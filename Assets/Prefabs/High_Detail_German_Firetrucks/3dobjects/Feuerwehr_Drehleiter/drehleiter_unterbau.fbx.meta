@@ -1,0 +1,114 @@
+fileFormatVersion: 2
+guid: 9dd1097ffa8d89c49a6ffba27e31a93d
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: body_main
+    100002: Camera
+    100004: //RootNode
+    100006: kleinteile
+    100008: radaufhaengungen
+    100010: standbeine_links_part1
+    100012: standbeine_links_part2
+    100014: standbeine_rechts_part1
+    100016: standbeine_rechts_part2
+    100018: tankdeckel
+    400000: body_main
+    400002: Camera
+    400004: //RootNode
+    400006: kleinteile
+    400008: radaufhaengungen
+    400010: standbeine_links_part1
+    400012: standbeine_links_part2
+    400014: standbeine_rechts_part1
+    400016: standbeine_rechts_part2
+    400018: tankdeckel
+    2300000: body_main
+    2300002: kleinteile
+    2300004: radaufhaengungen
+    2300006: standbeine_links_part1
+    2300008: standbeine_links_part2
+    2300010: standbeine_rechts_part1
+    2300012: standbeine_rechts_part2
+    2300014: tankdeckel
+    3300000: body_main
+    3300002: kleinteile
+    3300004: radaufhaengungen
+    3300006: standbeine_links_part1
+    3300008: standbeine_links_part2
+    3300010: standbeine_rechts_part1
+    3300012: standbeine_rechts_part2
+    3300014: tankdeckel
+    4300000: body_main
+    4300002: kleinteile
+    4300004: radaufhaengungen
+    4300006: standbeine_links_part1
+    4300008: standbeine_links_part2
+    4300010: standbeine_rechts_part1
+    4300012: standbeine_rechts_part2
+    4300014: tankdeckel
+    11100000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 2
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.01
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 1
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 0
+  tangentSpace:
+    normalSmoothAngle: 33
+    normalImportMode: 1
+    tangentImportMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
