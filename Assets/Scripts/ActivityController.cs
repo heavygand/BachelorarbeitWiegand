@@ -86,11 +86,9 @@ public class ActivityController : MonoBehaviour {
         navComponent.isStopped = true;
         animator.speed = 1f;
 
-        if (targetScript.makeGhost) {
-
-            GetComponent<Rigidbody>().isKinematic = true;
-            navComponent.enabled = false;
-        }
+        GetComponent<Rigidbody>().isKinematic = true;
+        navComponent.enabled = false;
+        
         rotateRelative();
 
         if (!targetScript.MoveVector.Equals(Vector3.zero)) {
