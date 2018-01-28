@@ -61,7 +61,7 @@ public class RegionController : MonoBehaviour {
             attenders.Add(activityController);
             activityController.setRegion(this);
 
-            Debug.Log($"Person {other.name} ist im Hotel");
+            //Debug.Log($"Person {other.name} ist im Hotel");
         }
 
         // We got an activity
@@ -72,7 +72,7 @@ public class RegionController : MonoBehaviour {
             activities.Add(objectController);
             objectController.setRegion(this);
 
-            Debug.Log($"Tätigkeit {other.name} ist im Hotel bei {other.transform.localPosition}");
+            //Debug.Log($"Tätigkeit {other.name} ist im Hotel bei {other.transform.localPosition}");
         }
         if (objectController != null && !objectController.isActiveAndEnabled) disabledActivities.Add(objectController);
 
@@ -81,19 +81,19 @@ public class RegionController : MonoBehaviour {
 
             if (activityController != null) {
 
-                activityController.setTarget();
-//                Debug.Log($"{activityController.gameObject.name} konnte anfangen");
+                activityController.changeActivity();
+                //Debug.Log($"{activityController.gameObject.name} konnte anfangen");
             }
             foreach (ActivityController waiter in waiters) {
 
-//                Debug.Log($"{waiter.gameObject.name} hat gewartet und konnte anfangen");
-                waiter.setTarget();
-            }
+                //Debug.Log($"{waiter.gameObject.name} hat gewartet und konnte anfangen");
+                waiter.changeActivity();
+			}
         }
         // Else, the attenders will have to wait
         else if(activityController != null) {
 
-            Debug.Log($"{activityController.gameObject.name} musste warten");
+            //Debug.Log($"{activityController.gameObject.name} musste warten");
             waiters.Add(activityController);
         }
         activityController = null;

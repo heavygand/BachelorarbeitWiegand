@@ -14,7 +14,7 @@ public class ActivityControllerEditor : Editor {
         Handles.BeginGUI();
         if (GUILayout.Button(buttonText, GUILayout.Width(buttonText.Length*7), GUILayout.Height(30))) {
             Debug.Log("Activitätswechselbutton gedrückt");
-            user.continueToNext();
+            user.changeActivity();
         }
         Handles.EndGUI();
     }

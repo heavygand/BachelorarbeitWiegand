@@ -69,12 +69,4 @@ public class ObjectController : MonoBehaviour {
 
         myRegion = rc;
     }
-
-    private void OnTriggerEnter(Collider other) {
-
-        ActivityController user = other.GetComponent<ActivityController>();
-
-        // Check if the intruder is a user, check if he has me as destination, then let him stop
-        if (user != null && user.currentActivity == gameObject) user.stop();
-    }
 }

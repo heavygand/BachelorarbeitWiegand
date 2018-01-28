@@ -772,24 +772,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 45
       objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.x
-      value: 0.41860008
-      objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.y
-      value: 0.41859996
-      objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.z
-      value: 0.41860008
-      objectReference: {fileID: 0}
     - target: {fileID: 1485257217322454, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
       propertyPath: m_Name
       value: Toilette (1)
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 65990561938731206, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
+    m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
   m_IsPrefabParent: 0
 --- !u!4 &6969314 stripped
@@ -797,23 +784,6 @@ Transform:
   m_PrefabParentObject: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc,
     type: 2}
   m_PrefabInternal: {fileID: 6969313}
---- !u!1 &6969315 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1485257217322454, guid: 5c4381647efb12d47b6092e32d343adc,
-    type: 2}
-  m_PrefabInternal: {fileID: 6969313}
---- !u!135 &6969316
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 6969315}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.44
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7035565
 GameObject:
   m_ObjectHideFlags: 0
@@ -8183,6 +8153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &124915542
@@ -11384,6 +11355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &174715785
@@ -26623,6 +26595,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &433086932
@@ -33467,6 +33440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &557289993
@@ -35441,6 +35415,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &582800891
@@ -37003,6 +36978,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &606412519
@@ -40775,6 +40751,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &677690221
@@ -46184,7 +46161,7 @@ Prefab:
         type: 2}
       propertyPath: currentActivity
       value: 
-      objectReference: {fileID: 1698582109}
+      objectReference: {fileID: 1582740041}
     - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
         type: 2}
       propertyPath: nextActivity
@@ -47522,6 +47499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &787669270
@@ -50087,6 +50065,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &822463057
@@ -51158,28 +51137,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 47
       objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.x
-      value: 0.4186
-      objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.y
-      value: 0.4186
-      objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.z
-      value: 0.4186
-      objectReference: {fileID: 0}
     - target: {fileID: 1485257217322454, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
       propertyPath: m_Name
       value: Toilette (3)
       objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 65990561938731206, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
+    m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
   m_IsPrefabParent: 0
 --- !u!4 &843099023 stripped
@@ -51187,23 +51149,6 @@ Transform:
   m_PrefabParentObject: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc,
     type: 2}
   m_PrefabInternal: {fileID: 843099022}
---- !u!1 &843099024 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1485257217322454, guid: 5c4381647efb12d47b6092e32d343adc,
-    type: 2}
-  m_PrefabInternal: {fileID: 843099022}
---- !u!135 &843099025
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 843099024}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.44
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &844166279
 GameObject:
   m_ObjectHideFlags: 0
@@ -51911,6 +51856,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &849944635
@@ -56686,6 +56632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &927967981
@@ -57112,6 +57059,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &932976697
@@ -59568,7 +59516,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
       propertyPath: m_LocalPosition.z
-      value: -10.67
+      value: -11.009
       objectReference: {fileID: 0}
     - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
       propertyPath: m_LocalRotation.x
@@ -59590,29 +59538,9 @@ Prefab:
       propertyPath: m_RootOrder
       value: 58
       objectReference: {fileID: 0}
-    - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
-      propertyPath: m_LocalScale.x
-      value: 0.5000008
-      objectReference: {fileID: 0}
-    - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
-      propertyPath: m_LocalScale.y
-      value: 0.5000008
-      objectReference: {fileID: 0}
-    - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
-      propertyPath: m_LocalScale.z
-      value: 0.50000006
-      objectReference: {fileID: 0}
     - target: {fileID: 1828418389489862, guid: f7975d34b33682c4e813ce8026391912, type: 2}
       propertyPath: m_Name
       value: WindowDestination (2)
-      objectReference: {fileID: 0}
-    - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 180.00002
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f7975d34b33682c4e813ce8026391912, type: 2}
@@ -60943,28 +60871,11 @@ Transform:
   m_Father: {fileID: 957882802}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1010417785 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1485257217322454, guid: 5c4381647efb12d47b6092e32d343adc,
-    type: 2}
-  m_PrefabInternal: {fileID: 1439939278}
 --- !u!4 &1010417786 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc,
     type: 2}
   m_PrefabInternal: {fileID: 1439939278}
---- !u!135 &1010417787
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1010417785}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.44
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1010635178
 GameObject:
   m_ObjectHideFlags: 0
@@ -64886,6 +64797,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1077373295
@@ -78465,6 +78377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1313347182
@@ -83065,6 +82978,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1386689991
@@ -86137,7 +86051,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -15.24
+      value: -15.208
       objectReference: {fileID: 0}
     - target: {fileID: 4275823922562800, guid: f7975d34b33682c4e813ce8026391912, type: 2}
       propertyPath: m_LocalPosition.y
@@ -86611,8 +86525,7 @@ Prefab:
       propertyPath: m_RootOrder
       value: 22
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 65990561938731206, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
+    m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
   m_IsPrefabParent: 0
 --- !u!1 &1440058128
@@ -88013,6 +87926,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1467973913
@@ -91935,6 +91849,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1532959617
@@ -92371,6 +92286,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1539555829
@@ -93414,6 +93330,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1559285435
@@ -94932,6 +94849,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1575164977
@@ -95290,6 +95208,11 @@ Transform:
   m_Father: {fileID: 1749559066}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1582740041 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1613041844533734, guid: aad00960ab17b89459a2e8fe33bd83bb,
+    type: 2}
+  m_PrefabInternal: {fileID: 952030710}
 --- !u!1 &1582870608
 GameObject:
   m_ObjectHideFlags: 0
@@ -95460,6 +95383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1582870617
@@ -98338,6 +98262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1627706061
@@ -98499,6 +98424,21 @@ Prefab:
     - target: {fileID: 4842706677345404, guid: 17d53e3894c9d0844a6c2bece23bd30a, type: 2}
       propertyPath: m_RootOrder
       value: 34
+      objectReference: {fileID: 0}
+    - target: {fileID: 114951429118190614, guid: 17d53e3894c9d0844a6c2bece23bd30a,
+        type: 2}
+      propertyPath: ausgeben
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 65789578946361486, guid: 17d53e3894c9d0844a6c2bece23bd30a,
+        type: 2}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 65404395140712254, guid: 17d53e3894c9d0844a6c2bece23bd30a,
+        type: 2}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 17d53e3894c9d0844a6c2bece23bd30a, type: 2}
@@ -101572,28 +101512,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 46
       objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.x
-      value: 0.4186
-      objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.y
-      value: 0.4186
-      objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalScale.z
-      value: 0.4186
-      objectReference: {fileID: 0}
     - target: {fileID: 1485257217322454, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
       propertyPath: m_Name
       value: Toilette (2)
       objectReference: {fileID: 0}
-    - target: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 65990561938731206, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
+    m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 5c4381647efb12d47b6092e32d343adc, type: 2}
   m_IsPrefabParent: 0
 --- !u!4 &1668389911 stripped
@@ -101601,23 +101524,6 @@ Transform:
   m_PrefabParentObject: {fileID: 4577470924201476, guid: 5c4381647efb12d47b6092e32d343adc,
     type: 2}
   m_PrefabInternal: {fileID: 1668389910}
---- !u!1 &1668389912 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1485257217322454, guid: 5c4381647efb12d47b6092e32d343adc,
-    type: 2}
-  m_PrefabInternal: {fileID: 1668389910}
---- !u!135 &1668389913
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1668389912}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.44
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1668798027
 GameObject:
   m_ObjectHideFlags: 0
@@ -102362,6 +102268,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1675220433
@@ -103948,11 +103855,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1695162398}
   m_Mesh: {fileID: 4300000, guid: 66c149934a56f4d62bfc45fbe028d614, type: 3}
---- !u!1 &1698582109 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1987695164232240, guid: 0def689e962f09b4fa05c640bd3f637f,
-    type: 2}
-  m_PrefabInternal: {fileID: 676513339}
 --- !u!1 &1701341692
 GameObject:
   m_ObjectHideFlags: 0
@@ -106755,6 +106657,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1744451992
@@ -108875,6 +108778,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1774026510
@@ -113585,6 +113489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &1858573056
@@ -128744,6 +128649,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &2096547435
@@ -130312,6 +130218,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 0
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!95 &2118856637

@@ -25,24 +25,49 @@ public class ActivityController : MonoBehaviour {
         navComponent = GetComponent<NavMeshAgent>();
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
         alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
+	    setStateDoing();
     }
 
-    /// <summary>
-    /// In Update, we check if there's a firealarm, we check if the activity has changed
-    /// we check if we're close enough to the destination, we check if we have to do some
-    /// special actions like sitting or laying down
-    /// </summary>
-    void Update () {
+	private void setStateDoing() {
+		allowStateChange = true;
+		currentState = state.doing;
+		allowStateChange = false;
+	}
+
+	private void setStateGoing() {
+		allowStateChange = true;
+		currentState = state.going;
+		allowStateChange = false;
+	}
+
+	private void setStateChangeTriggered() {
+		allowStateChange = true;
+		currentState = state.newTargetTriggered;
+		allowStateChange = false;
+	}
+
+	/// <summary>
+	/// In Update, we check if there's a firealarm, we check if the activity has changed
+	/// we check if we're close enough to the destination, we check if we have to do some
+	/// special actions like sitting or laying down
+	/// </summary>
+	void Update () {
 
         // If the alarm starts, then stop doing activities
+        // TODO remove this from update()
         if (alarmText.text == "FIREALARM" && !startedDeactivating) deactivateMe();
     }
 
-    // Set a target. Everything starts here.
-    public void setTarget() {
+	// Set a target. Everything starts here.
+	private void setTargetAndStartGoing() {
 
-        // Get a random Target, if we have no
-        if (currentActivity == null) {
+		// Proceed with activities, when available
+		lastActivity = currentActivity;
+		currentActivity = nextActivity;
+		nextActivity = null;
+
+		// Get a random Target, if we have no
+		while (currentActivity == null) {
 
             Debug.Log("Picking random target");
 
@@ -52,17 +77,22 @@ public class ActivityController : MonoBehaviour {
             // Pick a random number from the length of the destinationlist
             int target = Random.Range(0, activities.Count);
 
-            // Set this as target
-            currentActivity = activities[target].gameObject;
+            GameObject foundActivity = activities[target].gameObject;
+
+            // Set this as target, if its not the last one
+            if (foundActivity != lastActivity) {
+                currentActivity = foundActivity; 
+            }
         }
 
-        // Get the Script
-        targetScript = currentActivity.GetComponent<ObjectController>();
+		// START GOING
+		if (!tryToSwitchState()) return;
 
-        // START GOING
+		// Get the Script
+		targetScript = currentActivity.GetComponent<ObjectController>();
 
-        // Look where to go and set the navmesh destination
-        currTargetPos = currentActivity.transform.position + targetScript.WorkPlace;
+		// Look where to go and set the navmesh destination
+		currTargetPos = currentActivity.transform.position + targetScript.WorkPlace;
         navComponent.SetDestination(currTargetPos);
 
         // Set Animator ready for going
@@ -70,13 +100,13 @@ public class ActivityController : MonoBehaviour {
         animator.SetTrigger("walk");
         animator.applyRootMotion = false;
 
-        Debug.Log($"{gameObject.name} in {myRegion.gameObject.name}: I'm now going to {currentActivity.name}");
+		Debug.Log($"{gameObject.name} in {myRegion.gameObject.name}: I'm now going to {currentActivity.name}");
     }
 
-    // Called from the targetobject, when arrived
-    public void stop() {
+	// Called when arrived
+	private void stopGoingAndStartDoing(string activityName) {
 
-        Debug.Log($"{gameObject.name} stopped by {currentActivity.name}");
+        Debug.Log($"{gameObject.name} stopped by {activityName}");
 
         // rootMotion on, because we're not walking on the navMesh anymore
         animator.applyRootMotion = true;
@@ -86,25 +116,71 @@ public class ActivityController : MonoBehaviour {
         navComponent.isStopped = true;
         animator.speed = 1f;
 
-        GetComponent<Rigidbody>().isKinematic = true;
+		// Start doing the activity
+		if( !tryToSwitchState() ) return;
+
+		GetComponent<Rigidbody>().isKinematic = true;
         navComponent.enabled = false;
         
         rotateRelative();
 
         if (!targetScript.MoveVector.Equals(Vector3.zero)) {
 
-            StartCoroutine(gotoPos(true)); 
+            StartCoroutine(slideToPlace(true)); 
         }
 
         StartCoroutine(startAction());
 
-        StartCoroutine(continueAfter());
+	    doing = StartCoroutine(waitForUsageTime());
     }
-    /// <summary>
-    /// This moves the Avatar in a given vector, after a delay of 5 seconds.
-    /// <param name="toMoveVector">Says if we must move towards the movevector or back</param>
-    /// </summary>
-    private IEnumerator gotoPos(bool toMoveVector) {
+
+	private bool tryToSwitchState() {
+
+		bool stateCouldChange;
+
+		switch (currentState) {
+
+			case state.doing:
+			setStateGoing();
+			stateCouldChange = true;
+				break;
+
+			case state.going:
+				setStateDoing();
+			stateCouldChange = true;
+			break;
+
+			default: //state.newTargetTriggered
+			setStateDoing();
+			setTargetAndStartGoing();
+			stateCouldChange = false;
+			break;
+		}
+		
+		return stateCouldChange;
+	}
+
+	/// <summary>
+	/// Starts the rotation for a given angle
+	/// </summary>
+	private void rotateRelative() {
+
+		// Get the rotation of the Target
+		Quaternion wrongTargetRot = currentActivity.transform.parent.transform.rotation;
+		Quaternion targetRot = Quaternion.Euler(
+			wrongTargetRot.eulerAngles.x,
+			wrongTargetRot.eulerAngles.y + targetScript.turnAngle + currentActivity.transform.localRotation.eulerAngles.y,
+			wrongTargetRot.eulerAngles.z);
+
+		// Rotate myself like this
+		StartCoroutine(rotate(targetRot));
+	}
+
+	/// <summary>
+	/// This moves the Avatar in a given vector, after a delay of 5 seconds.
+	/// <param name="toMoveVector">Says if we must move towards the movevector or back</param>
+	/// </summary>
+	private IEnumerator slideToPlace(bool toMoveVector) {
 
         displaced = toMoveVector;
 
@@ -129,90 +205,63 @@ public class ActivityController : MonoBehaviour {
         }
 
         yield return 0;
+	}
+
+	/// <summary>
+	/// Starts to do an animation after a second. I do this because the rotation before the sitting takes some time
+	/// </summary>
+	/// <returns></returns>
+	private IEnumerator startAction() {
+
+		// Start acting after some time
+		yield return new WaitForSeconds(1);
+		animator.SetBool(targetScript.activity.ToString(), true);
+	}
+
+	// Continues with the next activity, after the "useage"-time of the activity endet
+	private IEnumerator waitForUsageTime() {
+
+        // Check if my state changed every 100ms
+        for (int i = 0; i < targetScript.time*10; i++) {
+			
+            yield return new WaitForSeconds(0.1f); // Every 100ms
+		}
+
+		stopDoingThis();
     }
 
-    // Continues with the next activity, after the "useage"-time of the activity endet
-    private IEnumerator continueAfter() {
+	private void stopDoingThis() {
 
-        string thisthing = currentActivity.name;
-        
-        yield return new WaitForSeconds(targetScript.time);
-
-        Debug.Log($"Aktivitätszeit für {thisthing} vorbei, mache etwas anderes");
-        continueToNext();
-    }
-
-    public void continueToNext() {
-
-        // When the button in scene view gets pressed
-        if (!Application.isPlaying) {
-            
-            Debug.LogError("Aktivitätswechsel nur zur Laufzeit verfügbar!");
-            return;
-        }
-
-        // Stop doing this activity
-        animator.SetBool(targetScript.activity.ToString(), false);
+		// Stop doing this activity
+		if (targetScript != null) {
+			animator.SetBool(targetScript.activity.ToString(), false);
+		}
 
         // Re-place when displaced
         if (displaced) {
 
             Debug.Log("Displaced -> re-placing");
-            StartCoroutine(gotoPos(false));
+            StartCoroutine(slideToPlace(false));
         }
 
-        // Proceed with activities, when available
-        currentActivity = nextActivity;
-        nextActivity = null;
-
-        if(currentActivity != null) Debug.Log($"Proceeding to activity: {currentActivity.name}");
-
         // Wait with the next target until we are ready to walk again (when sitting or laying)
-        StartCoroutine(continueWhenDone());
+        StartCoroutine(continueWhenDoneStopping());
     }
 
-    private IEnumerator continueWhenDone() {
+    private IEnumerator continueWhenDoneStopping() {
 
         while (!animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
             Debug.Log($"Kann nicht weiter machen, weil {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
             yield return new WaitForSeconds(0.2f);
         }
-        Debug.Log($"Kann jetzt weiter machen");
 
         // Reactivate stuff, that maybe was deactivated in stop()
         navComponent.enabled = true;
         navComponent.isStopped = false;
         GetComponent<Rigidbody>().isKinematic = false;
 
-        setTarget();
-    }
-
-    /// <summary>
-    /// Starts to do an animation after a second. I do this because the rotation before the sitting takes some time
-    /// </summary>
-    /// <returns></returns>
-    private IEnumerator startAction() {
-
-        // Start acting after some time
-        yield return new WaitForSeconds(1);
-        animator.SetBool(targetScript.activity.ToString(), true);
-    }
-
-    /// <summary>
-    /// Starts the rotation for a given angle
-    /// </summary>
-    private void rotateRelative() {
-
-        // Get the rotation of the Target
-        Quaternion wrongTargetRot = currentActivity.transform.parent.transform.rotation;
-        Quaternion targetRot = Quaternion.Euler(
-            wrongTargetRot.eulerAngles.x,
-            wrongTargetRot.eulerAngles.y + targetScript.turnAngle + currentActivity.transform.localRotation.eulerAngles.y,
-            wrongTargetRot.eulerAngles.z);
-
-        // Rotate myself like this
-        StartCoroutine(rotate(targetRot));
+        setTargetAndStartGoing();
     }
 
     /// <summary>
@@ -278,10 +327,10 @@ public class ActivityController : MonoBehaviour {
         deactivateMe();
     }
 
-    /// <summary>
-    /// Starts deactivating all activities, and allows walking again
-    /// </summary>
-    public void deactivateMe() {
+	/// <summary>
+	/// Starts deactivating all activities, and allows walking again
+	/// </summary>
+	private void deactivateMe() {
 
         startedDeactivating = true;
 
@@ -339,24 +388,66 @@ public class ActivityController : MonoBehaviour {
 
         myRegion = rc;
     }
+
+    private void OnTriggerEnter(Collider other) {
+
+        ObjectController activity = other.GetComponent<ObjectController>();
+
+        // Check if we reached an object with objectcontroller
+        // Check if it's the first collider (the work place)
+        // Check if it's my current activity
+        if (activity            !=  null &&
+            other               ==  activity.gameObject.GetComponents<Collider>()[0] &&
+            activity.gameObject ==  currentActivity) {
+			
+			stopGoingAndStartDoing(activity.name);
+        }
+    }
+
+	public void changeActivity() {
+
+		switch (currentState) {
+				
+			case state.doing:
+			if (doing != null) StopCoroutine(doing);
+				stopDoingThis();
+			break;
+
+			case state.going:
+				setTargetAndStartGoing();
+			break;
+
+			default:
+				setStateChangeTriggered();
+			break;
+		}
+	}
     
-    private GameObject tempState;
-    private GameObject[] destinations;
     public GameObject currentActivity;
     public GameObject nextActivity;
+
+	private enum state { doing, going, newTargetTriggered}
+	private state currentState;
+
+	private state CurrentState {
+		set {
+			if (allowStateChange) currentState = value;
+			else Debug.LogError($"{name}: mein State wurde unerlaubt geändert!");
+		}
+	}
     private GameObject lastFire;
     private Vector3 currTargetPos;
-    private SortedList<float, GameObject> sortedDests;
     private Animator animator;
     private NavMeshAgent navComponent;
     private Text alarmText;
     private AvatarController fleeScript;
     private Transform whatBurn;
     private RegionController myRegion;
-    private bool start;
     private bool toBurn;
     private bool displaced;
-    private bool targetsExist;
     private bool startedDeactivating;
     private ObjectController targetScript;
+    private GameObject lastActivity;
+	private Coroutine doing;
+	private bool allowStateChange;
 }
