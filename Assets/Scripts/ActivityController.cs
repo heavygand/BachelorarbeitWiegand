@@ -14,42 +14,41 @@ using UnityEngine.UI;
 /// This Script manages all activities and deactivates itself in case of alarm
 /// </summary>
 public class ActivityController : MonoBehaviour {
-    
-    /// <summary>
-    /// Initialisation
-    /// </summary>
-    void Start () {
 
-        // Init Components
-        animator = GetComponent<Animator>();
+	public GameObject currentActivity;
+	public GameObject nextActivity;
+
+	private GameObject lastFire;
+	private Animator animator;
+	private NavMeshAgent navComponent;
+	private Text alarmText;
+	private AvatarController fleeScript;
+	private Transform whatBurn;
+	private RegionController myRegion;
+	private bool toBurn;
+	private bool displaced;
+	private bool startedDeactivating;
+	private ObjectController targetScript;
+	private GameObject lastActivity;
+	private Coroutine doing;
+	private bool activityChangeRequested;
+	private bool going;
+
+	/// <summary>
+	/// Initialisation
+	/// </summary>
+	void Start () {
+
+		// Init Components
+		animator = GetComponent<Animator>();
         navComponent = GetComponent<NavMeshAgent>();
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
         alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
-	    setStateDoing();
     }
-
-	private void setStateDoing() {
-		allowStateChange = true;
-		currentState = state.doing;
-		allowStateChange = false;
-	}
-
-	private void setStateGoing() {
-		allowStateChange = true;
-		currentState = state.going;
-		allowStateChange = false;
-	}
-
-	private void setStateChangeTriggered() {
-		allowStateChange = true;
-		currentState = state.newTargetTriggered;
-		allowStateChange = false;
-	}
+	
 
 	/// <summary>
-	/// In Update, we check if there's a firealarm, we check if the activity has changed
-	/// we check if we're close enough to the destination, we check if we have to do some
-	/// special actions like sitting or laying down
+	/// In Update, we check if there's a firealarm
 	/// </summary>
 	void Update () {
 
@@ -58,8 +57,10 @@ public class ActivityController : MonoBehaviour {
         if (alarmText.text == "FIREALARM" && !startedDeactivating) deactivateMe();
     }
 
-	// Set a target. Everything starts here.
-	private void setTargetAndStartGoing() {
+	// Set a target
+	private void setTarget() {
+
+		activityChangeRequested = false;
 
 		// Proceed with activities, when available
 		lastActivity = currentActivity;
@@ -67,7 +68,8 @@ public class ActivityController : MonoBehaviour {
 		nextActivity = null;
 
 		// Get a random Target, if we have no
-		while (currentActivity == null) {
+		int counter = 0;
+		while (currentActivity == null && counter < 10) {
 
             Debug.Log("Picking random target");
 
@@ -83,25 +85,61 @@ public class ActivityController : MonoBehaviour {
             if (foundActivity != lastActivity) {
                 currentActivity = foundActivity; 
             }
-        }
 
-		// START GOING
-		if (!tryToSwitchState()) return;
+			counter++;
+		}
+		if (counter == 10) {
+
+			Debug.LogError("Es konnten keine Aktivitäten mehr gefunden werden.");
+			return;
+		}
+		
+		startGoing();
+	}
+
+	// START GOING
+	public void startGoing() {
+
+		if (currentActivity == null) {
+			
+			setTarget();
+			return;
+		}
 
 		// Get the Script
 		targetScript = currentActivity.GetComponent<ObjectController>();
 
 		// Look where to go and set the navmesh destination
-		currTargetPos = currentActivity.transform.position + targetScript.WorkPlace;
-        navComponent.SetDestination(currTargetPos);
+		Vector3 currTargetPos = targetScript.WorkPlace;
+		navComponent.SetDestination(currTargetPos);
 
-        // Set Animator ready for going
-        animator.SetBool("closeEnough", false);
-        animator.SetTrigger("walk");
-        animator.applyRootMotion = false;
+		// Set Animator ready for going
+		animator.SetBool("closeEnough", false);
+		animator.SetTrigger("walk");
+		animator.applyRootMotion = false;
+
+		going = true;
 
 		Debug.Log($"{gameObject.name} in {myRegion.gameObject.name}: I'm now going to {currentActivity.name}");
-    }
+	}
+
+	// Arrived
+	private void OnTriggerEnter(Collider other) {
+
+		ObjectController activity = other.GetComponent<ObjectController>();
+
+		// Check if we reached an object with objectcontroller
+		// Check if it's the first collider (the work place)
+		// Check if it's my current activity
+		if (activity != null &&
+			other == activity.gameObject.GetComponents<Collider>()[0] &&
+			activity.gameObject == currentActivity &&
+			going) {
+
+			going = false;
+			stopGoingAndStartDoing(activity.name);
+		}
+	}
 
 	// Called when arrived
 	private void stopGoingAndStartDoing(string activityName) {
@@ -117,7 +155,6 @@ public class ActivityController : MonoBehaviour {
         animator.speed = 1f;
 
 		// Start doing the activity
-		if( !tryToSwitchState() ) return;
 
 		GetComponent<Rigidbody>().isKinematic = true;
         navComponent.enabled = false;
@@ -133,32 +170,6 @@ public class ActivityController : MonoBehaviour {
 
 	    doing = StartCoroutine(waitForUsageTime());
     }
-
-	private bool tryToSwitchState() {
-
-		bool stateCouldChange;
-
-		switch (currentState) {
-
-			case state.doing:
-			setStateGoing();
-			stateCouldChange = true;
-				break;
-
-			case state.going:
-				setStateDoing();
-			stateCouldChange = true;
-			break;
-
-			default: //state.newTargetTriggered
-			setStateDoing();
-			setTargetAndStartGoing();
-			stateCouldChange = false;
-			break;
-		}
-		
-		return stateCouldChange;
-	}
 
 	/// <summary>
 	/// Starts the rotation for a given angle
@@ -189,12 +200,12 @@ public class ActivityController : MonoBehaviour {
 
         Vector3 moveVector = targetScript.MoveVector;
 
-        Vector3 targetPos = targetScript.transform.position + targetScript.WorkPlace + moveVector;
+        Vector3 targetPos = targetScript.WorkPlace + moveVector;
 
         // toMoveVector determines if we move towards it or away from it
         if (!toMoveVector) {
 
-            targetPos = targetScript.transform.position + targetScript.WorkPlace;
+            targetPos = targetScript.WorkPlace;
         }
 
         // Move to pos
@@ -220,10 +231,11 @@ public class ActivityController : MonoBehaviour {
 
 	// Continues with the next activity, after the "useage"-time of the activity endet
 	private IEnumerator waitForUsageTime() {
-
-        // Check if my state changed every 100ms
-        for (int i = 0; i < targetScript.time*10; i++) {
+		
+		// Check if my state changed every 100ms
+		for (int i = 0; i < targetScript.time*10; i++) {
 			
+			if (activityChangeRequested) stopDoingThis();
             yield return new WaitForSeconds(0.1f); // Every 100ms
 		}
 
@@ -232,19 +244,15 @@ public class ActivityController : MonoBehaviour {
 
 	private void stopDoingThis() {
 
+		if (doing != null) StopCoroutine(doing);
+
 		// Stop doing this activity
-		if (targetScript != null) {
-			animator.SetBool(targetScript.activity.ToString(), false);
-		}
+		if (targetScript != null) animator.SetBool(targetScript.activity.ToString(), false);
 
         // Re-place when displaced
-        if (displaced) {
+        if (displaced) StartCoroutine(slideToPlace(false));
 
-            Debug.Log("Displaced -> re-placing");
-            StartCoroutine(slideToPlace(false));
-        }
-
-        // Wait with the next target until we are ready to walk again (when sitting or laying)
+		// Wait with the next target until we are ready to walk again (when sitting or laying)
         StartCoroutine(continueWhenDoneStopping());
     }
 
@@ -261,7 +269,7 @@ public class ActivityController : MonoBehaviour {
         navComponent.isStopped = false;
         GetComponent<Rigidbody>().isKinematic = false;
 
-        setTargetAndStartGoing();
+        setTarget();
     }
 
     /// <summary>
@@ -389,65 +397,10 @@ public class ActivityController : MonoBehaviour {
         myRegion = rc;
     }
 
-    private void OnTriggerEnter(Collider other) {
+	public void requestActivityChange() {
+		
+		activityChangeRequested = true;
 
-        ObjectController activity = other.GetComponent<ObjectController>();
-
-        // Check if we reached an object with objectcontroller
-        // Check if it's the first collider (the work place)
-        // Check if it's my current activity
-        if (activity            !=  null &&
-            other               ==  activity.gameObject.GetComponents<Collider>()[0] &&
-            activity.gameObject ==  currentActivity) {
-			
-			stopGoingAndStartDoing(activity.name);
-        }
-    }
-
-	public void changeActivity() {
-
-		switch (currentState) {
-				
-			case state.doing:
-			if (doing != null) StopCoroutine(doing);
-				stopDoingThis();
-			break;
-
-			case state.going:
-				setTargetAndStartGoing();
-			break;
-
-			default:
-				setStateChangeTriggered();
-			break;
-		}
+		if(going) setTarget();
 	}
-    
-    public GameObject currentActivity;
-    public GameObject nextActivity;
-
-	private enum state { doing, going, newTargetTriggered}
-	private state currentState;
-
-	private state CurrentState {
-		set {
-			if (allowStateChange) currentState = value;
-			else Debug.LogError($"{name}: mein State wurde unerlaubt geändert!");
-		}
-	}
-    private GameObject lastFire;
-    private Vector3 currTargetPos;
-    private Animator animator;
-    private NavMeshAgent navComponent;
-    private Text alarmText;
-    private AvatarController fleeScript;
-    private Transform whatBurn;
-    private RegionController myRegion;
-    private bool toBurn;
-    private bool displaced;
-    private bool startedDeactivating;
-    private ObjectController targetScript;
-    private GameObject lastActivity;
-	private Coroutine doing;
-	private bool allowStateChange;
 }

@@ -10,24 +10,31 @@ public class ObjectController : MonoBehaviour {
 
     private RegionController myRegion;
 
-    public enum Activities {
+	void Start() {
+
+		if (time < 1) time = 100;
+		
+		workPlace = getFootOfFirstCollider();
+	}
+
+	public Vector3 getFootOfFirstCollider() {
+		Bounds bounds = GetComponents<Collider>()[0].bounds;
+		Vector3 center = new Vector3(bounds.center.x, bounds.center.y - bounds.size.y/2, bounds.center.z);
+		return center;
+	}
+
+	public enum Activities {
         sitDown,
         layDown,
-        stehen,
-        sport
-    }
+        stand,
+        sport,
+		rummage
+	}
 
     [Tooltip("The general animation to fulfill here")]
     public Activities activity;
-
-    [Tooltip("The place relative to the Object, where the user has to go")]
-    public Vector3 workPlace;
-
-    public Vector3 WorkPlace {
-        get {
-            return rotateVector(workPlace);
-        }
-    }
+	
+    private Vector3 workPlace;
 
     public Vector3 MoveVector {
         get {
@@ -35,13 +42,19 @@ public class ObjectController : MonoBehaviour {
         }
     }
 
-    [Tooltip("Rotation relative to the Object")]
+	public Vector3 WorkPlace {
+		get {
+			return workPlace;
+		}
+	}
+
+	[Tooltip("Rotation relative to the Object")]
     public int turnAngle;
 
-    [Tooltip("The time the user will do this activity")]
+    [Tooltip("The time in seconds to use this activity")]
     public int time;
 
-    [Tooltip("A direction to slide to, when arrived (seen from the work place)")]
+    [Tooltip("A direction to slide to, when arrived (seen from the center of the stopper-collider)")]
     public Vector3 moveVector;
 
     [Tooltip("Indicates if this should be visible ingame")]
@@ -53,16 +66,6 @@ public class ObjectController : MonoBehaviour {
     private Vector3 rotateVector(Vector3 unturnedVector) {
 
         return transform.localRotation * unturnedVector;
-    }
-
-    // Use this for initialization
-    void Start() {
-        
-    }
-
-    // Update is called once per frame
-    void Update() {
-
     }
 
     public void setRegion(RegionController rc) {

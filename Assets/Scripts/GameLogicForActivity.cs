@@ -17,7 +17,6 @@ public class GameLogicForActivity : MonoBehaviour {
     public void register(RegionController rc) {
         
         regions.Add(rc);
-//        Debug.Log(rc.name + " bei GameLogicForActivity registriert");
     }
 
     public List<RegionController> getRegions(RegionController rc) {

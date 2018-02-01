@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEditor;
 
 [CustomEditor (typeof (ObjectController))]
+[CanEditMultipleObjects]
 public class ObjectControllerEditor : Editor {
 
     private ObjectController oc;
@@ -14,11 +15,14 @@ public class ObjectControllerEditor : Editor {
         oc = (ObjectController)target;
         
 		Handles.color = Color.white;
+		
+	    Vector3 center = oc.getFootOfFirstCollider();
+		
+		drawPlace(center, "Work Place");
 
-        drawPlace(oc.transform.position + oc.WorkPlace, "Work Place");
-
-        if (oc.moveVector != Vector3.zero) drawPlace(oc.transform.position + oc.WorkPlace + oc.MoveVector, "Move Place");
-    }
+        if (oc.moveVector != Vector3.zero) drawPlace(center + oc.MoveVector, "Move Place");
+		
+	}
 
     private void drawPlace(Vector3 place, string text) {
 

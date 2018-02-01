@@ -9,8 +9,9 @@ public class RegionController : MonoBehaviour {
     private List<ObjectController> disabledActivities = new List<ObjectController>();
     private List<ActivityController> waiters = new List<ActivityController>();
     private List<ActivityController> attenders = new List<ActivityController>();
+	private bool wasAlreadyCalled;
 
-    // Use this for initialization
+	// Use this for initialization
     void Start () {
 
         GameLogicForActivity master = GameObject.Find("GameActivityController").GetComponent<GameLogicForActivity>();
@@ -46,58 +47,58 @@ public class RegionController : MonoBehaviour {
         }
     }
 
-    // Update is called once per frame
-	void Update () {
-
-    }
-
     private void OnTriggerEnter(Collider other) {
         
         // We got an attender
-        ActivityController activityController = other.GetComponent<ActivityController>();
+        ActivityController avatarActivityController = other.GetComponent<ActivityController>();
 
-        if (activityController != null) {
+        if (avatarActivityController != null) {
 
-            attenders.Add(activityController);
-            activityController.setRegion(this);
+            attenders.Add(avatarActivityController);
+            avatarActivityController.setRegion(this);
 
             //Debug.Log($"Person {other.name} ist im Hotel");
         }
 
         // We got an activity
-        ObjectController objectController = other.GetComponent<ObjectController>();
+        ObjectController objectActivityController = other.GetComponent<ObjectController>();
 
-        if (objectController != null && objectController.isActiveAndEnabled && !activities.Contains(objectController)) {
+        if (objectActivityController != null && objectActivityController.isActiveAndEnabled && !activities.Contains(objectActivityController)) {
 
-            activities.Add(objectController);
-            objectController.setRegion(this);
+            activities.Add(objectActivityController);
+            objectActivityController.setRegion(this);
 
             //Debug.Log($"Tätigkeit {other.name} ist im Hotel bei {other.transform.localPosition}");
         }
-        if (objectController != null && !objectController.isActiveAndEnabled) disabledActivities.Add(objectController);
+        if (objectActivityController != null && !objectActivityController.isActiveAndEnabled) disabledActivities.Add(objectActivityController);
 
         // Only if we already have at least one activity and one attender, we can let them start
-        if (activities.Count > 0 && attenders.Count > 0) {
+        if (!wasAlreadyCalled && activities.Count > 0 && attenders.Count > 0) {
 
-            if (activityController != null) {
+	        wasAlreadyCalled = true;
 
-                activityController.changeActivity();
-                //Debug.Log($"{activityController.gameObject.name} konnte anfangen");
+			//Debug.Log($"Regioncontroller: wir betreten jetzt die foreach, weil activities.Count > 0 && attenders.Count > 0");
+
+			if (avatarActivityController != null) {
+
+                //Debug.Log($"Regioncontroller: {avatarActivityController.gameObject.name} kriegt startGoing()");
+                avatarActivityController.startGoing();
             }
-            foreach (ActivityController waiter in waiters) {
+			//Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
+			foreach (ActivityController waiter in waiters) {
 
-                //Debug.Log($"{waiter.gameObject.name} hat gewartet und konnte anfangen");
-                waiter.changeActivity();
+                //Debug.Log($"Regioncontroller: {waiter.gameObject.name} hat gewartet und kriegt startGoing()");
+                waiter.startGoing();
 			}
         }
         // Else, the attenders will have to wait
-        else if(activityController != null) {
+        else if(avatarActivityController != null) {
 
-            //Debug.Log($"{activityController.gameObject.name} musste warten");
-            waiters.Add(activityController);
+            //Debug.Log($"{avatarActivityController.gameObject.name} musste warten, weil die größe der activities = {activities.Count} war");
+            waiters.Add(avatarActivityController);
         }
-        activityController = null;
-        objectController = null;
+        avatarActivityController = null;
+        objectActivityController = null;
     }
 
     public List<ObjectController> getActivities() {
