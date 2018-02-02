@@ -120,7 +120,7 @@ public class ActivityController : MonoBehaviour {
 
 		going = true;
 
-		Debug.Log($"{gameObject.name} in {myRegion.gameObject.name}: I'm now going to {currentActivity.name}");
+		Debug.Log($"{gameObject.name} in {myRegion.gameObject.name}: I'm now going to {currentActivity.name} at {currTargetPos}");
 	}
 
 	// Arrived

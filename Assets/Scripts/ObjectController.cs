@@ -15,6 +15,7 @@ public class ObjectController : MonoBehaviour {
 		if (time < 1) time = 100;
 		
 		workPlace = getFootOfFirstCollider();
+		Debug.Log($"Workplace von {name} ist bei {workPlace}");
 	}
 
 	public Vector3 getFootOfFirstCollider() {
@@ -28,7 +29,9 @@ public class ObjectController : MonoBehaviour {
         layDown,
         stand,
         sport,
-		rummage
+		rummage,
+		bartending,
+		brooming
 	}
 
     [Tooltip("The general animation to fulfill here")]
@@ -36,17 +39,17 @@ public class ObjectController : MonoBehaviour {
 	
     private Vector3 workPlace;
 
-    public Vector3 MoveVector {
-        get {
-            return rotateVector(moveVector);
-        }
-    }
-
 	public Vector3 WorkPlace {
 		get {
 			return workPlace;
 		}
 	}
+
+    public Vector3 MoveVector {
+        get {
+            return rotateVector(moveVector);
+        }
+    }
 
 	[Tooltip("Rotation relative to the Object")]
     public int turnAngle;
