@@ -66,7 +66,10 @@ public class ObjectController : MonoBehaviour {
     [Tooltip("Indicates if the user has to be able to \"go through\" things to use this")]
     public bool makeGhost;
 
-    private Vector3 rotateVector(Vector3 unturnedVector) {
+	[Tooltip("The tool to use for this activity")]
+	public GameObject toolToUse;
+
+	private Vector3 rotateVector(Vector3 unturnedVector) {
 
         return transform.localRotation * unturnedVector;
     }

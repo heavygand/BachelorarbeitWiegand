@@ -33,6 +33,9 @@ public class ActivityController : MonoBehaviour {
 	private Coroutine doing;
 	private bool activityChangeRequested;
 	private bool going;
+	private GameObject tool;
+	private GameObject leftHand;
+	private GameObject rightHand;
 
 	/// <summary>
 	/// Initialisation
@@ -156,19 +159,26 @@ public class ActivityController : MonoBehaviour {
 
 		// Start doing the activity
 
+		// Disable Kinematic, so no physics will affect the animation
 		GetComponent<Rigidbody>().isKinematic = true;
+
+		// Disable the navcomponent, because he blocks the height of the avatar during an activity
         navComponent.enabled = false;
         
+		// Rotate towards the Activity
         rotateRelative();
 
+		// Slide to another place if neccesary
         if (!targetScript.MoveVector.Equals(Vector3.zero)) {
 
             StartCoroutine(slideToPlace(true)); 
         }
 
-        StartCoroutine(startAction());
+		// Starts to do the activity animations after a second
+		StartCoroutine(startAction());
 
-	    doing = StartCoroutine(waitForUsageTime());
+		// Starts the usage time, after which the activity will stop
+	    doing = StartCoroutine(startUsageTime());
     }
 
 	/// <summary>
@@ -219,7 +229,7 @@ public class ActivityController : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Starts to do an animation after a second. I do this because the rotation before the sitting takes some time
+	/// Starts to do an animation after a second. I do this because the rotation takes some time
 	/// </summary>
 	/// <returns></returns>
 	private IEnumerator startAction() {
@@ -230,17 +240,79 @@ public class ActivityController : MonoBehaviour {
 	}
 
 	// Continues with the next activity, after the "useage"-time of the activity endet
-	private IEnumerator waitForUsageTime() {
-		
+	private IEnumerator startUsageTime() {
+
+		// If we need a tool, then spawn it
+		tool = getTool();
+		if (tool != null) {
+			leftHand = getHand("Left");
+			rightHand = getHand("Right");
+		}
+
 		// Check if my state changed every 100ms
-		for (int i = 0; i < targetScript.time*10; i++) {
+		for (int i = 0; i < targetScript.time*40; i++) {
 			
 			if (activityChangeRequested) stopDoingThis();
-            yield return new WaitForSeconds(0.1f); // Every 100ms
+
+			// If we have a tool, then place it right again
+			if (tool != null) {
+
+				adjustTool(tool, leftHand, rightHand);
+			}
+
+			yield return new WaitForSeconds(0.025f); // Every 25ms
 		}
 
 		stopDoingThis();
     }
+
+	private void adjustTool(GameObject tool, GameObject leftHand, GameObject rightHand) {
+
+		Vector3 leftHandPos = leftHand.transform.position;
+		Vector3 rightHandPos = rightHand.transform.position;
+		Transform broomTransform = tool.transform;
+
+		// POSITION
+		// Stick to the left hand
+		broomTransform.position = leftHandPos;
+
+		// Move a little bit down along the local pivot,
+		// so the end of the broom will later lie exactly in the right hand
+		broomTransform.transform.Translate(Vector3.down / 8);
+
+		// ROTATION
+		// Let it look at the right hand
+		broomTransform.LookAt(rightHandPos);
+
+		// Turn around 90 degrees, so the end of the broom lies exactly in the right hand
+		Vector3 rot = broomTransform.rotation.eulerAngles;
+		broomTransform.rotation = Quaternion.Euler(new Vector3(rot.x + 90, rot.y, rot.z));
+	}
+
+	private GameObject getHand(string side) {
+		GameObject found = null;
+
+		Transform[] transformsInChildren = GetComponentsInChildren<Transform>();
+		foreach (Transform child in transformsInChildren) {
+
+			if (child.name == "mixamorig:"+side+"HandMiddle1") {
+
+				found = child.gameObject;
+			}
+		}
+
+		return found;
+	}
+
+	private GameObject getTool() {
+
+		if (targetScript.toolToUse == null) return null;
+
+		GameObject tool = Instantiate(targetScript.toolToUse);
+		tool.transform.parent = gameObject.transform;
+		tool.transform.localScale = targetScript.toolToUse.transform.localScale;
+		return tool;
+	}
 
 	private void stopDoingThis() {
 
