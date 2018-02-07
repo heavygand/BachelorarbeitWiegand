@@ -36,6 +36,8 @@ public class ActivityController : MonoBehaviour {
 	private GameObject tool;
 	private GameObject leftHand;
 	private GameObject rightHand;
+	private bool onlySetDontGo;
+	private bool iAmPartner;
 
 	/// <summary>
 	/// Initialisation
@@ -47,7 +49,7 @@ public class ActivityController : MonoBehaviour {
         navComponent = GetComponent<NavMeshAgent>();
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
         alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
-    }
+	}
 	
 
 	/// <summary>
@@ -81,11 +83,15 @@ public class ActivityController : MonoBehaviour {
 
             // Pick a random number from the length of the destinationlist
             int target = Random.Range(0, activities.Count);
+			
+			// Set this as target
+			GameObject foundActivity = activities[target].gameObject;
 
-            GameObject foundActivity = activities[target].gameObject;
+			ObjectController tempScript = getTargetScript(foundActivity);
 
-            // Set this as target, if its not the last one
-            if (foundActivity != lastActivity) {
+			// But not the last one, and not talk to myself (all avatars are sane)
+			if (foundActivity != lastActivity && tempScript != null && !(tempScript.isWithOtherPerson && tempScript.getAvatar() == this)) {
+
                 currentActivity = foundActivity; 
             }
 
@@ -96,8 +102,17 @@ public class ActivityController : MonoBehaviour {
 			Debug.LogError("Es konnten keine Aktivitäten mehr gefunden werden.");
 			return;
 		}
-		
-		startGoing();
+		// Target Activity found.
+
+		if (onlySetDontGo) {
+			
+			onlySetDontGo = false;
+			stopGoing();
+		}
+		else{
+
+			startGoing();
+		}
 	}
 
 	// START GOING
@@ -109,12 +124,20 @@ public class ActivityController : MonoBehaviour {
 			return;
 		}
 
-		// Get the Script
-		targetScript = currentActivity.GetComponent<ObjectController>();
+		getTargetScript();
+
+		// When another Avatar is involved, then he must be interrupted, no backtalk ;)
+		if (targetScript.isWithOtherPerson) {
+
+			// Give him the Gameobject of my ObjectController and change him
+			Debug.Log($"{gameObject.name}: I'm now interrupting {targetScript.getAvatar().name}");
+			StartCoroutine(targetScript.getAvatar().requestActivityChange(gameObject.GetComponentInChildren<ObjectController>().gameObject));
+		}
+
+		Debug.Log($"{gameObject.name} in {myRegion.gameObject.name}: I'm now going to {currentActivity.name}");
 
 		// Look where to go and set the navmesh destination
-		Vector3 currTargetPos = targetScript.WorkPlace;
-		navComponent.SetDestination(currTargetPos);
+		navComponent.SetDestination(targetScript.WorkPlace);
 
 		// Set Animator ready for going
 		animator.SetBool("closeEnough", false);
@@ -122,64 +145,104 @@ public class ActivityController : MonoBehaviour {
 		animator.applyRootMotion = false;
 
 		going = true;
+	}
 
-		Debug.Log($"{gameObject.name} in {myRegion.gameObject.name}: I'm now going to {currentActivity.name} at {currTargetPos}");
+	private ObjectController getTargetScript(GameObject activity) {
+
+		return activity.GetComponent<ObjectController>();
+	}
+
+	private void getTargetScript() {
+
+		// Get the Script
+		targetScript = currentActivity.GetComponent<ObjectController>();
+
+		// No script
+		if (targetScript == null) {
+
+			// Mayby it's in the children
+			targetScript = currentActivity.GetComponentInChildren<ObjectController>();
+
+			// If yes, then also set this as current activity
+			if (targetScript != null) currentActivity = targetScript.gameObject;
+		}
 	}
 
 	// Arrived
 	private void OnTriggerEnter(Collider other) {
 
-		ObjectController activity = other.GetComponent<ObjectController>();
+		ObjectController otherScript = other.GetComponent<ObjectController>();
 
 		// Check if we reached an object with objectcontroller
 		// Check if it's the first collider (the work place)
 		// Check if it's my current activity
-		if (activity != null &&
-			other == activity.gameObject.GetComponents<Collider>()[0] &&
-			activity.gameObject == currentActivity &&
+		// Check if I'm currently going, because otherwise this could be triggered while doing
+		if (otherScript != null &&
+			other == otherScript.gameObject.GetComponents<Collider>()[0] &&
+			otherScript.gameObject == currentActivity &&
 			going) {
 
-			going = false;
-			stopGoingAndStartDoing(activity.name);
+			stopGoing();
+
+			StartCoroutine(startDoing());
 		}
 	}
 
-	// Called when arrived
-	private void stopGoingAndStartDoing(string activityName) {
+	private void stopGoing() {
 
-        Debug.Log($"{gameObject.name} stopped by {activityName}");
+		going = false;
 
-        // rootMotion on, because we're not walking on the navMesh anymore
-        animator.applyRootMotion = true;
+		// rootMotion on, because we're not walking on the navMesh anymore
+		animator.applyRootMotion = true;
 
-        // Stop here
-        animator.SetBool("closeEnough", true);
-        navComponent.isStopped = true;
-        animator.speed = 1f;
+		// Stop here
+		animator.SetBool("closeEnough", true);
+		navComponent.isStopped = true;
+		animator.speed = 1f;
+	}
 
-		// Start doing the activity
+	private IEnumerator startDoing() {
+
+		getTargetScript();
+
+		// When there's another Avatar involved, start him also
+		if (targetScript.isWithOtherPerson) {
+			if (iAmPartner) {
+				// I'm the partner
+
+				iAmPartner = false;
+			} else {
+				// I'm the starter
+
+				StartCoroutine(targetScript.getAvatar().startDoing());
+			}
+
+			// Look at the target
+			Vector3 targetPos = targetScript.gameObject.transform.position;
+			transform.LookAt(new Vector3(targetPos.x, transform.position.y, targetPos.z));
+		} else {
+
+			// Rotate as the Activity says
+			rotateRelative();
+		}
 
 		// Disable Kinematic, so no physics will affect the animation
 		GetComponent<Rigidbody>().isKinematic = true;
 
 		// Disable the navcomponent, because he blocks the height of the avatar during an activity
-        navComponent.enabled = false;
-        
-		// Rotate towards the Activity
-        rotateRelative();
+		navComponent.enabled = false;
 
 		// Slide to another place if neccesary
-        if (!targetScript.MoveVector.Equals(Vector3.zero)) {
+		if (!targetScript.MoveVector.Equals(Vector3.zero)) {
 
-            StartCoroutine(slideToPlace(true)); 
-        }
-
-		// Starts to do the activity animations after a second
-		StartCoroutine(startAction());
+			StartCoroutine(slideToPlace(true));
+		}
 
 		// Starts the usage time, after which the activity will stop
-	    doing = StartCoroutine(startUsageTime());
-    }
+		doing = StartCoroutine(startUsageTime());
+
+		yield return 0;
+	}
 
 	/// <summary>
 	/// Starts the rotation for a given angle
@@ -195,6 +258,40 @@ public class ActivityController : MonoBehaviour {
 
 		// Rotate myself like this
 		StartCoroutine(rotate(targetRot));
+	}
+
+	/// <summary>
+	/// Rotates the avatar to a given rotation
+	/// </summary>
+	/// <param name="targetRot"></param>
+	/// <returns></returns>
+	private IEnumerator rotate(Quaternion targetRot) {
+
+		int counter = 0;
+		int number = 200;
+
+		// Similar problem as with the moving function Lerp()
+		while (counter < number * 2) {
+
+			counter++;
+			// First try to slerp
+			if (counter <= number) {
+
+				transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.05f);
+				Debug.Log($"{gameObject.name}: Rotating myself to {targetRot.eulerAngles.x}, {targetRot.eulerAngles.y}, {targetRot.eulerAngles.z}"); 
+			}
+
+			// Then force the rotation
+			if (counter > number) {
+
+				transform.rotation = targetRot;
+				Debug.Log($"{gameObject.name}: Rotation settet to {targetRot.eulerAngles.x}, {targetRot.eulerAngles.y}, {targetRot.eulerAngles.z}");
+			}
+
+			yield return new WaitForSeconds(0);
+		}
+
+		yield return 0;
 	}
 
 	/// <summary>
@@ -228,19 +325,13 @@ public class ActivityController : MonoBehaviour {
         yield return 0;
 	}
 
-	/// <summary>
-	/// Starts to do an animation after a second. I do this because the rotation takes some time
-	/// </summary>
-	/// <returns></returns>
-	private IEnumerator startAction() {
-
-		// Start acting after some time
-		yield return new WaitForSeconds(1);
-		animator.SetBool(targetScript.activity.ToString(), true);
-	}
-
 	// Continues with the next activity, after the "useage"-time of the activity endet
 	private IEnumerator startUsageTime() {
+		
+		// Starts to do an animation after a second. I do this because the rotation takes some time
+		yield return new WaitForSeconds(1);
+		
+		animator.SetBool(targetScript.activity.ToString(), true);
 
 		// If we need a tool, then spawn it
 		tool = getTool();
@@ -249,10 +340,9 @@ public class ActivityController : MonoBehaviour {
 			rightHand = getHand("Right");
 		}
 
-		// Check if my state changed every 100ms
-		for (int i = 0; i < targetScript.time*40; i++) {
-			
-			if (activityChangeRequested) stopDoingThis();
+		// Check if my state changed every 0.025ms
+		float ms = 0.025f;
+		for (int i = 0; i < targetScript.time*(1/ms) && !activityChangeRequested; i++) {
 
 			// If we have a tool, then place it right again
 			if (tool != null) {
@@ -260,10 +350,10 @@ public class ActivityController : MonoBehaviour {
 				adjustTool(tool, leftHand, rightHand);
 			}
 
-			yield return new WaitForSeconds(0.025f); // Every 25ms
+			yield return new WaitForSeconds(ms); // Every 25ms
 		}
 
-		stopDoingThis();
+		stopDoing();
     }
 
 	private void adjustTool(GameObject tool, GameObject leftHand, GameObject rightHand) {
@@ -314,9 +404,11 @@ public class ActivityController : MonoBehaviour {
 		return tool;
 	}
 
-	private void stopDoingThis() {
+	private void stopDoing() {
 
 		if (doing != null) StopCoroutine(doing);
+
+		Destroy(tool);
 
 		// Stop doing this activity
 		if (targetScript != null) animator.SetBool(targetScript.activity.ToString(), false);
@@ -332,7 +424,7 @@ public class ActivityController : MonoBehaviour {
 
         while (!animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
-            Debug.Log($"Kann nicht weiter machen, weil {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
+            //Debug.Log($"Kann nicht weiter machen, weil {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
             yield return new WaitForSeconds(0.2f);
         }
 
@@ -342,40 +434,6 @@ public class ActivityController : MonoBehaviour {
         GetComponent<Rigidbody>().isKinematic = false;
 
         setTarget();
-    }
-
-    /// <summary>
-    /// Rotates the avatar to a given rotation
-    /// </summary>
-    /// <param name="targetRot"></param>
-    /// <returns></returns>
-    private IEnumerator rotate(Quaternion targetRot) {
-
-        int counter = 0;
-        int number = 200;
-
-        // Similar problem as with the moving function Lerp()
-        while (counter < number * 2) {
-
-            counter++;
-            // First try to slerp
-            if (counter <= number) {
-
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.05f);
-                //Debug.Log($"{gameObject.name} on {myFloor}: Rotating myself to {targetRot.eulerAngles.x}, {targetRot.eulerAngles.y}, {targetRot.eulerAngles.z}"); 
-            }
-
-            // Then force the rotation
-            if (counter > number) {
-
-                transform.rotation = targetRot;
-                //Debug.Log($"{gameObject.name} on {myFloor}: Rotation settet to {targetRot.eulerAngles.x}, {targetRot.eulerAngles.y}, {targetRot.eulerAngles.z}");
-            }
-
-            yield return new WaitForSeconds(0);
-        }
-
-        yield return 0;
     }
 
     /// <summary>
@@ -474,5 +532,16 @@ public class ActivityController : MonoBehaviour {
 		activityChangeRequested = true;
 
 		if(going) setTarget();
+	}
+	public IEnumerator requestActivityChange(GameObject activity) {
+
+		nextActivity = activity;
+		onlySetDontGo = true;
+		currentActivity = null;
+		iAmPartner = true;
+
+		requestActivityChange();
+
+		yield return 0;
 	}
 }

@@ -48,16 +48,27 @@ public class RegionController : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
+
+		// The Collider has to be the first Collider
+		if(other.gameObject.GetComponents<Collider>()[0] != other) return;
         
         // We got an attender
         ActivityController avatarActivityController = other.GetComponent<ActivityController>();
 
         if (avatarActivityController != null) {
 
-            attenders.Add(avatarActivityController);
+			Debug.Log($"Person {other.name} ist im Hotel");
+
+			attenders.Add(avatarActivityController);
             avatarActivityController.setRegion(this);
 
-            //Debug.Log($"Person {other.name} ist im Hotel");
+	        if (activities.Count > 0) {
+
+				avatarActivityController.startGoing();
+			} else {
+		        
+		        waiters.Add(avatarActivityController);
+	        }
         }
 
         // We got an activity
@@ -65,10 +76,10 @@ public class RegionController : MonoBehaviour {
 
         if (objectActivityController != null && objectActivityController.isActiveAndEnabled && !activities.Contains(objectActivityController)) {
 
-            activities.Add(objectActivityController);
-            objectActivityController.setRegion(this);
+			Debug.Log($"Tätigkeit {other.name} ist im Hotel");
 
-            //Debug.Log($"Tätigkeit {other.name} ist im Hotel bei {other.transform.localPosition}");
+			activities.Add(objectActivityController);
+            objectActivityController.setRegion(this);
         }
         if (objectActivityController != null && !objectActivityController.isActiveAndEnabled) disabledActivities.Add(objectActivityController);
 
@@ -76,26 +87,12 @@ public class RegionController : MonoBehaviour {
         if (!wasAlreadyCalled && activities.Count > 0 && attenders.Count > 0) {
 
 	        wasAlreadyCalled = true;
-
-			//Debug.Log($"Regioncontroller: wir betreten jetzt die foreach, weil activities.Count > 0 && attenders.Count > 0");
-
-			if (avatarActivityController != null) {
-
-                //Debug.Log($"Regioncontroller: {avatarActivityController.gameObject.name} kriegt startGoing()");
-                avatarActivityController.startGoing();
-            }
 			//Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
 			foreach (ActivityController waiter in waiters) {
 
                 //Debug.Log($"Regioncontroller: {waiter.gameObject.name} hat gewartet und kriegt startGoing()");
                 waiter.startGoing();
 			}
-        }
-        // Else, the attenders will have to wait
-        else if(avatarActivityController != null) {
-
-            //Debug.Log($"{avatarActivityController.gameObject.name} musste warten, weil die größe der activities = {activities.Count} war");
-            waiters.Add(avatarActivityController);
         }
         avatarActivityController = null;
         objectActivityController = null;
