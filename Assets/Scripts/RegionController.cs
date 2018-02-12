@@ -18,9 +18,29 @@ public class RegionController : MonoBehaviour {
         master.register(this);
 
         StartCoroutine(hide(0.5f));
-    }
+		StartCoroutine(awakeWaiters(0.5f));
+	}
 
-    private IEnumerator hide(float seconds) {
+	private IEnumerator awakeWaiters(float waitTime) {
+		
+		yield return new WaitForSeconds(waitTime);
+		awakeWaiters();
+	}
+
+	private void awakeWaiters() {
+
+		if(waiters.Count == 0) return;
+
+		Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
+		foreach (ActivityController waiter in waiters) {
+
+			Debug.Log($"Regioncontroller: {waiter.gameObject.name} hat gewartet und kriegt startGoing()");
+			waiter.startGoing();
+			waiters.Remove(waiter);
+		}
+	}
+
+	private IEnumerator hide(float seconds) {
 
         yield return new WaitForSeconds(seconds);
         foreach (ObjectController objectController in activities) {
@@ -45,57 +65,63 @@ public class RegionController : MonoBehaviour {
         foreach (MeshRenderer chMr in objectController.gameObject.GetComponentsInChildren<MeshRenderer>()) {
             chMr.enabled = false;
         }
-    }
+	}
 
-    private void OnTriggerEnter(Collider other) {
+	public void registerAvatar(ActivityController avatar) {
+
+		Debug.Log($"Person {avatar.name} ist in {name}");
+
+		attenders.Add(avatar);
+		avatar.setRegion(this);
+
+		if (activities.Count > 0) {
+
+			avatar.startGoing();
+		} else {
+
+			waiters.Add(avatar);
+		}
+	}
+
+	public void registerActivity(ObjectController activity) {
+
+
+		Debug.Log($"Tätigkeit {activity.name} ist in {name}");
+
+		activities.Add(activity);
+		activity.setRegion(this);
+	}
+
+	private void OnTriggerEnter(Collider other) {
 
 		// The Collider has to be the first Collider
 		if(other.gameObject.GetComponents<Collider>()[0] != other) return;
         
         // We got an attender
-        ActivityController avatarActivityController = other.GetComponent<ActivityController>();
-
-        if (avatarActivityController != null) {
-
-			Debug.Log($"Person {other.name} ist im Hotel");
-
-			attenders.Add(avatarActivityController);
-            avatarActivityController.setRegion(this);
-
-	        if (activities.Count > 0) {
-
-				avatarActivityController.startGoing();
-			} else {
-		        
-		        waiters.Add(avatarActivityController);
-	        }
-        }
+        ActivityController avatar = other.GetComponent<ActivityController>();
+        if (avatar != null) registerAvatar(avatar);
 
         // We got an activity
-        ObjectController objectActivityController = other.GetComponent<ObjectController>();
+        ObjectController activity = other.GetComponent<ObjectController>();
 
-        if (objectActivityController != null && objectActivityController.isActiveAndEnabled && !activities.Contains(objectActivityController)) {
+		if (activity != null) {
+			if (activity.isActiveAndEnabled && !activities.Contains(activity)) {
 
-			Debug.Log($"Tätigkeit {other.name} ist im Hotel");
+				registerActivity(activity);
+			}
+			if (!activity.isActiveAndEnabled)
 
-			activities.Add(objectActivityController);
-            objectActivityController.setRegion(this);
-        }
-        if (objectActivityController != null && !objectActivityController.isActiveAndEnabled) disabledActivities.Add(objectActivityController);
+				disabledActivities.Add(activity); 
+		}
 
         // Only if we already have at least one activity and one attender, we can let them start
         if (!wasAlreadyCalled && activities.Count > 0 && attenders.Count > 0) {
 
-	        wasAlreadyCalled = true;
-			//Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
-			foreach (ActivityController waiter in waiters) {
-
-                //Debug.Log($"Regioncontroller: {waiter.gameObject.name} hat gewartet und kriegt startGoing()");
-                waiter.startGoing();
-			}
+	        awakeWaiters();
         }
-        avatarActivityController = null;
-        objectActivityController = null;
+
+        avatar = null;
+        activity = null;
     }
 
     public List<ObjectController> getActivities() {

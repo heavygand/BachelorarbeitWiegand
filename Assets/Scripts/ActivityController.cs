@@ -49,8 +49,18 @@ public class ActivityController : MonoBehaviour {
         navComponent = GetComponent<NavMeshAgent>();
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
         alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
+
+		StartCoroutine(checkIfOutside());
 	}
-	
+
+	private IEnumerator checkIfOutside() {
+		
+		yield return new WaitForSeconds(0.25f);
+		if (myRegion == null) {
+
+			GameObject.Find("GameActivityController").GetComponentInChildren<RegionController>().registerAvatar(this);
+		}
+	}
 
 	/// <summary>
 	/// In Update, we check if there's a firealarm
@@ -76,7 +86,7 @@ public class ActivityController : MonoBehaviour {
 		int counter = 0;
 		while (currentActivity == null && counter < 10) {
 
-            Debug.Log("Picking random target");
+            Debug.Log($"{name} is Picking random target");
 
             //Get the activities in my region
             List<ObjectController> activities = myRegion.getActivities();
@@ -203,9 +213,12 @@ public class ActivityController : MonoBehaviour {
 
 	private IEnumerator startDoing() {
 
-		getTargetScript();
+		Debug.Log($"{gameObject.name}: starting doing");
 
-		// When there's another Avatar involved, start him also
+		getTargetScript();
+		ObjectController[] componentsInChildren = targetScript.GetComponentsInChildren<ObjectController>();
+
+		// When there's another Avatar involved, start him also, and look at him
 		if (targetScript.isWithOtherPerson) {
 			if (iAmPartner) {
 				// I'm the partner
@@ -220,9 +233,16 @@ public class ActivityController : MonoBehaviour {
 			// Look at the target
 			Vector3 targetPos = targetScript.gameObject.transform.position;
 			transform.LookAt(new Vector3(targetPos.x, transform.position.y, targetPos.z));
-		} else {
+		}
+		// When we have more waypoints, then look at them
+		else if (targetScript.lookAtNext && componentsInChildren.Length >= 2 && componentsInChildren[1] != null) {
 
-			// Rotate as the Activity says
+			Vector3 transformPosition = componentsInChildren[1].transform.position;
+			transform.LookAt(new Vector3(transformPosition.x, transform.position.y, transformPosition.z));
+		}
+		// Else, rotate as the activity says
+		else {
+
 			rotateRelative();
 		}
 
@@ -250,10 +270,10 @@ public class ActivityController : MonoBehaviour {
 	private void rotateRelative() {
 
 		// Get the rotation of the Target
-		Quaternion wrongTargetRot = currentActivity.transform.parent.transform.rotation;
+		Quaternion wrongTargetRot = currentActivity.transform.rotation;
 		Quaternion targetRot = Quaternion.Euler(
 			wrongTargetRot.eulerAngles.x,
-			wrongTargetRot.eulerAngles.y + targetScript.turnAngle + currentActivity.transform.localRotation.eulerAngles.y,
+			wrongTargetRot.eulerAngles.y + targetScript.turnAngle,
 			wrongTargetRot.eulerAngles.z);
 
 		// Rotate myself like this
@@ -274,21 +294,13 @@ public class ActivityController : MonoBehaviour {
 		while (counter < number * 2) {
 
 			counter++;
-			// First try to slerp
 			if (counter <= number) {
 
 				transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.05f);
-				Debug.Log($"{gameObject.name}: Rotating myself to {targetRot.eulerAngles.x}, {targetRot.eulerAngles.y}, {targetRot.eulerAngles.z}"); 
+				//Debug.Log($"{gameObject.name}: Rotating myself to {targetRot.eulerAngles.x}, {targetRot.eulerAngles.y}, {targetRot.eulerAngles.z}"); 
 			}
 
-			// Then force the rotation
-			if (counter > number) {
-
-				transform.rotation = targetRot;
-				Debug.Log($"{gameObject.name}: Rotation settet to {targetRot.eulerAngles.x}, {targetRot.eulerAngles.y}, {targetRot.eulerAngles.z}");
-			}
-
-			yield return new WaitForSeconds(0);
+			yield return new WaitForSeconds(0.01f);
 		}
 
 		yield return 0;
@@ -335,7 +347,9 @@ public class ActivityController : MonoBehaviour {
 
 		// If we need a tool, then spawn it
 		tool = getTool();
+
 		if (tool != null) {
+
 			leftHand = getHand("Left");
 			rightHand = getHand("Right");
 		}
@@ -347,7 +361,17 @@ public class ActivityController : MonoBehaviour {
 			// If we have a tool, then place it right again
 			if (tool != null) {
 
-				adjustTool(tool, leftHand, rightHand);
+				// Both hands
+				if (targetScript.handToUse == ObjectController.HandUsage.bothHands) {
+
+					adjustTool(tool);
+				}
+				// One hand
+				else {
+
+					putToolInHand(targetScript.handToUse);
+				}
+
 			}
 
 			yield return new WaitForSeconds(ms); // Every 25ms
@@ -356,7 +380,18 @@ public class ActivityController : MonoBehaviour {
 		stopDoing();
     }
 
-	private void adjustTool(GameObject tool, GameObject leftHand, GameObject rightHand) {
+	private void putToolInHand(ObjectController.HandUsage handToUse) {
+
+		if (handToUse == ObjectController.HandUsage.leftHand) {
+
+			tool.transform.position = leftHand.transform.position;
+		} else {
+
+			tool.transform.position = rightHand.transform.position;
+		}
+	}
+
+	private void adjustTool(GameObject tool) {
 
 		Vector3 leftHandPos = leftHand.transform.position;
 		Vector3 rightHandPos = rightHand.transform.position;
@@ -405,6 +440,8 @@ public class ActivityController : MonoBehaviour {
 	}
 
 	private void stopDoing() {
+		
+		Debug.Log($"{gameObject.name}: stops doing");
 
 		if (doing != null) StopCoroutine(doing);
 
@@ -424,15 +461,34 @@ public class ActivityController : MonoBehaviour {
 
         while (!animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
-            //Debug.Log($"Kann nicht weiter machen, weil {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
+            Debug.Log($"Kann nicht weiter machen, weil {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
             yield return new WaitForSeconds(0.2f);
         }
-
-        // Reactivate stuff, that maybe was deactivated in stop()
-        navComponent.enabled = true;
+		
+		Debug.Log($"{gameObject.name}: reactivating stuff");
+		// Reactivate stuff, that maybe was deactivated in stop()
+		navComponent.enabled = true;
         navComponent.isStopped = false;
         GetComponent<Rigidbody>().isKinematic = false;
 
+	    // Does the activity still have children?
+	    ObjectController[] componentsInChildren = targetScript.GetComponentsInChildren<ObjectController>();
+	    if (componentsInChildren.Length >= 2 && componentsInChildren[1] != null) {
+
+		    // Then go there first
+		    nextActivity = componentsInChildren[1].gameObject;
+	    }
+	    // Else check if we still have loops
+	    else if (targetScript.loops > 0) {
+
+		    targetScript.loops--;
+		    // Then start with the root again
+		    ObjectController[] componentsInParent = targetScript.gameObject.GetComponentsInParent<ObjectController>();
+		    nextActivity = componentsInParent[componentsInParent.Length - 1].gameObject;
+	    }
+		else targetScript.resetLoops(); // Loops was 0
+		
+		// Proceed as usual
         setTarget();
     }
 

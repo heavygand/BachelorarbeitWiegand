@@ -4,6 +4,7 @@
 /// Matrikelnummer: 30204300
 /// </summary>
 
+using System.Collections;
 using UnityEngine;
 
 public class ObjectController : MonoBehaviour {
@@ -11,6 +12,7 @@ public class ObjectController : MonoBehaviour {
     private RegionController myRegion;
 	private bool withOtherPerson;
 	private ActivityController avatar;
+	private int internalLoops;
 
 	public Vector3 WorkPlace
 	{
@@ -47,7 +49,10 @@ public class ObjectController : MonoBehaviour {
 		rummage,
 		bartending,
 		brooming,
-		talking
+		talking,
+		eating,
+		handMovements,
+		ironing
 	}
 
 	[Tooltip("The general animation to fulfill here")]
@@ -71,9 +76,25 @@ public class ObjectController : MonoBehaviour {
 	[Tooltip("The tool to use for this activity")]
 	public GameObject toolToUse;
 
+	public enum HandUsage {
+		leftHand,
+		rightHand,
+		bothHands
+	}
+
+	[Tooltip("Wich hands shall the avatar use with this tool?")]
+	public HandUsage handToUse;
+
+	[Tooltip("How often shall the Avatar start again with the destination-tree")]
+	public int loops;
+
+	[Tooltip("Only for child-destinations: Indicates if the user shall look at the next destination, when arrived")]
+	public bool lookAtNext;
+
 	void Start() {
 
 		if (time < 1) time = 100;
+		internalLoops = loops;
 
 		avatar = gameObject.GetComponentInParent<ActivityController>();
 
@@ -82,6 +103,16 @@ public class ObjectController : MonoBehaviour {
 			withOtherPerson = true;
 		}
 		else withOtherPerson = false;
+		StartCoroutine(checkIfOutside());
+	}
+
+	private IEnumerator checkIfOutside() {
+
+		yield return new WaitForSeconds(0.25f);
+		if (myRegion == null) {
+
+			GameObject.Find("GameActivityController").GetComponentInChildren<RegionController>().registerActivity(this);
+		}
 	}
 
 	public Vector3 getFootOfFirstCollider() {
@@ -100,4 +131,9 @@ public class ObjectController : MonoBehaviour {
 
         myRegion = rc;
     }
+
+	public void resetLoops() {
+
+		loops = internalLoops;
+	}
 }
