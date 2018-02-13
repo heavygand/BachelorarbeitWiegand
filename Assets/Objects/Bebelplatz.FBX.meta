@@ -743,6 +743,9 @@ ModelImporter:
     101470: WideCurbsideCurve025
     101472: WideCurbsideCurve026
     101474: WideCurbsideCurve027
+    101476: Bebelplatz
+    101478: SewerRound.001
+    101480: SewerSquare.001
     400000: //RootNode
     400002: Box001
     400004: Box002
@@ -1481,6 +1484,9 @@ ModelImporter:
     401470: WideCurbsideCurve025
     401472: WideCurbsideCurve026
     401474: WideCurbsideCurve027
+    401476: Bebelplatz
+    401478: SewerRound.001
+    401480: SewerSquare.001
     2100000: WhiteStripes
     2100002: Trashplaces
     2100004: StreetSouth
@@ -1505,6 +1511,30 @@ ModelImporter:
     2100042: CurbsideRail
     2100044: CurbsideNormal
     2100046: CurbsideCurved
+    2100048: PavementNorth.001
+    2100050: PavementNorthWest.001
+    2100052: PavementNorthEast.001
+    2100054: PavementSouth.001
+    2100056: PavementSouthWest.001
+    2100058: PavementSoutWest.001
+    2100060: PlaceNorth.001
+    2100062: PlaceSouth.001
+    2100064: StreetNorth.001
+    2100066: StreetSouth.001
+    2100068: CurbsideNormal.001
+    2100070: CurbsideRail.001
+    2100072: CurbsideWaved.001
+    2100074: CurbsideWay.001
+    2100076: CurbsideWide.001
+    2100078: Hydrant.001
+    2100080: Rails.001
+    2100082: SewerBig.001
+    2100084: SewerRound.001
+    2100086: SewerSquare.001
+    2100088: StairsWall.001
+    2100090: Trashplaces.001
+    2100092: WhiteStripes.001
+    2100094: CurbsideCurved.001
     2300000: Box001
     2300002: Box002
     2300004: Box003
