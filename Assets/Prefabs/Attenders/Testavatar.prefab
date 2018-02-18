@@ -2452,6 +2452,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Priority: 1
   activity: 7
   turnAngle: 180
   time: 100
@@ -2459,6 +2460,10 @@ MonoBehaviour:
   isPhysical: 0
   makeGhost: 0
   toolToUse: {fileID: 0}
+  handToUse: 0
+  isGroupActivity: 0
+  loops: 0
+  lookAtNext: 0
 --- !u!114 &114378850510226326
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2470,6 +2475,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bubble: {fileID: 1514474999493290, guid: 612696b421061e146860be199b1c82dc, type: 2}
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
 --- !u!114 &114434433465026578

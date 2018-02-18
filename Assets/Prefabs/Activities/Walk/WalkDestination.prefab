@@ -232,6 +232,7 @@ MonoBehaviour:
   isPhysical: 0
   makeGhost: 0
   toolToUse: {fileID: 0}
+  handToUse: 0
   loops: 0
   lookAtNext: 1
 --- !u!114 &114914414143807008
@@ -252,5 +253,6 @@ MonoBehaviour:
   isPhysical: 0
   makeGhost: 0
   toolToUse: {fileID: 0}
+  handToUse: 0
   loops: 2
   lookAtNext: 1

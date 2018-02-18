@@ -10,17 +10,8 @@ using UnityEngine;
 public class ObjectController : MonoBehaviour {
 
     private RegionController myRegion;
-	private bool withOtherPerson;
 	private ActivityController avatar;
 	private int internalLoops;
-
-	public Vector3 WorkPlace
-	{
-		get
-		{
-			return getFootOfFirstCollider();
-		}
-	}
 
 	public Vector3 MoveVector
 	{
@@ -30,12 +21,34 @@ public class ObjectController : MonoBehaviour {
 		}
 	}
 
-	public bool isWithOtherPerson {
+	private bool withOtherPerson;
+	public bool isWithOther {
 		get {
-			return withOtherPerson;
+			return avatar!=null;
 		}
 	}
 
+	private ActivityController user;
+	public ActivityController currentUser {
+		get {
+
+			// If the user doesn't have this as current activity anymore, then set and return null
+			if (user != null && user.CurrentActivity != this) {
+
+				if (logging) Debug.Log($"{name}: has no user anymore");
+				user = null;
+			}
+
+			return user;
+		}
+		set {
+
+			if (logging) Debug.Log($"{user.name}: is now the user of {name}");
+			user = value;
+		}
+	}
+
+	// This is the avatar, that IS the activity, not the current user of this activity (like the talkDestination)
 	public ActivityController getAvatar(){
 
 		return avatar;
@@ -52,13 +65,17 @@ public class ObjectController : MonoBehaviour {
 		talking,
 		eating,
 		handMovements,
-		ironing
+		ironing,
+		typing
 	}
+
+	[Tooltip("When an avatar (A) wants to interrupt someone else (B), then this is only possible if the activity of avatar (A) is more important than the one of (B)")]
+	public int Priority;
 
 	[Tooltip("The general animation to fulfill here")]
 	public Activities activity;
 
-	[Tooltip("Rotation relative to the Object")]
+	[Tooltip("Rotation relative to the Object, wich the avatar will perform when arrived there")]
 	public int turnAngle;
 
 	[Tooltip("The time in seconds to use this activity")]
@@ -85,11 +102,24 @@ public class ObjectController : MonoBehaviour {
 	[Tooltip("Wich hands shall the avatar use with this tool?")]
 	public HandUsage handToUse;
 
+	[Tooltip("Indicates if this is an activity with more avatars involved, wich will be picked randomly in the current region and will be interrupted and will look for destinations under the parent of this object (those should be deactivated)")]
+	public bool isGroupActivity;
+
 	[Tooltip("How often shall the Avatar start again with the destination-tree")]
 	public int loops;
 
 	[Tooltip("Only for child-destinations: Indicates if the user shall look at the next destination, when arrived")]
 	public bool lookAtNext;
+
+	private bool logging;
+
+	public Vector3 WorkPlace
+	{
+		get
+		{
+			return getFootOfFirstCollider();
+		}
+	}
 
 	void Start() {
 
@@ -98,11 +128,6 @@ public class ObjectController : MonoBehaviour {
 
 		avatar = gameObject.GetComponentInParent<ActivityController>();
 
-		if (avatar != null) {
-
-			withOtherPerson = true;
-		}
-		else withOtherPerson = false;
 		StartCoroutine(checkIfOutside());
 	}
 

@@ -2216,3 +2216,6 @@ MonoBehaviour:
   isPhysical: 1
   makeGhost: 0
   toolToUse: {fileID: 0}
+  handToUse: 0
+  loops: 0
+  lookAtNext: 0

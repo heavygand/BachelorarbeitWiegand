@@ -16,7 +16,7 @@ public class ObjectControllerEditor : Editor {
         
 		Handles.color = Color.white;
 		
-	    Vector3 center = oc.getFootOfFirstCollider();
+	    Vector3 center = oc.WorkPlace;
 		
 		drawPlace(center, "Work Place");
 

@@ -448,7 +448,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1369292308630022}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
@@ -460,3 +460,6 @@ MonoBehaviour:
   isPhysical: 1
   makeGhost: 1
   toolToUse: {fileID: 0}
+  handToUse: 0
+  loops: 0
+  lookAtNext: 0

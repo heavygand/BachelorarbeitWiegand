@@ -25863,3 +25863,6 @@ MonoBehaviour:
   isPhysical: 0
   makeGhost: 0
   toolToUse: {fileID: 1821884682661508, guid: 08ed254083cfc90468b860c6a57c9023, type: 2}
+  handToUse: 2
+  loops: 0
+  lookAtNext: 0

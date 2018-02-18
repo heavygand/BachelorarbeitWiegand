@@ -80,6 +80,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Priority: 1
   activity: 7
   turnAngle: 180
   time: 100
@@ -87,3 +88,7 @@ MonoBehaviour:
   isPhysical: 0
   makeGhost: 0
   toolToUse: {fileID: 0}
+  handToUse: 0
+  isGroupActivity: 0
+  loops: 0
+  lookAtNext: 0

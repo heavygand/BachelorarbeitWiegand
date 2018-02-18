@@ -9,7 +9,7 @@ public class RegionController : MonoBehaviour {
     private List<ObjectController> disabledActivities = new List<ObjectController>();
     private List<ActivityController> waiters = new List<ActivityController>();
     private List<ActivityController> attenders = new List<ActivityController>();
-	private bool wasAlreadyCalled;
+	private bool logging = false;
 
 	// Use this for initialization
     void Start () {
@@ -31,10 +31,10 @@ public class RegionController : MonoBehaviour {
 
 		if(waiters.Count == 0) return;
 
-		Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
+		if(logging) Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
 		foreach (ActivityController waiter in waiters) {
 
-			Debug.Log($"Regioncontroller: {waiter.gameObject.name} hat gewartet und kriegt startGoing()");
+			if(logging) Debug.Log($"Regioncontroller: {waiter.gameObject.name} hat gewartet und kriegt startGoing()");
 			waiter.startGoing();
 			waiters.Remove(waiter);
 		}
@@ -69,7 +69,7 @@ public class RegionController : MonoBehaviour {
 
 	public void registerAvatar(ActivityController avatar) {
 
-		Debug.Log($"Person {avatar.name} ist in {name}");
+		if(logging) Debug.Log($"Person {avatar.name} ist in {name}");
 
 		attenders.Add(avatar);
 		avatar.setRegion(this);
@@ -84,9 +84,8 @@ public class RegionController : MonoBehaviour {
 	}
 
 	public void registerActivity(ObjectController activity) {
-
-
-		Debug.Log($"Tätigkeit {activity.name} ist in {name}");
+		
+		if(logging) Debug.Log($"Tätigkeit {activity.name} ist in {name}");
 
 		activities.Add(activity);
 		activity.setRegion(this);
@@ -115,13 +114,10 @@ public class RegionController : MonoBehaviour {
 		}
 
         // Only if we already have at least one activity and one attender, we can let them start
-        if (!wasAlreadyCalled && activities.Count > 0 && attenders.Count > 0) {
+        if (activities.Count > 0 && attenders.Count > 0) {
 
 	        awakeWaiters();
         }
-
-        avatar = null;
-        activity = null;
     }
 
     public List<ObjectController> getActivities() {
@@ -129,8 +125,23 @@ public class RegionController : MonoBehaviour {
         return activities;
     }
 
-    public bool hasActivities() {
+	public List<ActivityController> getTheAvailableOthersFor(ActivityController asker, ObjectController newActivity) { 
 
-        return activities.Count > 0;
-    }
+		List<ActivityController> theOthers = new List<ActivityController>(attenders);
+		theOthers.Remove(asker);
+
+		// Only leave a person in the "others", when the requested new activity is more important for the person
+		foreach (ActivityController other in theOthers) {
+
+			if (newActivity.Priority <= other.CurrentActivity.Priority) {
+
+				theOthers.Remove(other);
+
+				if (logging)
+					Debug.Log($"{other.name} konnte nicht an {newActivity.name} teilnehmen, weil er etwas wichtigeres macht");
+			}
+		}
+
+		return theOthers;
+	}
 }

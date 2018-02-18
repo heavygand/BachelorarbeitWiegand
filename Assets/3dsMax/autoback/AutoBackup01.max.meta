@@ -45,6 +45,15 @@ ModelImporter:
     100074: Box001
     100076: Box002
     100078: Plane001
+    100080: Plane.002
+    100082: Plane.005
+    100084: Plane.062
+    100086: Compass01
+    100088: Cylinder02
+    100090: Daylight01
+    100092: Object12
+    100094: Sky02
+    100096: Sun01
     400000: //RootNode
     400002: Bip001
     400004: Bip001 Footsteps
@@ -85,18 +94,58 @@ ModelImporter:
     400074: Box001
     400076: Box002
     400078: Plane001
+    400080: Plane.002
+    400082: Plane.005
+    400084: Plane.062
+    400086: Compass01
+    400088: Cylinder02
+    400090: Daylight01
+    400092: Object12
+    400094: Sky02
+    400096: Sun01
     2100000: No Name
+    2100002: Material.001
+    2100004: Material.002
+    2100006: Black Keys
+    2100008: Material
+    2100010: Black Keys.0
+    2100012: Black Keys.0.000
+    2100014: Material.003
+    2100016: Black Plasti
+    2100018: Blu-ray logo
+    2100020: Energy logo
+    2100022: Nvidia Logo
+    2100024: Intel Logo
+    2100026: 'Material #384'
+    2100028: 'Material #378'
     2300000: Box001
     2300002: Box002
     2300004: Plane001
+    2300006: Plane.002
+    2300008: Plane.005
+    2300010: Plane.062
+    2300012: Cylinder02
+    2300014: Object12
     3300000: Box001
     3300002: Box002
     3300004: Plane001
+    3300006: Plane.002
+    3300008: Plane.005
+    3300010: Plane.062
+    3300012: Cylinder02
+    3300014: Object12
     4300000: Box001
     4300002: Plane001
     4300004: Box002
+    4300006: Plane.062
+    4300008: Plane.002
+    4300010: Plane.005
+    4300012: Cylinder02
+    4300014: Object12
     7400000: Take 001
     9500000: //RootNode
+    10800000: Sky02
+    10800002: Sun01
   externalObjects: {}
   materials:
     importMaterials: 1
