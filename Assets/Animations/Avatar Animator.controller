@@ -74,13 +74,13 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
-  - m_Name: rummage
+  - m_Name: bartending
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
-  - m_Name: bartending
+  - m_Name: rummage
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -110,13 +110,13 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
-  - m_Name: ironing
+  - m_Name: typing
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
-  - m_Name: typing
+  - m_Name: ironing
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -271,6 +271,33 @@ AnimatorStateTransition:
   m_TransitionDuration: 0.25
   m_TransitionOffset: 0
   m_ExitTime: 0.8369565
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
+--- !u!1101 &1101075198353299644
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 2
+    m_ConditionEvent: panicMode
+    m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: call
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 1102482061861336920}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.9479167
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -832,9 +859,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25
+  m_TransitionDuration: 1.3800371
   m_TransitionOffset: 0
-  m_ExitTime: 0.6031744
+  m_ExitTime: 0.6031738
   m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -1257,6 +1284,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 2
     m_ConditionEvent: call
+    m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: panicMode
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102391208002780182}
@@ -2010,6 +2040,33 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1101 &1101914055538068570
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 2
+    m_ConditionEvent: panicMode
+    m_EventTreshold: 0
+  - m_ConditionMode: 1
+    m_ConditionEvent: call
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 1102754945217556090}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.9976744
+  m_HasExitTime: 0
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &1101920549200965338
 AnimatorStateTransition:
   m_ObjectHideFlags: 3
@@ -2745,6 +2802,7 @@ AnimatorState:
   - {fileID: 1101552767143939184}
   - {fileID: 1101830470441723516}
   - {fileID: 1101006422866550764}
+  - {fileID: 1101914055538068570}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -3145,6 +3203,7 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1101608863433542782}
+  - {fileID: 1101075198353299644}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -3530,7 +3589,7 @@ AnimatorStateMachine:
     m_Position: {x: 300, y: -264, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102754945217556090}
-    m_Position: {x: 0, y: 672, z: 0}
+    m_Position: {x: -24, y: 624, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102135863410707320}
     m_Position: {x: 1128, y: 516, z: 0}

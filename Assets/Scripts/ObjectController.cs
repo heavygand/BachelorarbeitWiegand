@@ -66,7 +66,8 @@ public class ObjectController : MonoBehaviour {
 		eating,
 		handMovements,
 		ironing,
-		typing
+		typing,
+		call
 	}
 
 	[Tooltip("When an avatar (A) wants to interrupt someone else (B), then this is only possible if the activity of avatar (A) is more important than the one of (B)")]
@@ -94,6 +95,7 @@ public class ObjectController : MonoBehaviour {
 	public GameObject toolToUse;
 
 	public enum HandUsage {
+		noHand,
 		leftHand,
 		rightHand,
 		bothHands
@@ -111,7 +113,7 @@ public class ObjectController : MonoBehaviour {
 	[Tooltip("Only for child-destinations: Indicates if the user shall look at the next destination, when arrived")]
 	public bool lookAtNext;
 
-	private bool logging;
+	private bool logging = false;
 
 	public Vector3 WorkPlace
 	{

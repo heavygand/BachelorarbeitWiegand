@@ -4949,9 +4949,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4561917784806120}
+  - component: {fileID: 114986169844700820}
   - component: {fileID: 54061927321534708}
   - component: {fileID: 65682513591491516}
-  - component: {fileID: 114986169844700820}
   m_Layer: 0
   m_Name: broomDestination
   m_TagString: Untagged
@@ -8526,9 +8526,9 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1785519858440628}
-  m_LocalRotation: {x: -0, y: -0.9936439, z: -0, w: 0.112569675}
-  m_LocalPosition: {x: -2.3789685, y: 1.9299998, z: -5.4925222}
-  m_LocalScale: {x: 0.022479646, y: 0.009109727, z: 0.022479648}
+  m_LocalRotation: {x: -0, y: 0.11406943, z: -0, w: 0.9934728}
+  m_LocalPosition: {x: -39.23972, y: 2.3320003, z: -56.27311}
+  m_LocalScale: {x: 0.01348779, y: 0.0054658363, z: 0.013487791}
   m_Children:
   - {fileID: 4914104270834560}
   - {fileID: 4516202060135178}
@@ -25856,13 +25856,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Priority: 0
   activity: 6
   turnAngle: 0
-  time: 0
+  time: 100
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
   makeGhost: 0
   toolToUse: {fileID: 1821884682661508, guid: 08ed254083cfc90468b860c6a57c9023, type: 2}
-  handToUse: 2
+  handToUse: 3
+  isGroupActivity: 0
   loops: 0
   lookAtNext: 0
