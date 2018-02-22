@@ -68,7 +68,8 @@ public class ObjectController : MonoBehaviour {
 		ironing,
 		typing,
 		call,
-        throwOneHand
+        throwOneHand,
+        pushButton
     }
 
 	[Tooltip("When an avatar (A) wants to interrupt someone else (B), then this is only possible if the activity of avatar (A) is more important than the one of (B)")]

@@ -69,7 +69,7 @@ public class ActivityController : MonoBehaviour {
     void Start() {
 
         // Init Components
-        logging = true;//(name == "Testavatar (0)");
+        logging = (name == "Testavatar (0)");
         detail10Log = logging;
         randomTarget = true;
         animator = GetComponent<Animator>();
