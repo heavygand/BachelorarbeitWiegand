@@ -13,8 +13,14 @@ public class ObjectControllerEditor : Editor {
     void OnSceneGUI() {
 
         oc = (ObjectController)target;
-        
-		Handles.color = Color.white;
+
+        if (oc.noTurning) {
+
+            oc.turnAngle = 0;
+            oc.lookAtNext = false;
+        }
+
+        Handles.color = Color.white;
 		
 	    Vector3 center = oc.WorkPlace;
 		

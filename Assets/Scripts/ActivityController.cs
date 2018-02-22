@@ -674,7 +674,12 @@ public class ActivityController : MonoBehaviour {
     private void organizeLookRotation(ObjectController[] componentsInChildren) {
 
         // When there's another Avatar involved, look at him.
-        if (CurrentActivity.isWithOther) {
+        if (CurrentActivity.noTurning) {
+
+            // NO ROTATION
+        }
+        // When there's another Avatar involved, look at him.
+        else if (CurrentActivity.isWithOther) {
             // Look at the target
             Vector3 targetPos = CurrentActivity.gameObject.transform.position;
             transform.LookAt(new Vector3(targetPos.x, transform.position.y, targetPos.z));

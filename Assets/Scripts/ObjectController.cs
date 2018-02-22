@@ -67,8 +67,9 @@ public class ObjectController : MonoBehaviour {
 		handMovements,
 		ironing,
 		typing,
-		call
-	}
+		call,
+        throwOneHand
+    }
 
 	[Tooltip("When an avatar (A) wants to interrupt someone else (B), then this is only possible if the activity of avatar (A) is more important than the one of (B)")]
 	public int Priority;
@@ -76,10 +77,16 @@ public class ObjectController : MonoBehaviour {
 	[Tooltip("The general animation to fulfill here")]
 	public Activities activity;
 
-	[Tooltip("Rotation relative to the Object, wich the avatar will perform when arrived there")]
+	[Tooltip("Rotation relative to the Object, wich the avatar will perform when arrived there. Turnangle 0 therefore means 'look where the object looks'. If no rotation shall be performed, then please activate 'No Turning'")]
 	public int turnAngle;
 
-	[Tooltip("The time in seconds to use this activity")]
+    [Tooltip("Only for child-destinations: Indicates if the user shall look at the next destination, when arrived")]
+    public bool lookAtNext;
+
+    [Tooltip("Indicates, that the avatar shall not rotate when arrived. -> Deactivates 'Look At Next' and resets the turnAngle")]
+    public bool noTurning;
+
+    [Tooltip("The time in seconds to use this activity")]
 	public int time;
 
 	[Tooltip("A direction to slide to, when arrived (seen from the center of the stopper-collider)")]
@@ -110,9 +117,6 @@ public class ObjectController : MonoBehaviour {
 	[Tooltip("How often shall the Avatar start again with the destination-tree")]
 	public int loops;
 
-	[Tooltip("Only for child-destinations: Indicates if the user shall look at the next destination, when arrived")]
-	public bool lookAtNext;
-
 	private bool logging = false;
 
 	public Vector3 WorkPlace
@@ -131,6 +135,11 @@ public class ObjectController : MonoBehaviour {
 		avatar = gameObject.GetComponentInParent<ActivityController>();
 
 		StartCoroutine(checkIfOutside());
+
+        if (noTurning && turnAngle != 0) {
+
+            Debug.LogWarning($"Achtung: bei {name} ist 'No Turning' aktiviert und eine Rotation eingetragen. Der Avatar wird nicht rotieren."); 
+        }
 	}
 
 	private IEnumerator checkIfOutside() {
