@@ -126,9 +126,12 @@ public class ObjectController : MonoBehaviour {
 		{
 			return getFootOfFirstCollider();
 		}
-	}
+    }
 
-	void Start() {
+    [Tooltip("The time in seconds, after wich the sound will start playing, when there is one")]
+    public int soundPlayDelay;
+
+    void Start() {
 
 		if (time < 1) time = 100;
 		internalLoops = loops;
@@ -173,4 +176,13 @@ public class ObjectController : MonoBehaviour {
 
 		loops = internalLoops;
 	}
+
+    public IEnumerator activated() {
+
+        // If there's a sound, then play it
+        yield return new WaitForSeconds(soundPlayDelay);
+
+        AudioSource audio = GetComponent<AudioSource>();
+        audio.Play();
+    }
 }

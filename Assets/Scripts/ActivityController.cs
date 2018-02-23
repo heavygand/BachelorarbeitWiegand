@@ -253,6 +253,8 @@ public class ActivityController : MonoBehaviour {
 
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();
 
+        StartCoroutine(CurrentActivity.activated());
+
         // Start the partner when I'm the starter, abort if he wasn't interested
         if (CurrentActivity.isWithOther && !startPartnerIfNecessaryAndPossible()) {
 
