@@ -183,6 +183,7 @@ public class ObjectController : MonoBehaviour {
         yield return new WaitForSeconds(soundPlayDelay);
 
         AudioSource audio = GetComponent<AudioSource>();
-        audio.Play();
+
+        if (audio != null) audio.Play();
     }
 }
