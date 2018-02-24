@@ -9,15 +9,24 @@ public class RegionController : MonoBehaviour {
     private List<ObjectController> disabledActivities = new List<ObjectController>();
     private List<ActivityController> waiters = new List<ActivityController>();
     private List<ActivityController> attenders = new List<ActivityController>();
-	private bool logging = false;
+	private bool logging = true;
+    
+    [Tooltip("Indicates if this region is not publicly available, so when somebody wants to enter, he will have to ring the doorbell before entering.")]
+    public bool isPrivate;
 
-	// Use this for initialization
+    [Tooltip("Only needed, when this region is private")]
+    public ObjectController doorBell;
+
+    // Use this for initialization
     void Start () {
 
         GameLogicForActivity master = GameObject.Find("GameActivityController").GetComponent<GameLogicForActivity>();
         master.register(this);
 
-        StartCoroutine(hide(0.5f));
+        if (isPrivate && doorBell == null)
+            Debug.LogError($"ERROR: {name} is a private region, but has no doorbell!");
+
+            StartCoroutine(hide(0.5f));
 		StartCoroutine(awakeWaiters(0.5f));
 	}
 

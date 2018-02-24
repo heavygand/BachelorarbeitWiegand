@@ -90,8 +90,6 @@ public class ActivityController : MonoBehaviour {
 
         if (logging) Debug.Log($"{name}: setTarget() called");
 
-        Debug.Log($"{name}: setTarget() called");
-
         activityChangeRequested = false;
 
         // Take the next activity if there is one, and save the last activity
@@ -346,8 +344,6 @@ public class ActivityController : MonoBehaviour {
 
         if (logging && detail10Log)
             Debug.Log($"{name}: Checking, if there is an animation to stop...");
-
-        Debug.Log($"{name}: Checking, if there is an animation to stop...");
 
         // Stop doing this activity (standing does not have to be deactivated)
         if (CurrentActivity != null && CurrentActivity.activity.ToString() != "stand") {

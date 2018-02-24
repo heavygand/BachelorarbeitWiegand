@@ -10,6 +10,7 @@ public class RegionControllerEditor : Editor {
 
         RegionController region = (RegionController)target;
 
-	    // ToDo: Wenn hier nichts mehr kommt, dann die Klasse löschen
+        if (region.isPrivate && region.doorBell == null)
+            Debug.LogWarning($"Warning: {region.name} is a private region, but has no doorbell, this will lead to an error on play");
     }
 }
