@@ -86,7 +86,7 @@ public class RegionController : MonoBehaviour {
 
 	public void registerAvatar(ActivityController avatar) {
 
-		if(logging) Debug.Log($"Person {avatar.name} ist in {name}");
+        if(logging) Debug.Log($"Person {avatar.name} is now registered in {name}");
 
 		attenders.Add(avatar);
 		avatar.setRegion(this);
@@ -94,15 +94,27 @@ public class RegionController : MonoBehaviour {
         // Start this avatar if we already have an activity and only if he has no activity yet
 		if (activities.Count > 0 && avatar.CurrentActivity == null) {
 
+		    if(logging) Debug.Log($"Person {avatar.name} is starting in {name}");
 			avatar.startGoing();
 		}
-        else {
+        // Avatar will have to wait, when there still are no activities
+        else if(activities.Count == 0) {
 
+            if(logging) Debug.Log($"Person {avatar.name} is waiting in {name}, because there still were no activities");
 			waiters.Add(avatar);
 		}
-	}
+        // Do nothing
+        else {
 
-	public void registerActivity(ObjectController activity) {
+        }
+    }
+
+    public void unregisterAvatar(ActivityController avatar) {
+
+        attenders.Remove(avatar);
+    }
+
+    public void registerActivity(ObjectController activity) {
 		
 		if(logging) Debug.Log($"Tätigkeit {activity.name} ist in {name}");
 

@@ -62,6 +62,7 @@ public class ActivityController : MonoBehaviour {
     private Transform whatBurn;
     private RegionController myRegion;
     private Coroutine doing;
+    private int retries = 0;
 
     /// <summary>
     /// Initialisation
@@ -69,8 +70,8 @@ public class ActivityController : MonoBehaviour {
     void Start() {
 
         // Init Components
-        logging = (name == "Testavatar (0)");
-        detail10Log = logging;
+        logging = false;//(name == "Testavatar (0)");
+        detail10Log = false;
         
         findOutside = true;
 
@@ -79,10 +80,16 @@ public class ActivityController : MonoBehaviour {
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
         alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
 
-        if (CurrentActivity != null)
+        // When we already have a current activity, then we can start going
+        if (CurrentActivity != null) {
+
             CurrentActivity.CurrentUser = this;
-        if (nextActivity != null)
+            startGoing();
+        }
+        if (nextActivity != null) {
+
             nextActivity.CurrentUser = this;
+        }
 
         StartCoroutine(checkIfOutside());
     }
@@ -104,7 +111,7 @@ public class ActivityController : MonoBehaviour {
 
             float waitTime = 0.5f;
 
-            Debug.LogWarning($"{name} setting target failed, trying again in {waitTime}s");
+            if (logging) Debug.LogWarning($"{name} setting target failed, trying again in {waitTime}s");
 
             StartCoroutine(tryAgainAfterTime(waitTime));
             return;
@@ -162,9 +169,9 @@ public class ActivityController : MonoBehaviour {
         if (navComponent.isOnNavMesh) {
 
             navComponent.SetDestination(CurrentActivity.WorkPlace);
-            if (logging)
-                Debug.Log($"{name}: in {myRegion.gameObject.name}: I'm now going to {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
-        } else {
+            if (logging) Debug.Log($"{name}: {(myRegion != null ? "in " + myRegion.name + ": " : "")}I'm now going to {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
+        }
+        else {
 
             Debug.LogError($"{name} wanted to go to {CurrentActivity}, but wasn't on the navmesh");
         }
@@ -367,6 +374,8 @@ public class ActivityController : MonoBehaviour {
         if (logging && detail10Log)
             Debug.Log($"{name}: Started Coroutine continueWhenDoneStopping()");
 
+        string currAnim = ""+animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+
         while (!animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
             if (logging)
@@ -375,7 +384,7 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
 
-        if (logging) Debug.Log($"{name}: done stopping {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}, calling setTarget()");
+        if (logging) Debug.Log($"{name}: done stopping {currAnim}, calling setTarget()");
 
         // The end. Proceed as usual
         setTarget();
@@ -625,6 +634,10 @@ public class ActivityController : MonoBehaviour {
 
     public void setRegion(RegionController rc) {
 
+        if(myRegion != null) myRegion.unregisterAvatar(this);
+
+        if (logging) Debug.Log($"{name}: my region was {(myRegion != null ? myRegion.name : "null")} and now is {rc.name}");
+
         myRegion = rc;
     }
 
@@ -870,6 +883,8 @@ public class ActivityController : MonoBehaviour {
 
         if (logging) Debug.Log($"{name}: is Picking a random target in {forRegion.name}");
 
+        if(forRegion.name == "Wohnhaus" && forRegion != myRegion) logging = true;
+
         //Get the activities in my region
         List<ObjectController> activities = forRegion.getActivities();
 
@@ -892,7 +907,7 @@ public class ActivityController : MonoBehaviour {
             // When there were no activities in the region (should not happen)
             else if (activities.Count == 0) {
 
-                Debug.LogWarning($"{name} could not find any activities in {forRegion.name}.");
+                if (logging) Debug.LogWarning($"{name} could not find any activities in {forRegion.name}.");
 
                 return;
             }
@@ -933,7 +948,7 @@ public class ActivityController : MonoBehaviour {
                 }
                 else {
 
-                    if (logging) Debug.Log($"{name}: forRegion.isPrivate == {forRegion.isPrivate} && (forRegion != myRegion) == {forRegion != myRegion}, so setting CurrentActivity = foundActivity");
+                    if (logging && detail10Log) Debug.Log($"{name}: forRegion.isPrivate == {forRegion.isPrivate} && (forRegion != myRegion) == {forRegion != myRegion}, so setting CurrentActivity = foundActivity");
 
                     CurrentActivity = foundActivity;
                 }
@@ -942,6 +957,10 @@ public class ActivityController : MonoBehaviour {
     }
 
     private IEnumerator tryAgainAfterTime(float waitTime) {
+
+        retries++;
+
+        if (retries >= 3) Debug.LogError($"{name} could not find any target after {retries} tries");
 
         yield return new WaitForSeconds(waitTime);
 
@@ -956,7 +975,7 @@ public class ActivityController : MonoBehaviour {
         List<RegionController> regions = new List<RegionController>(myRegion.getMaster().getRegions());
         regions.Remove(myRegion);
 
-        if (logging) {
+        if (logging && detail10Log) {
             foreach (RegionController region in regions) {
 
                 Debug.Log($"{name}: {region.name} was in the list of regions");
