@@ -13,7 +13,9 @@ public class ObjectController : MonoBehaviour {
 	private ActivityController avatar;
 	private int internalLoops;
 
-	public Vector3 MoveVector
+    private bool logging = false;
+
+    public Vector3 MoveVector
 	{
 		get
 		{
@@ -29,7 +31,7 @@ public class ObjectController : MonoBehaviour {
 	}
 
 	private ActivityController user;
-	public ActivityController currentUser {
+	public ActivityController CurrentUser {
 		get {
 
 			// If the user doesn't have this as current activity anymore, then set and return null
@@ -118,8 +120,6 @@ public class ObjectController : MonoBehaviour {
 	[Tooltip("How often shall the Avatar start again with the destination-tree")]
 	public int loops;
 
-	private bool logging = false;
-
 	public Vector3 WorkPlace
 	{
 		get
@@ -172,7 +172,12 @@ public class ObjectController : MonoBehaviour {
         myRegion = rc;
     }
 
-	public void resetLoops() {
+    public RegionController getRegion() {
+
+        return myRegion;
+    }
+
+    public void resetLoops() {
 
 		loops = internalLoops;
 	}

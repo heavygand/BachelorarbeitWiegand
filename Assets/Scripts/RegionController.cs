@@ -9,7 +9,14 @@ public class RegionController : MonoBehaviour {
     private List<ObjectController> disabledActivities = new List<ObjectController>();
     private List<ActivityController> waiters = new List<ActivityController>();
     private List<ActivityController> attenders = new List<ActivityController>();
-	private bool logging = true;
+    private GameLogicForActivity master;
+
+    private bool logging;
+
+    public GameLogicForActivity getMaster(){
+
+        return master;
+    }
     
     [Tooltip("Indicates if this region is not publicly available, so when somebody wants to enter, he will have to ring the doorbell before entering.")]
     public bool isPrivate;
@@ -20,13 +27,14 @@ public class RegionController : MonoBehaviour {
     // Use this for initialization
     void Start () {
 
-        GameLogicForActivity master = GameObject.Find("GameActivityController").GetComponent<GameLogicForActivity>();
+        logging = false;//(name == "the Outside area");
+
+        master = GameObject.Find("GameActivityController").GetComponent<GameLogicForActivity>();
         master.register(this);
 
-        if (isPrivate && doorBell == null)
-            Debug.LogError($"ERROR: {name} is a private region, but has no doorbell!");
-
-            StartCoroutine(hide(0.5f));
+        if (isPrivate && doorBell == null) Debug.LogError($"ERROR: {name} is a private region, but has no doorbell!");
+        
+        StartCoroutine(hide(0.5f));
 		StartCoroutine(awakeWaiters(0.5f));
 	}
 
@@ -96,7 +104,7 @@ public class RegionController : MonoBehaviour {
 		
 		if(logging) Debug.Log($"Tätigkeit {activity.name} ist in {name}");
 
-		activities.Add(activity);
+        activities.Add(activity);
 		activity.setRegion(this);
 	}
 
@@ -113,6 +121,7 @@ public class RegionController : MonoBehaviour {
         ObjectController activity = other.GetComponent<ObjectController>();
 
 		if (activity != null) {
+
 			if (activity.isActiveAndEnabled && !activities.Contains(activity)) {
 
 				registerActivity(activity);
@@ -134,23 +143,30 @@ public class RegionController : MonoBehaviour {
         return activities;
     }
 
-	public List<ActivityController> getTheAvailableOthersFor(ActivityController asker, ObjectController newActivity) { 
+	public List<ActivityController> getTheAvailableOthersFor(ActivityController asker, ObjectController newActivity) {
 
 		List<ActivityController> theOthers = new List<ActivityController>(attenders);
-		theOthers.Remove(asker);
+        List<ActivityController> theOthers2 = new List<ActivityController>(theOthers);
+        theOthers.Remove(asker);
 
 		// Only leave a person in the "others", when the requested new activity is more important for the person
 		foreach (ActivityController other in theOthers) {
 
+            if (other.CurrentActivity == null) {
+
+                theOthers2.Remove(other);
+                Debug.LogError($"The CurrentActivity of {other.name} was null!");
+                continue;
+            }
+
 			if (newActivity.Priority <= other.CurrentActivity.Priority) {
 
-				theOthers.Remove(other);
+                theOthers2.Remove(other);
 
-				if (logging)
-					Debug.Log($"{other.name} konnte nicht an {newActivity.name} teilnehmen, weil er etwas wichtigeres macht");
+				if (logging) Debug.Log($"{other.name} konnte nicht an {newActivity.name} teilnehmen, weil er etwas wichtigeres macht");
 			}
 		}
 
-		return theOthers;
+		return theOthers2;
 	}
 }

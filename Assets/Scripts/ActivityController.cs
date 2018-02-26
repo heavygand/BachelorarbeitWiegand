@@ -29,7 +29,7 @@ public class ActivityController : MonoBehaviour {
 
             if (currentActivity != null) {
 
-                currentActivity.currentUser = this;
+                currentActivity.CurrentUser = this;
             }
         }
     }
@@ -53,7 +53,7 @@ public class ActivityController : MonoBehaviour {
     private bool iAmPartner;
     private bool logging;
     private bool detail10Log;
-    private bool randomTarget;
+    private bool findOutside;
 
     private Animator animator;
     private NavMeshAgent navComponent;
@@ -69,18 +69,20 @@ public class ActivityController : MonoBehaviour {
     void Start() {
 
         // Init Components
-        logging = (name == "Testavatar (0)");
+        logging = false;//(name == "Testavatar (0)");
         detail10Log = logging;
-        randomTarget = true;
+        
+        findOutside = true;
+
         animator = GetComponent<Animator>();
         navComponent = GetComponent<NavMeshAgent>();
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
         alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
 
         if (CurrentActivity != null)
-            CurrentActivity.currentUser = this;
+            CurrentActivity.CurrentUser = this;
         if (nextActivity != null)
-            nextActivity.currentUser = this;
+            nextActivity.CurrentUser = this;
 
         StartCoroutine(checkIfOutside());
     }
@@ -96,24 +98,15 @@ public class ActivityController : MonoBehaviour {
         tryNextInQueue();
 
         // Get a random Target, if we have no
-        if (CurrentActivity == null)
-            CurrentActivity = findTargetFromActivityList();
-
-        // Get an iterative Target, if we still have no activity
-        if (CurrentActivity == null) {
-
-            if (logging)
-                Debug.Log($"{name}: no random activity found, searching iterative");
-
-            randomTarget = false;
-            CurrentActivity = findTargetFromActivityList();
-        }
-
-        randomTarget = true;
+        if (CurrentActivity == null) findTarget();
 
         if (CurrentActivity == null) {
 
-            Debug.LogError($"{name}: no activity found!");
+            float waitTime = 0.5f;
+
+            Debug.LogWarning($"{name} setting target failed, trying again in {waitTime}s");
+
+            StartCoroutine(tryAgainAfterTime(waitTime));
             return;
         }
         // Target Activity found.
@@ -155,8 +148,6 @@ public class ActivityController : MonoBehaviour {
             setTarget();
             return;
         }
-
-        organizeGroupActivity();
 
         /*
 		 * Start going
@@ -248,6 +239,8 @@ public class ActivityController : MonoBehaviour {
 
         if (logging)
             Debug.Log($"{gameObject.name}: start doing for {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
+
+        organizeGroupActivity();
 
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();
 
@@ -382,10 +375,7 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
 
-        if (logging)
-            Debug.Log($"{name}: done stopping {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}, calling setTarget()");
-
-        Debug.Log($"{name}: done stopping {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}, calling setTarget()");
+        if (logging) Debug.Log($"{name}: done stopping {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}, calling setTarget()");
 
         // The end. Proceed as usual
         setTarget();
@@ -771,28 +761,30 @@ public class ActivityController : MonoBehaviour {
     }
 
     private void organizeGroupActivity() {
+
         // When this is a group activity, then it has to be organized (pick and interrupt the others, etc)
         if (CurrentActivity.isGroupActivity) {
-            // How many places we got?
+
+            // Get the parent of this (a groupactivity is organized under a parent with multiple activities)
             GameObject parent = CurrentActivity.GetComponentInParent<Transform>().parent.gameObject;
 
             if (logging)
                 Debug.Log(
                     $"{name}: Parent {parent.name} found for {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
 
-            List<ObjectController> otherActivities = new List<ObjectController>(
-                parent.GetComponentsInChildren<ObjectController>());
+            // Get all activities under this parent
+            List<ObjectController> otherActivities = new List<ObjectController>(parent.GetComponentsInChildren<ObjectController>());
+
+            // Remove my current activity, since this is the leaders activity
             otherActivities.Remove(CurrentActivity);
 
-            if (logging)
-                Debug.Log($"{name}: Parent {parent.name} had {otherActivities.Count} children without the target");
+            if (logging) Debug.Log($"{name}: Parent {parent.name} had {otherActivities.Count} children without the target");
 
             // Pick this amount of other avatars in my region
             List<ActivityController> theOthers = myRegion.getTheAvailableOthersFor(this, otherActivities[0]);
             List<ActivityController> participants = theOthers.GetRange(0, otherActivities.Count);
 
-            if (logging)
-                Debug.Log($"{name}: {participants.Count} participants picked");
+            if (logging) Debug.Log($"{name}: {participants.Count} participants picked");
 
             // And interrupt them with one place in the groupactivity
             int i = 0;
@@ -867,46 +859,113 @@ public class ActivityController : MonoBehaviour {
         nextActivity = null;
     }
 
-    private ObjectController findTargetFromActivityList() {
+    private void findTarget() {
 
-        if (logging)
-            Debug.Log($"{name}: is Picking {(randomTarget ? "a random target" : "the next activity available in the list")}");
+        findTargetIn(myRegion);
+    }
+
+    // Finds a destination. Gets the whole list of destinations for this region, and one "outside"-destination, wich means "change the region".
+    // When the Avatar gets "outside", he will pick a destination in that new region
+    private void findTargetIn(RegionController forRegion) {
+
+        if (logging) Debug.Log($"{name}: is Picking a random target in {forRegion.name}");
 
         //Get the activities in my region
-        List<ObjectController> activities = myRegion.getActivities();
+        List<ObjectController> activities = forRegion.getActivities();
 
-        ObjectController foundActivity = null;
-        int limit = randomTarget ? 10 : activities.Count;
+        int maxActivities = findOutside ? activities.Count + 1 : activities.Count;// +1 because of the last "outside" destination
+        int limit = 20;
 
-        // Try to find something random 10 times
+        // Try to find something random
         for (int i = 0; i <= limit && CurrentActivity == null; i++) {
 
-            // Pick a random number from the length of the destinationlist or i
-            int target = randomTarget ? Random.Range(0, activities.Count) : i;
+            // Pick a random number from the length of the destinationlist
+            int target = Random.Range(0, maxActivities);
 
-            // Set this as target
-            foundActivity = activities[target];
+            ObjectController foundActivity = null;
 
-            if (logging)
-                Debug.Log(
-                    $"{name}: found {foundActivity.name}{(foundActivity.isWithOther ? " with " + foundActivity.getAvatar().name : "")}.");
+            // Set this as target, when inside of this region
+            if (target < activities.Count) {
+
+                foundActivity = activities[target];
+            }
+            // When there were no activities in the region (should not happen)
+            else if (activities.Count == 0) {
+
+                Debug.LogWarning($"{name} could not find any activities in {forRegion.name}.");
+
+                return;
+            }
+            // Outside of this region
+            else if(target == activities.Count) {
+
+                logging = true;
+
+                if (logging) Debug.Log($"{name}: I'm gonna change my region :)");
+
+                findOutside = false;
+
+                findTargetIn(getRandomRegion());
+
+                findOutside = true;
+
+                return;
+            }
+            // This should not happen
+            else {
+                
+                Debug.LogError($"{name} Unknown error in findTarget()");
+                return;
+            }
+
+            if (logging) Debug.Log($"{name}: found {foundActivity.name}{(foundActivity.isWithOther ? " with " + foundActivity.getAvatar().name : "")}.");
 
             // Check if found activity is ok
             if (activityIsOK(foundActivity)) {
 
-                // Then tell the activity, that I use it
-                foundActivity.currentUser = this;
+                // When this is a private region, and it's not my current region, then ring the doorbell first
+                if (forRegion.isPrivate && forRegion != myRegion) {
 
-                // Set this as current
-                CurrentActivity = foundActivity;
+                    if (logging)
+                        Debug.Log(
+                            $"{name}: forRegion.isPrivate == {forRegion.isPrivate} && (forRegion != myRegion) == {forRegion != myRegion}, so setting CurrentActivity = forRegion.doorBell and nextActivity = foundActivity");
 
-                if (logging)
-                    Debug.Log(
-                        $"{name}: {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")} picked {(randomTarget ? "randomly" : "iteratively")}");
+                    CurrentActivity = forRegion.doorBell;
+                    nextActivity = foundActivity; 
+                }
+                else {
+
+                    if (logging) Debug.Log($"{name}: forRegion.isPrivate == {forRegion.isPrivate} && (forRegion != myRegion) == {forRegion != myRegion}, so setting CurrentActivity = foundActivity");
+
+                    CurrentActivity = foundActivity;
+                }
+            }
+        }
+    }
+
+    private IEnumerator tryAgainAfterTime(float waitTime) {
+
+        yield return new WaitForSeconds(waitTime);
+
+        setTarget();
+    }
+
+    private RegionController getRandomRegion() {
+
+        if (logging) Debug.Log($"{name} in {myRegion.name}: I am picking a random region");
+
+        //Get the regions in the game and remove my current region
+        List<RegionController> regions = new List<RegionController>(myRegion.getMaster().getRegions());
+        regions.Remove(myRegion);
+
+        if (logging) {
+            foreach (RegionController region in regions) {
+
+                Debug.Log($"{name}: {region.name} was in the list of regions");
             }
         }
 
-        return foundActivity;
+        return regions[Random.Range(0, regions.Count)];
     }
 
     private bool activityIsOK(ObjectController activity2Check) {
@@ -915,7 +974,7 @@ public class ActivityController : MonoBehaviour {
             Debug.Log(
                 $"{name}: checking if {activity2Check.name}{(activity2Check.isWithOther ? " with " + activity2Check.getAvatar().name : "")} is OK to use");
 
-        // Check if the found activity is ok
+        // Check if the found activity is ok, the bool statements 
         Hashtable criteria = new Hashtable {
             {
                 "Activity shall not be the last one", activity2Check != lastActivity
@@ -923,10 +982,13 @@ public class ActivityController : MonoBehaviour {
                 "Activity shall not be the the own activity",
                 !(activity2Check.isWithOther && activity2Check.getAvatar() == this)
             }, {
-                "Activity must not be occupied", activity2Check.currentUser == null
+                "Activity must not be occupied", activity2Check.CurrentUser == null
             }, {
                 "Activity must be important enough for the partner",
                 getPartnerPriority(activity2Check) < activity2Check.Priority
+            }, {
+                "Activity must be the doorbell",
+                activity2Check != activity2Check.getRegion().doorBell
             }
         };
 

@@ -19,7 +19,7 @@ public class GameLogicForActivity : MonoBehaviour {
         regions.Add(rc);
     }
 
-    public List<RegionController> getRegions(RegionController rc) {
+    public List<RegionController> getRegions() {
 
         return regions;
     }
