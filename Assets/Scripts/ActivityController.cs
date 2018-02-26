@@ -69,7 +69,7 @@ public class ActivityController : MonoBehaviour {
     void Start() {
 
         // Init Components
-        logging = false;//(name == "Testavatar (0)");
+        logging = (name == "Testavatar (0)");
         detail10Log = logging;
         
         findOutside = true;
@@ -898,8 +898,6 @@ public class ActivityController : MonoBehaviour {
             }
             // Outside of this region
             else if(target == activities.Count) {
-
-                logging = true;
 
                 if (logging) Debug.Log($"{name}: I'm gonna change my region :)");
 

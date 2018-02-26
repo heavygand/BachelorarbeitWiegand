@@ -91,10 +91,12 @@ public class RegionController : MonoBehaviour {
 		attenders.Add(avatar);
 		avatar.setRegion(this);
 
-		if (activities.Count > 0) {
+        // Start this avatar if we already have an activity and only if he has no activity yet
+		if (activities.Count > 0 && avatar.CurrentActivity == null) {
 
 			avatar.startGoing();
-		} else {
+		}
+        else {
 
 			waiters.Add(avatar);
 		}
