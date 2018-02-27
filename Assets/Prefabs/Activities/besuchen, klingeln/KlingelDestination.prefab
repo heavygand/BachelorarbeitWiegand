@@ -28,7 +28,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 8
   m_IsActive: 1
 --- !u!1 &1923232857537816
 GameObject:
@@ -45,7 +45,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 8
   m_IsActive: 1
 --- !u!4 &4959807162369412
 Transform:
@@ -67,7 +67,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1848838927198154}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.133, y: 0.826, z: -10.156}
+  m_LocalPosition: {x: -4.128, y: 0.842, z: -10.156}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4959807162369412}
@@ -232,7 +232,7 @@ MonoBehaviour:
   makeGhost: 0
   toolToUse: {fileID: 0}
   handToUse: 0
-  isGroupActivity: 0
+  isGroupActivity: 1
   loops: 0
   soundPlayDelay: 2
 --- !u!136 &136615208776702798
@@ -247,4 +247,4 @@ CapsuleCollider:
   m_Radius: 0.02
   m_Height: 1
   m_Direction: 1
-  m_Center: {x: 0, y: -0.32, z: -0.11}
+  m_Center: {x: 0, y: -0.32, z: -0.17}

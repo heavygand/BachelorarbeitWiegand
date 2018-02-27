@@ -27,7 +27,7 @@ public class RegionController : MonoBehaviour {
     // Use this for initialization
     void Start () {
 
-        logging = false;//(name == "the Outside area");
+        logging = (name == "Wohnhaus");
 
         master = GameObject.Find("GameActivityController").GetComponent<GameLogicForActivity>();
         master.register(this);
@@ -86,6 +86,8 @@ public class RegionController : MonoBehaviour {
 
 	public void registerAvatar(ActivityController avatar) {
 
+        if (avatar.getRegion() == this) return;
+
         if(logging) Debug.Log($"Person {avatar.name} is now registered in {name}");
 
 		attenders.Add(avatar);
@@ -109,20 +111,41 @@ public class RegionController : MonoBehaviour {
         }
     }
 
-    public void unregisterAvatar(ActivityController avatar) {
-
-        attenders.Remove(avatar);
-    }
-
     public void registerActivity(ObjectController activity) {
 		
-		if(logging) Debug.Log($"Tätigkeit {activity.name} ist in {name}");
+		if(logging) Debug.Log($"Activity {activity.name}{(activity.isWithOther ? " of " + activity.getAvatar().name : "")} is in {name}");
 
         activities.Add(activity);
 		activity.setRegion(this);
 	}
 
-	private void OnTriggerEnter(Collider other) {
+    private void OnTriggerExit(Collider other) {
+
+		// The Collider has to be the first Collider
+		if(other.gameObject.GetComponents<Collider>()[0] != other) return;
+
+        // An attender left
+        ActivityController avatar = other.GetComponent<ActivityController>();
+        if (avatar != null && avatar.getRegion() == this) unregisterAvatar(avatar);
+
+        // An activity left
+        ObjectController activity = other.GetComponent<ObjectController>();
+        if (activity != null && activity.getRegion() == this) {
+
+            activity.setRegion(null);
+            activities.Remove(activity);
+        }
+    }
+
+    public void unregisterAvatar(ActivityController avatar) {
+
+        attenders.Remove(avatar);
+
+        if(avatar.getRegion() == this) avatar.setRegion(null);
+    }
+
+
+    private void OnTriggerEnter(Collider other) {
 
 		// The Collider has to be the first Collider
 		if(other.gameObject.GetComponents<Collider>()[0] != other) return;
@@ -159,9 +182,14 @@ public class RegionController : MonoBehaviour {
 
 	public List<ActivityController> getTheAvailableOthersFor(ActivityController asker, ObjectController newActivity) {
 
+        if (logging) Debug.Log($"{name} hat {attenders.Count} Teilnehmer");
+
+        // For iteration
 		List<ActivityController> theOthers = new List<ActivityController>(attenders);
-        List<ActivityController> theOthers2 = new List<ActivityController>(theOthers);
         theOthers.Remove(asker);
+
+        // For returning
+        List<ActivityController> theOthers2 = new List<ActivityController>(theOthers);
 
 		// Only leave a person in the "others", when the requested new activity is more important for the person
 		foreach (ActivityController other in theOthers) {
@@ -177,10 +205,16 @@ public class RegionController : MonoBehaviour {
 
                 theOthers2.Remove(other);
 
-				if (logging) Debug.Log($"{other.name} konnte nicht an {newActivity.name} teilnehmen, weil er etwas wichtigeres macht");
-			}
+				if (logging) Debug.Log($"{other.name} konnte in {name} nicht an {newActivity.name} teilnehmen, weil er etwas wichtigeres macht: {other.CurrentActivity.name}");
+
+            }
 		}
 
 		return theOthers2;
 	}
+
+    public List<ActivityController> getAttenders() {
+
+        return attenders;
+    }
 }

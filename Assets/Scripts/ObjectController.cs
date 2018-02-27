@@ -153,9 +153,18 @@ public class ObjectController : MonoBehaviour {
 
 			GameObject.Find("GameActivityController").GetComponentInChildren<RegionController>().registerActivity(this);
 		}
-	}
+    }
 
-	public Vector3 getFootOfFirstCollider() {
+    public void setRegion(RegionController rc) {
+
+        if (logging || myRegion!=null) Debug.Log($"{name}{(isWithOther ? " of " + transform.parent.gameObject.name: "")}: region was {(myRegion != null ? myRegion.name : "null")} and now is {(rc != null ? rc.name : "null")}");
+
+        myRegion = rc;
+
+        StartCoroutine(checkIfOutside());
+    }
+
+    public Vector3 getFootOfFirstCollider() {
 
 		Bounds bounds = GetComponents<Collider>()[0].bounds;
 		Vector3 center = new Vector3(bounds.center.x, bounds.center.y - bounds.size.y/2, bounds.center.z);
@@ -165,11 +174,6 @@ public class ObjectController : MonoBehaviour {
 	private Vector3 rotateVector(Vector3 unturnedVector) {
 
         return transform.localRotation * unturnedVector;
-    }
-
-    public void setRegion(RegionController rc) {
-
-        myRegion = rc;
     }
 
     public RegionController getRegion() {
