@@ -27,7 +27,7 @@ public class RegionController : MonoBehaviour {
     // Use this for initialization
     void Start () {
 
-        logging = (name == "Wohnhaus");
+        logging = false;//(name == "Wohnhaus");
 
         master = GameObject.Find("GameActivityController").GetComponent<GameLogicForActivity>();
         master.register(this);
@@ -51,7 +51,7 @@ public class RegionController : MonoBehaviour {
 		if(logging) Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
 		foreach (ActivityController waiter in waiters) {
 
-			if(logging) Debug.Log($"Regioncontroller: {waiter.gameObject.name} hat gewartet und kriegt startGoing()");
+			if(logging || waiter.Logging) Debug.Log($"Regioncontroller: {waiter.name} hat gewartet und kriegt startGoing()");
 			waiter.startGoing();
 			waiters.Remove(waiter);
 		}
@@ -88,7 +88,7 @@ public class RegionController : MonoBehaviour {
 
         if (avatar.getRegion() == this) return;
 
-        if(logging) Debug.Log($"Person {avatar.name} is now registered in {name}");
+        if(logging || avatar.Logging) Debug.Log($"Person {avatar.name} is now registered in {name}");
 
 		attenders.Add(avatar);
 		avatar.setRegion(this);
@@ -96,13 +96,13 @@ public class RegionController : MonoBehaviour {
         // Start this avatar if we already have an activity and only if he has no activity yet
 		if (activities.Count > 0 && avatar.CurrentActivity == null) {
 
-		    if(logging) Debug.Log($"Person {avatar.name} is starting in {name}");
+		    if(logging || avatar.Logging) Debug.Log($"Person {avatar.name} is starting in {name}");
 			avatar.startGoing();
 		}
         // Avatar will have to wait, when there still are no activities
         else if(activities.Count == 0) {
 
-            if(logging) Debug.Log($"Person {avatar.name} is waiting in {name}, because there still were no activities");
+            if(logging || avatar.Logging) Debug.Log($"Person {avatar.name} is waiting in {name}, because there still were no activities");
 			waiters.Add(avatar);
 		}
         // Do nothing
@@ -113,7 +113,7 @@ public class RegionController : MonoBehaviour {
 
     public void registerActivity(ObjectController activity) {
 		
-		if(logging) Debug.Log($"Activity {activity.name}{(activity.isWithOther ? " of " + activity.getAvatar().name : "")} is in {name}");
+		if(logging || (activity.getAvatar() != null && activity.getAvatar().Logging)) Debug.Log($"Activity {activity.name}{(activity.isWithOther ? " of " + activity.getAvatar().name : "")} is in {name}");
 
         activities.Add(activity);
 		activity.setRegion(this);
@@ -182,11 +182,13 @@ public class RegionController : MonoBehaviour {
 
 	public List<ActivityController> getTheAvailableOthersFor(ActivityController asker, ObjectController newActivity) {
 
-        if (logging) Debug.Log($"{name} hat {attenders.Count} Teilnehmer");
+        if (logging || asker.Logging) Debug.Log($"{asker.name}: {name} has {attenders.Count} inhabitants");
 
         // For iteration
-		List<ActivityController> theOthers = new List<ActivityController>(attenders);
+        List <ActivityController> theOthers = new List<ActivityController>(attenders);
         theOthers.Remove(asker);
+
+        if (logging) Debug.Log($"{asker.name}: {name} has {theOthers.Count} participants for {newActivity}");
 
         // For returning
         List<ActivityController> theOthers2 = new List<ActivityController>(theOthers);
@@ -197,7 +199,7 @@ public class RegionController : MonoBehaviour {
             if (other.CurrentActivity == null) {
 
                 theOthers2.Remove(other);
-                Debug.LogError($"The CurrentActivity of {other.name} was null!");
+                Debug.LogError($"{asker.name}: The CurrentActivity of {other.name} was null!");
                 continue;
             }
 
@@ -205,8 +207,7 @@ public class RegionController : MonoBehaviour {
 
                 theOthers2.Remove(other);
 
-				if (logging) Debug.Log($"{other.name} konnte in {name} nicht an {newActivity.name} teilnehmen, weil er etwas wichtigeres macht: {other.CurrentActivity.name}");
-
+				if (logging || asker.Logging) Debug.Log($"{asker.name}: {other.name} in {name} could not participate in {newActivity.name} because he is doing something more important: {other.CurrentActivity.name}");
             }
 		}
 

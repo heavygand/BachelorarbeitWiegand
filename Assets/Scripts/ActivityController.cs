@@ -14,7 +14,7 @@ using UnityEngine.UI;
 /// This Script manages all activities and deactivates itself in case of alarm
 /// </summary>
 public class ActivityController : MonoBehaviour {
-
+    
     public ObjectController currentActivity;
 
     public ObjectController CurrentActivity
@@ -35,6 +35,12 @@ public class ActivityController : MonoBehaviour {
     }
 
     public ObjectController nextActivity;
+
+    [Tooltip("Indicates if there shall be debug logs for this avatar")]
+    public bool logging;
+    public bool Logging => logging;
+
+    [Tooltip("The destination bubble for partner activities")]
     public GameObject bubble;
 
     private ObjectController lastActivity;
@@ -51,18 +57,24 @@ public class ActivityController : MonoBehaviour {
     private bool activityChangeRequested;
     private bool going;
     private bool iAmPartner;
-    private bool logging;
     private bool detail10Log;
     private bool findOutside;
+    private bool isParticipating;
 
+    private List<ActivityController> myParticipants;
     private Animator animator;
     private NavMeshAgent navComponent;
     private Text alarmText;
     private AvatarController fleeScript;
     private Transform whatBurn;
-    private RegionController myRegion;
+    private int retries;
+
+    private ActivityController myLeader;
+
     private Coroutine doing;
-    private int retries = 0;
+    public Coroutine Doing => doing;
+
+    private RegionController myRegion;
 
     /// <summary>
     /// Initialisation
@@ -70,7 +82,6 @@ public class ActivityController : MonoBehaviour {
     void Start() {
 
         // Init Components
-        logging = (name == "Testavatar (0)");
         detail10Log = false;
         
         findOutside = true;
@@ -117,7 +128,6 @@ public class ActivityController : MonoBehaviour {
             return;
         }
         // Target Activity found.
-
         if (logging && detail10Log) Debug.Log($"{name}: Current Activity is {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // Decide what to do now
@@ -126,7 +136,8 @@ public class ActivityController : MonoBehaviour {
             if (logging) Debug.Log($"{name}: calling startDoing(), because iAmPartner = true");
 
             startDoing();
-        } else {
+        }
+        else {
 
             if (logging && detail10Log) Debug.Log($"{name}: calling startGoing()");
 
@@ -169,7 +180,7 @@ public class ActivityController : MonoBehaviour {
         }
         else {
 
-            Debug.LogError($"{name} wanted to go to {CurrentActivity}, but wasn't on the navmesh");
+            Debug.LogError($"{name} wanted to go to {CurrentActivity.name}, but wasn't on the navmesh");
         }
 
         // Set Animator ready for going
@@ -242,7 +253,7 @@ public class ActivityController : MonoBehaviour {
 
         if (logging) Debug.Log($"{gameObject.name}: start doing for {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
 
-        organizeGroupActivity();
+        StartCoroutine(organizeGroupActivityAfterTime());
 
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();
 
@@ -285,14 +296,17 @@ public class ActivityController : MonoBehaviour {
         // Activate animation. Standing does not have to be activated
         if (CurrentActivity.activity.ToString() != "stand") animator.SetBool(CurrentActivity.activity.ToString(), true);
 
+        // When I am the participant of a groupactivity, then mark myself as "isParticipating"
+        StartCoroutine(participate(CurrentActivity));
+
         // If we need a tool, then spawn it
         setToolAndHandsFields();
 
         bool isWithOther = CurrentActivity.isWithOther;
         ActivityController theOther = CurrentActivity.getAvatar();
 
-        // Activity time. Also check if my state changed every 0.025ms
-        float ms = 0.020f;
+        // Activity time. Also check if my state changed every 20ms
+        float ms = 0.02f;
         for (int i = 0; i < CurrentActivity.time * (1 / ms) && !activityChangeRequested && !(isWithOther && theOther.activityChangeRequested); i++) {
 
             adjustTool();
@@ -314,19 +328,21 @@ public class ActivityController : MonoBehaviour {
 
             if (logging) Debug.Log($"{gameObject.name}: stopping {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
         }
-
         stopDoing();
     }
 
     private void stopDoing() {
-
+        
         iAmPartner = false;
 
         if (logging)
             Debug.Log($"{gameObject.name}: stops doing {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
 
-        if (doing != null)
+        if (doing != null) {
+
             StopCoroutine(doing);
+            doing = null;
+        }
 
         if (!checkFurtherChildDestinations()) {
 
@@ -372,8 +388,6 @@ public class ActivityController : MonoBehaviour {
         if (logging && detail10Log)
             Debug.Log($"{name}: Started Coroutine continueWhenDoneStopping()");
 
-        string currAnim = ""+animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
-
         while (!animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
             if (logging)
@@ -382,19 +396,63 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
 
-        if (logging) Debug.Log($"{name}: done stopping {currAnim}, calling setTarget()");
+        if (logging) Debug.Log($"{name}: done stopping {CurrentActivity.name}");
+
+        // When I am the leader of a group activity, then wait until everyone started with my invoked groupactivity
+        while (!allParticipantsStarted()) {
+
+            yield return new WaitForSeconds(0.2f);
+        }
 
         // The end. Proceed as usual
         setTarget();
     }
 
+    private IEnumerator participate(ObjectController groupChildActivity) {
+        
+        yield return new WaitForSeconds(getMoreDelayIfWeHaveSoundPlayDelay());
+
+        if (!activityChangeRequested && myLeader != null) {
+
+            isParticipating = true;
+            if (logging || myLeader.logging)
+                Debug.Log($"{name}: now participated in groupactivity {myLeader.CurrentActivity.name} of {myLeader.name} with {groupChildActivity}");
+        }
+    }
+
+    private bool allParticipantsStarted() {
+
+        if(myParticipants == null) return true;
+
+        foreach (ActivityController parti in myParticipants) {
+
+            if (!parti.isParticipating) {
+
+                if (logging || parti.logging) Debug.Log($"{name}: Cannot proceed, because my participant {parti.name} of groupactivity {CurrentActivity.name} hasn't started yet");
+                return false;
+            }
+        }
+        // Group activity is done
+        foreach (ActivityController parti in myParticipants) {
+            
+            if (logging || parti.logging) Debug.Log($"{name}: removing myself as leader of {parti.name} for groupactivity {CurrentActivity.name}");
+            parti.myLeader = null;
+            parti.isParticipating = false;
+        }
+        myParticipants = null;
+
+        return true;
+    }
+
     // Does the activity still have children?
     private bool checkFurtherChildDestinations() {
+
+        // Ignore children and loops, when activityChangeRequested == true
 
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();
 
         // When the activity still has children
-        if (componentsInChildren.Length >= 2 && componentsInChildren[1] != null) {
+        if (!activityChangeRequested && componentsInChildren.Length >= 2 && componentsInChildren[1] != null) {
 
             if (logging)
                 Debug.Log($"{name}: Proceeding to {componentsInChildren[1].name} after this");
@@ -405,7 +463,7 @@ public class ActivityController : MonoBehaviour {
             return true;
         }
         // Else check if we still have loops
-        if (CurrentActivity.loops > 0) {
+        if (!activityChangeRequested && CurrentActivity.loops > 0) {
 
             if (logging)
                 Debug.Log($"{name}: No childDestinations anymore, but I still have {CurrentActivity.loops} loops. Will start over again.");
@@ -521,14 +579,14 @@ public class ActivityController : MonoBehaviour {
         if (going) {
 
             if (logging && detail10Log)
-                Debug.Log($"{name}: was going, therefore setting new target");
+                Debug.Log($"{name}: was going, therefore stopping and setting new target");
+            stopGoing();
             setTarget();
         }
     }
     public IEnumerator requestActivityChange(ObjectController activity) {
 
-        if (logging)
-            Debug.Log($"{name}: Was interrupted to do {activity.name}{(activity.isWithOther ? " with " + activity.transform.parent.gameObject.name : "")}");
+        if (logging || (activity.isWithOther && activity.getAvatar().Logging)) Debug.Log($"{name}: Was interrupted to do {activity.name}{(activity.isWithOther ? " with " + activity.getAvatar().name : "")}");
 
         nextActivity = activity;
 
@@ -636,7 +694,7 @@ public class ActivityController : MonoBehaviour {
 
         myRegion = rc;
 
-        if (logging || true) Debug.Log($"{name}: my region was {(oldRegion != null ? oldRegion.name : "null")} and now is {(myRegion != null ? myRegion.name : "null")}");
+        if (logging) Debug.Log($"{name}: my region was {(oldRegion != null ? oldRegion.name : "null")} and now is {(myRegion != null ? myRegion.name : "null")}");
 
         // Unregister in the region if he isn't the caller, myRegion variable will be nulled as a side effekt
         if(oldRegion != null && oldRegion.getAttenders().Contains(this)) oldRegion.unregisterAvatar(this);
@@ -773,6 +831,19 @@ public class ActivityController : MonoBehaviour {
             Debug.Log($"{name}: destroyed my bubble because {reason}.");
     }
 
+    private IEnumerator organizeGroupActivityAfterTime() {
+        
+        yield return new WaitForSeconds(getMoreDelayIfWeHaveSoundPlayDelay());
+
+        organizeGroupActivity();
+    }
+
+    private int getMoreDelayIfWeHaveSoundPlayDelay() {
+
+        return CurrentActivity.soundPlayDelay + (CurrentActivity.soundPlayDelay == 0 ? 0 : 2);
+    }
+
+    // Return the success
     private void organizeGroupActivity() {
 
         // When this is a group activity, then it has to be organized (pick and interrupt the others, etc)
@@ -781,7 +852,8 @@ public class ActivityController : MonoBehaviour {
             // Get the parent of this (a groupactivity is organized under a parent with multiple activities)
             GameObject parent = CurrentActivity.GetComponentInParent<Transform>().parent.gameObject;
 
-            if (logging) Debug.Log($"{name}: Parent {parent.name} found for {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
+            if (logging)
+                Debug.Log($"{name}: Parent {parent.name} found for {CurrentActivity.name}");
 
             // Get all activities under this parent
             List<ObjectController> otherActivities = new List<ObjectController>(parent.GetComponentsInChildren<ObjectController>());
@@ -789,33 +861,45 @@ public class ActivityController : MonoBehaviour {
             // Remove my current activity, since this is the leaders activity
             otherActivities.Remove(CurrentActivity);
 
-            if (logging) Debug.Log($"{name}: Parent {parent.name} had {otherActivities.Count} children without the target");
+            if (logging)
+                Debug.Log($"{name}: Parent {parent.name} had {otherActivities.Count} groupactivitychild without {CurrentActivity.name}");
 
             if (CurrentActivity.getRegion() == null) {
 
                 Debug.LogError($"{name}: The region of my activity {CurrentActivity.name} is null!");
+                requestActivityChange();
                 return;
             }
 
             // Pick this amount of other avatars in my region
             List<ActivityController> theOthers = CurrentActivity.getRegion().getTheAvailableOthersFor(this, otherActivities[0]);
 
-            if(theOthers.Count == 0) {
+            if (theOthers.Count == 0) {
 
-                Debug.LogError($"No participants found for groupactivity {CurrentActivity}!");
+                Debug.LogWarning($"{name}: No participants found for groupactivity {CurrentActivity}!");
+
+                setRegion(null);
+                StartCoroutine(checkIfOutside());
+                nextActivity = null;
+                requestActivityChange();
                 return;
             }
-            
-            List<ActivityController> participants = theOthers.GetRange(0, (theOthers.Count>otherActivities.Count? otherActivities.Count: theOthers.Count));
 
-            if (logging) Debug.Log($"{name}: {participants.Count} participants picked");
+            myParticipants = theOthers.GetRange(0, (theOthers.Count > otherActivities.Count ? otherActivities.Count : theOthers.Count));
+
+            if (logging)
+                Debug.Log($"{name}: {myParticipants.Count} participants picked{(myParticipants.Count==1?": "+ myParticipants[0].name: "")}");
 
             // And interrupt them with one place in the groupactivity
             int i = 0;
-            foreach (ActivityController participant in participants) {
-                if (logging) Debug.Log($"{name}: trying to interrupt {participant.name} with {otherActivities[i].name}");
+            foreach (ActivityController participant in myParticipants) {
+                if (logging)
+                    Debug.Log($"{name}: trying to interrupt the {participant.CurrentActivity.name} of {participant.name} with {otherActivities[i].name} and setting myself as leader");
 
                 StartCoroutine(participant.requestActivityChange(otherActivities[i]));
+
+                participant.myLeader = this;
+
                 i++;
             }
         }
@@ -892,8 +976,6 @@ public class ActivityController : MonoBehaviour {
     private void findTargetIn(RegionController forRegion) {
 
         if (logging) Debug.Log($"{name}: is Picking a random target in {forRegion.name}");
-
-        if(forRegion.name == "Wohnhaus" && forRegion != myRegion) logging = true;
 
         //Get the activities in my region
         List<ObjectController> activities = forRegion.getActivities();
