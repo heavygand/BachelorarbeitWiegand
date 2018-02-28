@@ -288,30 +288,39 @@ public class ActivityController : MonoBehaviour {
         // If we need a tool, then spawn it
         setToolAndHandsFields();
 
+        bool isWithOther = CurrentActivity.isWithOther;
+        ActivityController theOther = CurrentActivity.getAvatar();
+
         // Activity time. Also check if my state changed every 0.025ms
         float ms = 0.020f;
-        for (int i = 0; i < CurrentActivity.time * (1 / ms) && !activityChangeRequested; i++) {
+        for (int i = 0; i < CurrentActivity.time * (1 / ms) && !activityChangeRequested && !(isWithOther && theOther.activityChangeRequested); i++) {
 
             adjustTool();
 
             yield return new WaitForSeconds(ms);
         }
+        // Activity time is over
         if (!activityChangeRequested) {
 
-            if (logging)
-                Debug.Log($"{gameObject.name}: time is over for {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
-        } else {
+            if (logging) Debug.Log($"{gameObject.name}: time is over for {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
+        }
+        // My partner was interrupted
+        else if(isWithOther && theOther.activityChangeRequested) {
+            
+            if (logging) Debug.Log($"{gameObject.name}: stopping {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}, because my partner was interrupted");
+        }
+        // I was interrupted
+        else {
 
-            if (logging)
-                Debug.Log($"{gameObject.name}: stopping {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
-
-            activityChangeRequested = false;
+            if (logging) Debug.Log($"{gameObject.name}: stopping {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
         }
 
         stopDoing();
     }
 
     private void stopDoing() {
+
+        iAmPartner = false;
 
         if (logging)
             Debug.Log($"{gameObject.name}: stops doing {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
@@ -642,7 +651,6 @@ public class ActivityController : MonoBehaviour {
         if (iAmPartner) {
 
             if (logging && detail10Log) Debug.Log($"{gameObject.name}: I am the partner.");
-            iAmPartner = false;
         }
         // I'm the starter
         else {
