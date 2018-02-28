@@ -2455,6 +2455,8 @@ MonoBehaviour:
   Priority: 1
   activity: 7
   turnAngle: 180
+  lookAtNext: 0
+  noTurning: 0
   time: 100
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -2463,7 +2465,7 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  lookAtNext: 0
+  soundPlayDelay: 0
 --- !u!114 &114378850510226326
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2477,6 +2479,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
+  logging: 1
   bubble: {fileID: 1514474999493290, guid: 612696b421061e146860be199b1c82dc, type: 2}
 --- !u!114 &114434433465026578
 MonoBehaviour:

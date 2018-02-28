@@ -5,9 +5,11 @@ using UnityEngine;
 public class GameLogicForActivity : MonoBehaviour {
 
 	// Use this for initialization
-	void Start () {
-		
-	}
+	void Awake () {
+
+        Debug.Log($"Simulation startet {System.DateTime.UtcNow.ToString("HH:mm dd MMMM, yyyy")} ######################################################################");
+
+    }
 	
 	// Update is called once per frame
 	void Update () {

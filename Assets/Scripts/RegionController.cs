@@ -51,7 +51,7 @@ public class RegionController : MonoBehaviour {
 		if(logging) Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
 		foreach (ActivityController waiter in waiters) {
 
-			if(logging || waiter.Logging) Debug.Log($"Regioncontroller: {waiter.name} hat gewartet und kriegt startGoing()");
+			if(logging || waiter.Logging) Debug.Log($"{waiter.name}: I've waited and got startGoing() from the Regioncontroller");
 			waiter.startGoing();
 			waiters.Remove(waiter);
 		}
@@ -88,7 +88,7 @@ public class RegionController : MonoBehaviour {
 
         if (avatar.getRegion() == this) return;
 
-        if(logging || avatar.Logging) Debug.Log($"Person {avatar.name} is now registered in {name}");
+        if(logging || avatar.Logging) Debug.Log($"{avatar.name}: I am now registered in {name}");
 
 		attenders.Add(avatar);
 		avatar.setRegion(this);
@@ -113,7 +113,8 @@ public class RegionController : MonoBehaviour {
 
     public void registerActivity(ObjectController activity) {
 		
-		if(logging || (activity.getAvatar() != null && activity.getAvatar().Logging)) Debug.Log($"Activity {activity.name}{(activity.isWithOther ? " of " + activity.getAvatar().name : "")} is in {name}");
+		if(logging || (activity.getAvatar() != null && activity.getAvatar().Logging))
+            Debug.Log($"{(activity.isWithOther ? activity.getAvatar().name+": " : "")}Activity {activity.name} is in {name}");
 
         activities.Add(activity);
 		activity.setRegion(this);

@@ -157,7 +157,8 @@ public class ObjectController : MonoBehaviour {
 
     public void setRegion(RegionController rc) {
 
-        if (logging || (isWithOther && avatar.Logging)) Debug.Log($"{name}{(isWithOther ? " of " + avatar.name: "")}: region was {(myRegion != null ? myRegion.name : "null")} and now is {(rc != null ? rc.name : "null")}");
+        if (logging || (isWithOther && avatar.Logging))
+            Debug.Log($"{(isWithOther ? avatar.name + ": " : "")}{name}'s region was {(myRegion != null ? myRegion.name : "null")} and now is {(rc != null ? rc.name : "null")}");
 
         myRegion = rc;
 

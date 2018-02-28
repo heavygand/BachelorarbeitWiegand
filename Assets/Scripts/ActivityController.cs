@@ -72,6 +72,7 @@ public class ActivityController : MonoBehaviour {
     private ActivityController myLeader;
 
     private Coroutine doing;
+    private Coroutine rotateRoutine;
     public Coroutine Doing => doing;
 
     private RegionController myRegion;
@@ -82,7 +83,7 @@ public class ActivityController : MonoBehaviour {
     void Start() {
 
         // Init Components
-        detail10Log = false;
+        detail10Log = true;
         
         findOutside = true;
 
@@ -342,6 +343,11 @@ public class ActivityController : MonoBehaviour {
 
             StopCoroutine(doing);
             doing = null;
+        }
+        if (rotateRoutine != null) {
+
+            StopCoroutine(rotateRoutine);
+            rotateRoutine = null;
         }
 
         if (!checkFurtherChildDestinations()) {
@@ -767,7 +773,7 @@ public class ActivityController : MonoBehaviour {
             wrongTargetRot.eulerAngles.z);
 
         // Rotate myself like this
-        StartCoroutine(rotate(targetRot));
+        rotateRoutine = StartCoroutine(rotate(targetRot));
     }
 
     /// <summary>
