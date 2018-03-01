@@ -394,7 +394,7 @@ public class ActivityController : MonoBehaviour {
         if (logging && detail10Log)
             Debug.Log($"{name}: Started Coroutine continueWhenDoneStopping()");
 
-        while (!animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
+        while (name != "Cartoon_SportCar_B01" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
             if (logging)
                 Debug.Log($"{name}: Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");

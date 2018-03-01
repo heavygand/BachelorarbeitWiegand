@@ -49,7 +49,10 @@ public class RegionController : MonoBehaviour {
 		if(waiters.Count == 0) return;
 
 		if(logging) Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
-		foreach (ActivityController waiter in waiters) {
+
+	    List<ActivityController> waiters2 = new List<ActivityController>(waiters);
+
+	    foreach (ActivityController waiter in waiters2) {
 
 			if(logging || waiter.Logging) Debug.Log($"{waiter.name}: I've waited and got startGoing() from the Regioncontroller");
 			waiter.startGoing();

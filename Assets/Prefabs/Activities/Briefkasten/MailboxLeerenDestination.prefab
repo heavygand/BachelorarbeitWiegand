@@ -145,7 +145,7 @@ MonoBehaviour:
   turnAngle: 0
   lookAtNext: 0
   noTurning: 0
-  time: 100
+  time: 3
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 1
   makeGhost: 0
@@ -166,4 +166,4 @@ CapsuleCollider:
   m_Radius: 0.05
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: -0.94, y: 1, z: -1.25}
+  m_Center: {x: -1.12, y: 1, z: -1.25}

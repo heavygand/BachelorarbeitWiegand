@@ -16,14 +16,6 @@ namespace UnityStandardAssets.Vehicles.Car
 			m_Car = GetComponent<CarController>();
 		}
 
-		void Start()
-		{
-			if (isLocalPlayer)
-			{
-				spawnPoints = FindObjectsOfType<NetworkStartPosition> ();
-			}
-		}
-
 
 
 		private void FixedUpdate()
