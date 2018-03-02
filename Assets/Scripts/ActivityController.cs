@@ -781,7 +781,7 @@ public class ActivityController : MonoBehaviour {
     /// <returns></returns>
     private IEnumerator rotate(Quaternion targetRot) {
 
-        for (int counter = 0; counter < 100; counter++) {
+        for (int counter = 0; counter < 150; counter++) {
 
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.05f);
             if (logging)
