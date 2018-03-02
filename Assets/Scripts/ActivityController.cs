@@ -129,7 +129,7 @@ public class ActivityController : MonoBehaviour {
             return;
         }
         // Target Activity found.
-        if (logging && detail10Log) Debug.Log($"{name}: Current Activity is {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
+        if (logging) Debug.Log($"{name}: Current Activity is {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // Decide what to do now
         if (iAmPartner) {
@@ -140,7 +140,7 @@ public class ActivityController : MonoBehaviour {
         }
         else {
 
-            if (logging && detail10Log) Debug.Log($"{name}: calling startGoing()");
+            if (logging) Debug.Log($"{name}: calling startGoing()");
 
             // It is possible, that the other avatar is not there anymore, when we arrive, so this bubble will signalise, that we arrived but noone was there.
             // The bubble has to be smaller than the trigger collider of the destination
@@ -158,7 +158,7 @@ public class ActivityController : MonoBehaviour {
         // First set a target if we have no
         if (CurrentActivity == null) {
 
-            if (logging && detail10Log) Debug.Log($"{name}: rufe setTarget auf, weil meine currentactivity war null");
+            if (logging) Debug.Log($"{name}: rufe setTarget auf, weil meine currentactivity war null");
 
             setTarget();
             return;
@@ -184,10 +184,13 @@ public class ActivityController : MonoBehaviour {
             Debug.LogError($"{name} wanted to go to {CurrentActivity.name}, but wasn't on the navmesh");
         }
 
-        // Set Animator ready for going
-        animator.SetBool("closeEnough", false);
-        animator.SetTrigger("walk");
-        animator.applyRootMotion = false;
+        if (name != "Cartoon_SportCar_B01") {
+
+            // Set Animator ready for going
+            animator.SetBool("closeEnough", false);
+            animator.SetTrigger("walk");
+            animator.applyRootMotion = false; 
+        }
 
         going = true;
     }
@@ -230,16 +233,17 @@ public class ActivityController : MonoBehaviour {
 
     private void stopGoing() {
 
-        if (logging)
-            Debug.Log($"{name}: I stopped going");
+        if (logging) Debug.Log($"{name}: I stopped going");
 
         going = false;
+        
+        if (name != "Cartoon_SportCar_B01") {
 
-        // rootMotion on, because we're not walking on the navMesh anymore
-        animator.applyRootMotion = true;
+            animator.applyRootMotion = true;
+            animator.SetBool("closeEnough", true); 
+        }
 
         // Stop here
-        animator.SetBool("closeEnough", true);
         if (navComponent.isOnNavMesh) {
 
             navComponent.isStopped = true;
@@ -269,7 +273,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Rotate
-        organizeLookRotation(componentsInChildren);
+        //organizeLookRotation(componentsInChildren);
 
         // Disable Kinematic, so no physics will affect the animation
         GetComponent<Rigidbody>().isKinematic = true;
@@ -279,8 +283,6 @@ public class ActivityController : MonoBehaviour {
 
         // Slide to another place if neccesary
         if (!CurrentActivity.MoveVector.Equals(Vector3.zero)) StartCoroutine(slideToPlace(true));
-
-        if (logging) Debug.Log($"{name}: calling startUsageTime() for {CurrentActivity.name}{(CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // Starts the usage time, after which the activity will stop
         doing = StartCoroutine(startUsageTimeAndAnimation());
@@ -295,7 +297,11 @@ public class ActivityController : MonoBehaviour {
         yield return new WaitForSeconds(1);
 
         // Activate animation. Standing does not have to be activated
-        if (CurrentActivity.activity.ToString() != "stand") animator.SetBool(CurrentActivity.activity.ToString(), true);
+        if (CurrentActivity.activity.ToString() != "stand") {
+
+            if (logging) Debug.Log($"{name}: animation {CurrentActivity.activity} activated.");
+            animator.SetBool(CurrentActivity.activity.ToString(), true);
+        }
 
         // When I am the participant of a groupactivity, then mark myself as "isParticipating"
         StartCoroutine(participate(CurrentActivity));
@@ -352,38 +358,29 @@ public class ActivityController : MonoBehaviour {
 
         if (!checkFurtherChildDestinations()) {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: There were no childDestinations, destroying my tool");
 
             Destroy(tool);
             tool = null;
-
-            if (logging && detail10Log)
-                Debug.Log($"{name}: Tool should be destroyed now.");
         }
-
-        if (logging && detail10Log)
-            Debug.Log($"{name}: Checking, if there is an animation to stop...");
 
         // Stop doing this activity (standing does not have to be deactivated)
         if (CurrentActivity != null && CurrentActivity.activity.ToString() != "stand") {
 
-            if (logging && detail10Log)
-                Debug.Log($"{name}: Stopping animation {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
+            if (logging)
+                Debug.Log($"{name}: Setting animator bool of {CurrentActivity.activity} to false");
 
             animator.SetBool(CurrentActivity.activity.ToString(), false);
         }
         // Re-place when displaced
         if (displaced) {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: I was displaced, so sliding back");
 
             StartCoroutine(slideToPlace(false));
         }
-
-        if (logging && detail10Log)
-            Debug.Log($"{name}: Starting Coroutine continueWhenDoneStopping()");
 
         // Wait with the next target until we are ready to walk again (when sitting or laying)
         StartCoroutine(continueWhenDoneStopping());
@@ -391,7 +388,7 @@ public class ActivityController : MonoBehaviour {
 
     private IEnumerator continueWhenDoneStopping() {
 
-        if (logging && detail10Log)
+        if (logging)
             Debug.Log($"{name}: Started Coroutine continueWhenDoneStopping()");
 
         while (name != "Cartoon_SportCar_B01" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
@@ -402,7 +399,7 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
 
-        if (logging) Debug.Log($"{name}: done stopping {CurrentActivity.name}");
+        if (logging) Debug.Log($"{name}: done stopping {CurrentActivity.name}, because my animator clip is {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} and the bool of {CurrentActivity.activity} is {animator.GetBool(CurrentActivity.activity.ToString())}");
 
         // When I am the leader of a group activity, then wait until everyone started with my invoked groupactivity
         while (!allParticipantsStarted()) {
@@ -506,7 +503,7 @@ public class ActivityController : MonoBehaviour {
         // No hand
         if (CurrentActivity.handToUse == ObjectController.HandUsage.noHand) {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: Using my tool without hands.");
 
             tool.transform.position = transform.position;
@@ -515,14 +512,14 @@ public class ActivityController : MonoBehaviour {
         else if (CurrentActivity.handToUse == ObjectController.HandUsage.leftHand
             || CurrentActivity.handToUse == ObjectController.HandUsage.rightHand) {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: Using my tool with one hand: {CurrentActivity.handToUse}.");
             putToolInHand(CurrentActivity.handToUse);
         }
         // Both hands
         else {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: Using my tool with both hands.");
 
             Vector3 leftHandPos = leftHand.transform.position;
@@ -558,13 +555,13 @@ public class ActivityController : MonoBehaviour {
 
         if (CurrentActivity.toolToUse == null) {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: There is no tool to use for me");
 
             return;
         }
 
-        if (logging && detail10Log)
+        if (logging)
             Debug.Log($"{name}: I have to use a {CurrentActivity.toolToUse.name} for {CurrentActivity.name}");
 
         tool = Instantiate(CurrentActivity.toolToUse);
@@ -577,14 +574,14 @@ public class ActivityController : MonoBehaviour {
 
     public void requestActivityChange() {
 
-        if (logging && detail10Log)
+        if (logging)
             Debug.Log($"{name}: I'm interrupting myself");
 
         activityChangeRequested = true;
 
         if (going) {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: was going, therefore stopping and setting new target");
             stopGoing();
             setTarget();
@@ -714,7 +711,7 @@ public class ActivityController : MonoBehaviour {
         // I'm the partner
         if (iAmPartner) {
 
-            if (logging && detail10Log) Debug.Log($"{gameObject.name}: I am the partner.");
+            if (logging) Debug.Log($"{gameObject.name}: I am the partner.");
         }
         // I'm the starter
         else {
@@ -819,7 +816,7 @@ public class ActivityController : MonoBehaviour {
         // Move to pos
         while (Vector3.Distance(transform.position, targetPos) >= 0.01f) {
 
-            if (logging && detail10Log)
+            if (logging)
                 Debug.Log($"{name}: Sliding to place {targetPos}");
             transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime / 3);
             yield return new WaitForSeconds(0);
@@ -959,10 +956,10 @@ public class ActivityController : MonoBehaviour {
     }
 
     private void tryNextInQueue() {
-        if (logging && detail10Log)
+        if (logging)
             Debug.Log(
                 $"{name}: last activity was {(lastActivity == null ? "null" : lastActivity.name)} is now {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : ""))}");
-        if (logging && detail10Log)
+        if (logging)
             Debug.Log(
                 $"{name}: current activity was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isWithOther ? " with " + CurrentActivity.getAvatar().name : ""))} and is now {(nextActivity == null ? "null" : nextActivity.name)}");
 
@@ -1046,7 +1043,7 @@ public class ActivityController : MonoBehaviour {
                 }
                 else {
 
-                    if (logging && detail10Log) Debug.Log($"{name}: forRegion.isPrivate == {forRegion.isPrivate} && (forRegion != myRegion) == {forRegion != myRegion}, so setting CurrentActivity = foundActivity");
+                    if (logging) Debug.Log($"{name}: forRegion.isPrivate == {forRegion.isPrivate} && (forRegion != myRegion) == {forRegion != myRegion}, so setting CurrentActivity = foundActivity");
 
                     CurrentActivity = foundActivity;
                 }
@@ -1073,7 +1070,7 @@ public class ActivityController : MonoBehaviour {
         List<RegionController> regions = new List<RegionController>(myRegion.getMaster().getRegions());
         regions.Remove(myRegion);
 
-        if (logging && detail10Log) {
+        if (logging) {
             foreach (RegionController region in regions) {
 
                 Debug.Log($"{name}: {region.name} was in the list of regions");

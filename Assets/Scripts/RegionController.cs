@@ -142,6 +142,8 @@ public class RegionController : MonoBehaviour {
     }
 
     public void unregisterAvatar(ActivityController avatar) {
+        
+        if (logging) Debug.Log($"{avatar.name}: I have left region {name}");
 
         attenders.Remove(avatar);
 
@@ -156,7 +158,11 @@ public class RegionController : MonoBehaviour {
         
         // We got an attender
         ActivityController avatar = other.GetComponent<ActivityController>();
-        if (avatar != null) registerAvatar(avatar);
+        if (avatar != null) {
+
+            if (logging) Debug.Log($"{avatar.name}: I have entered {name}");
+            registerAvatar(avatar);
+        }
 
         // We got an activity
         ObjectController activity = other.GetComponent<ObjectController>();
