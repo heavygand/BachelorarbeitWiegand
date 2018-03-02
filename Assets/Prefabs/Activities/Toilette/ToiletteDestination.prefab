@@ -201,16 +201,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cannotBeFound: 0
+  Priority: 0
   activity: 0
   turnAngle: 180
+  lookAtNext: 0
+  noTurning: 0
   time: 5
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 1
   makeGhost: 0
   toolToUse: {fileID: 0}
   handToUse: 0
+  isGroupActivity: 0
   loops: 0
-  lookAtNext: 0
+  soundPlayDelay: 0
 --- !u!114 &114717135380549904
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -222,16 +227,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cannotBeFound: 1
+  Priority: 0
   activity: 9
   turnAngle: 90
+  lookAtNext: 0
+  noTurning: 0
   time: 3
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
   makeGhost: 0
   toolToUse: {fileID: 0}
   handToUse: 0
+  isGroupActivity: 0
   loops: 0
-  lookAtNext: 0
+  soundPlayDelay: 0
 --- !u!135 &135638757351362886
 SphereCollider:
   m_ObjectHideFlags: 1

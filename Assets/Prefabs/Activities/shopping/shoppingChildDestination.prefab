@@ -3393,14 +3393,17 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1885901998690356}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cannotBeFound: 1
   Priority: 0
   activity: 2
   turnAngle: 0
+  lookAtNext: 0
+  noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -3409,7 +3412,7 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  lookAtNext: 0
+  soundPlayDelay: 0
 --- !u!136 &136429663151846040
 CapsuleCollider:
   m_ObjectHideFlags: 1

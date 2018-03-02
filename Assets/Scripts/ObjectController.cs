@@ -74,7 +74,10 @@ public class ObjectController : MonoBehaviour {
         pushButton
     }
 
-	[Tooltip("When an avatar (A) wants to interrupt someone else (B), then this is only possible if the activity of avatar (A) is more important than the one of (B)")]
+    [Tooltip("Indicates if an avatar can get this as a random destination. Should be activated on childdestinations or when the destination is for only one user")]
+    public bool cannotBeFound;
+
+    [Tooltip("When an avatar (A) wants to interrupt someone else (B), then this is only possible if the activity of avatar (A) is more important than the one of (B)")]
 	public int Priority;
 
 	[Tooltip("The general animation to fulfill here")]

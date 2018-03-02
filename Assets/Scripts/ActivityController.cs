@@ -1087,7 +1087,7 @@ public class ActivityController : MonoBehaviour {
             Debug.Log(
                 $"{name}: checking if {activity2Check.name}{(activity2Check.isWithOther ? " with " + activity2Check.getAvatar().name : "")} is OK to use");
 
-        // Check if the found activity is ok, the bool statements 
+        // Check if the found activity is ok, the bool statements, these criteria have to fulfilled
         Hashtable criteria = new Hashtable {
             {
                 "Activity shall not be the last one", activity2Check != lastActivity
@@ -1102,6 +1102,9 @@ public class ActivityController : MonoBehaviour {
             }, {
                 "Activity must be the doorbell",
                 activity2Check != activity2Check.getRegion().doorBell
+            }, {
+                "Activity must be choosable. 'Cannot be Found'-bool was activated here",
+                !activity2Check.cannotBeFound
             }
         };
 
