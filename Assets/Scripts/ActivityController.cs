@@ -171,7 +171,6 @@ public class ActivityController : MonoBehaviour {
         // Reactivate stuff, that maybe was deactivated
         navComponent.enabled = true;
         navComponent.isStopped = false;
-        GetComponent<Rigidbody>().isKinematic = false;
 
         // Look where to go and set the navmesh destination
         if (navComponent.isOnNavMesh) {
@@ -273,10 +272,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Rotate
-        //organizeLookRotation(componentsInChildren);
-
-        // Disable Kinematic, so no physics will affect the animation
-        GetComponent<Rigidbody>().isKinematic = true;
+        organizeLookRotation(componentsInChildren);
 
         // Disable the navcomponent, because he blocks the height of the avatar during an activity
         navComponent.enabled = false;
@@ -391,15 +387,20 @@ public class ActivityController : MonoBehaviour {
         if (logging)
             Debug.Log($"{name}: Started Coroutine continueWhenDoneStopping()");
 
+        while (name != "Cartoon_SportCar_B01" && animator.GetAnimatorTransitionInfo(0).duration != 0) {
+
+            if (logging) Debug.Log($"{name}: Cannot proceed, because I'm still {animator.GetAnimatorTransitionInfo(0).duration}s in a transition from {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
+
+            yield return new WaitForSeconds(0.2f);
+        }
         while (name != "Cartoon_SportCar_B01" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
-            if (logging)
-                Debug.Log($"{name}: Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
+            if (logging) Debug.Log($"{name}: Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} has exit time");
 
             yield return new WaitForSeconds(0.2f);
         }
 
-        if (logging) Debug.Log($"{name}: done stopping {CurrentActivity.name}, because my animator clip is {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} and the bool of {CurrentActivity.activity} is {animator.GetBool(CurrentActivity.activity.ToString())}");
+        if (logging) Debug.Log($"{name}: done stopping {CurrentActivity.name}");
 
         // When I am the leader of a group activity, then wait until everyone started with my invoked groupactivity
         while (!allParticipantsStarted()) {
