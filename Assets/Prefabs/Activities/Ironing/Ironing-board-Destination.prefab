@@ -215,16 +215,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cannotBeFound: 0
+  Priority: 0
   activity: 10
   turnAngle: 0
+  lookAtNext: 0
+  lookAtTarget: 0
+  noTurning: 0
   time: 100
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 1
   makeGhost: 0
   toolToUse: {fileID: 1370183558719478, guid: 944db46f054e62d4bb9e30b7515695ce, type: 2}
-  handToUse: 1
+  handToUse: 2
+  isGroupActivity: 0
   loops: 0
-  lookAtNext: 0
+  soundPlayDelay: 0
 --- !u!136 &136068207777864200
 CapsuleCollider:
   m_ObjectHideFlags: 1

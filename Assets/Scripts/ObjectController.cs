@@ -9,48 +9,7 @@ using UnityEngine;
 
 public class ObjectController : MonoBehaviour {
 
-    private RegionController myRegion;
-	private ActivityController avatar;
-	private int internalLoops;
-
-    private bool logging = false;
-
-    public Vector3 MoveVector
-	{
-		get
-		{
-			return rotateVector(moveVector);
-		}
-	}
-
-	private bool withOtherPerson;
-	public bool isWithOther {
-		get {
-			return avatar!=null;
-		}
-	}
-
-	private ActivityController user;
-	public ActivityController CurrentUser {
-		get {
-
-			// If the user doesn't have this as current activity anymore, then set and return null
-			if (user != null && user.CurrentActivity != this) {
-
-				if (logging) Debug.Log($"{name}: has no user anymore");
-				user = null;
-			}
-
-			return user;
-		}
-		set {
-
-			if (logging) Debug.Log($"{user.name}: is now the user of {name}");
-			user = value;
-		}
-	}
-
-	// This is the avatar, that IS the activity, not the current user of this activity (like the talkDestination)
+	// This is the avatar, that IS the activity, not the current user of this activity
 	public ActivityController getAvatar(){
 
 		return avatar;
@@ -81,13 +40,16 @@ public class ObjectController : MonoBehaviour {
 	public int Priority;
 
 	[Tooltip("The general animation to fulfill here")]
-	public Activities activity;
+	public Activities wichAnimation;
 
 	[Tooltip("Rotation relative to the Object, wich the avatar will perform when arrived there. Turnangle 0 therefore means 'look where the object looks'. If no rotation shall be performed, then please activate 'No Turning'")]
 	public int turnAngle;
 
     [Tooltip("Only for child-destinations: Indicates if the user shall look at the next destination, when arrived")]
     public bool lookAtNext;
+
+    [Tooltip("Indicates if the avatar shall look at the target when arrived")]
+    public bool lookAtTarget;
 
     [Tooltip("Indicates, that the avatar shall not rotate when arrived. -> Deactivates 'Look At Next' and resets the turnAngle")]
     public bool noTurning;
@@ -123,16 +85,43 @@ public class ObjectController : MonoBehaviour {
 	[Tooltip("How often shall the Avatar start again with the destination-tree")]
 	public int loops;
 
-	public Vector3 WorkPlace
-	{
-		get
-		{
-			return getFootOfFirstCollider();
-		}
-    }
+	public Vector3 WorkPlace => getFootOfFirstCollider();
 
     [Tooltip("The time in seconds, after wich the sound will start playing, when there is one")]
     public int soundPlayDelay;
+
+    private RegionController myRegion;
+    private int internalLoops;
+    private bool logging = true;
+    public Vector3 MoveVector => rotateVector(moveVector);
+
+    private ActivityController avatar;
+    public bool isAvatar => avatar != null;
+
+    private bool withOtherPerson;
+
+    public bool isMovable => isAvatar;
+
+    private ActivityController user;
+    public ActivityController CurrentUser
+    {
+        get
+        {
+            // If the user doesn't have this as current activity anymore, then set and return null
+            if (user != null && user.CurrentActivity != this && user.NextActivity != this) {
+
+                if (logging) Debug.Log($"{name}: has no user anymore");
+                user = null;
+            }
+
+            return user;
+        }
+        set
+        {
+            if (user != null) Debug.Log($"{user.name}: I'm now the user of {name}");
+            user = value;
+        }
+    }
 
     void Start() {
 
@@ -160,8 +149,7 @@ public class ObjectController : MonoBehaviour {
 
     public void setRegion(RegionController rc) {
 
-        if (logging || (isWithOther && avatar.Logging))
-            Debug.Log($"{(isWithOther ? avatar.name + ": " : "")}{name}'s region was {(myRegion != null ? myRegion.name : "null")} and now is {(rc != null ? rc.name : "null")}");
+        Debug.Log($"{(isAvatar ? avatar.name + ": " : "")}{name}'s region is now {(rc != null ? rc.name : "null")} (was {(myRegion != null ? myRegion.name : "null")})");
 
         myRegion = rc;
 
