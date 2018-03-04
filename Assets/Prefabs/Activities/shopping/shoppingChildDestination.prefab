@@ -3400,9 +3400,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 2
   turnAngle: 0
   lookAtNext: 0
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}

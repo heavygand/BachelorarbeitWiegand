@@ -213,16 +213,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  activity: 9
+  cannotBeFound: 0
+  Priority: 0
+  wichAnimation: 9
   turnAngle: -90
+  lookAtNext: 0
+  lookAtTarget: 0
+  noTurning: 0
   time: 10
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 1
   makeGhost: 0
   toolToUse: {fileID: 0}
   handToUse: 0
+  isGroupActivity: 0
   loops: 0
-  lookAtNext: 0
+  soundPlayDelay: 0
 --- !u!136 &136435969454445308
 CapsuleCollider:
   m_ObjectHideFlags: 1

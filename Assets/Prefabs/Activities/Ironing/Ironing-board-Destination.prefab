@@ -217,7 +217,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 0
   Priority: 0
-  activity: 10
+  wichAnimation: 10
   turnAngle: 0
   lookAtNext: 0
   lookAtTarget: 0

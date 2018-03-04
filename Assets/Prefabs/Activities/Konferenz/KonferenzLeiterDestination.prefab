@@ -117,10 +117,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cannotBeFound: 0
   Priority: 2
-  activity: 7
+  wichAnimation: 7
   turnAngle: 0
   lookAtNext: 0
+  lookAtTarget: 0
   noTurning: 0
   time: 100
   moveVector: {x: 0, y: 0, z: 0}

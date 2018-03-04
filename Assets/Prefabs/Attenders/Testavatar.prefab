@@ -2454,7 +2454,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 0
   Priority: 1
-  activity: 7
+  wichAnimation: 7
   turnAngle: 0
   lookAtNext: 0
   lookAtTarget: 1
@@ -2481,7 +2481,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
-  logging: 1
   bubble: {fileID: 1514474999493290, guid: 612696b421061e146860be199b1c82dc, type: 2}
 --- !u!114 &114434433465026578
 MonoBehaviour:

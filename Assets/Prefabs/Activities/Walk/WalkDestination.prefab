@@ -941,9 +941,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -967,9 +968,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -993,9 +995,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -1019,9 +1022,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -1043,11 +1047,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cannotBeFound: 1
+  cannotBeFound: 0
   Priority: 0
-  activity: 2
+  wichAnimation: 2
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -1071,9 +1076,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -1097,9 +1103,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -1123,9 +1130,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
@@ -1149,9 +1157,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 2
+  wichAnimation: 0
   turnAngle: 0
   lookAtNext: 1
+  lookAtTarget: 0
   noTurning: 0
   time: 1
   moveVector: {x: 0, y: 0, z: 0}

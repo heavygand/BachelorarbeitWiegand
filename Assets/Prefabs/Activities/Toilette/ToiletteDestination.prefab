@@ -203,9 +203,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 0
   Priority: 0
-  activity: 0
+  wichAnimation: 0
   turnAngle: 180
   lookAtNext: 0
+  lookAtTarget: 0
   noTurning: 0
   time: 5
   moveVector: {x: 0, y: 0, z: 0}
@@ -229,9 +230,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cannotBeFound: 1
   Priority: 0
-  activity: 9
+  wichAnimation: 9
   turnAngle: 90
   lookAtNext: 0
+  lookAtTarget: 0
   noTurning: 0
   time: 3
   moveVector: {x: 0, y: 0, z: 0}
