@@ -65,10 +65,7 @@ public class ActivityController : MonoBehaviour {
     private GameObject leftHand;
     private GameObject rightHand;
     private GameObject myBubble;
-
-    private Transform oldSuperParent;
-    private Transform superParent;
-    private Transform parentOfCurrAct;
+    
     private Transform whatBurn;
 
     private bool toBurn;
@@ -480,12 +477,9 @@ public class ActivityController : MonoBehaviour {
         }
 
         // When I am the leader of a group activity, then wait until everyone started with my invoked groupactivity
-        float timeAddition = 0.2f;
-        float currentTime = 0;
-        while (!allParticipantsStartedAndDeorganize(currentTime)) {
+        while (!allParticipantsStartedAndDeorganize()) {
 
-            yield return new WaitForSeconds(timeAddition);
-            currentTime += timeAddition;
+            yield return new WaitForSeconds(0.2f);
         }
 
         Debug.Log($"{name}: done stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
@@ -516,7 +510,7 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
-    private bool allParticipantsStartedAndDeorganize(float time) {
+    private bool allParticipantsStartedAndDeorganize() {
 
         if (iAmParticipant) {
 
@@ -545,18 +539,6 @@ public class ActivityController : MonoBehaviour {
          * 
          */
 
-        // Undo wrapping, that eventually was done in getOtherActivitiesWithoutThisAndWrapIfNecessary()
-        if (superParent != null) {
-
-            Debug.Log($"{name}: Undoing wrapping of {superParent.name}");
-
-            transform.parent = oldSuperParent;
-            parentOfCurrAct.parent = oldSuperParent;
-
-            Destroy(superParent.gameObject);
-            superParent = null;
-        }
-
         // Deorganize the group activity
         foreach (ActivityController parti in myParticipants) {
 
@@ -567,11 +549,10 @@ public class ActivityController : MonoBehaviour {
         return true;
     }
 
-    private List<ObjectController> getOtherActivitiesWithoutThisAndWrapIfNecessary() {
+    private List<ObjectController> getOtherActivitiesWithoutThis() {
 
         // Get the parent of CurrentActivity (a groupactivity has to be organized under a parent with multiple activities)
-        parentOfCurrAct = CurrentActivity.GetComponentInParent<Transform>().parent;
-        string myName = name;
+        Transform parentOfCurrAct = CurrentActivity.GetComponentInParent<Transform>().parent;
 
         // Get the other activities under this parent
         List<ObjectController> otherActivities = new List<ObjectController>(parentOfCurrAct.GetComponentsInChildren<ObjectController>());
@@ -580,24 +561,7 @@ public class ActivityController : MonoBehaviour {
         // When there are no other activities at the target parent, then wrap the target parent and myself under a new parent, so my own childdestinations will be found
         if (otherActivities.Count == 0) {
 
-            Debug.Log($"{name}: Parent {parentOfCurrAct.name} has 0 other activities, so creating another parent around me and the target parent");
-
-            superParent = new GameObject { name = "Wrapper for " + CurrentActivity.name + " of " + myName + " and " + parentOfCurrAct.name }.transform;
-
-            // superparent has to be under the current superparent, when there is one, else do nothing
-            oldSuperParent = parentOfCurrAct.transform.parent;
-            if (oldSuperParent != null)
-                superParent.transform.parent = oldSuperParent;
-
-            // Place my destination parent and myself under the new superparent
-            parentOfCurrAct.transform.parent = superParent.transform;
-            transform.parent = superParent.transform;
-
-            // Get the other activities under this parent
-            otherActivities = new List<ObjectController>(superParent.GetComponentsInChildren<ObjectController>());
-            otherActivities.Remove(CurrentActivity);
-
-            parentOfCurrAct = superParent;
+            Debug.LogError($"{name}: Parent {parentOfCurrAct.name} has 0 other activities");
         }
 
         Debug.Log($"{name}: Parent {parentOfCurrAct.name} had {otherActivities.Count} groupactivitychild without {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
@@ -630,8 +594,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Else pick the other avatars for this groupactivity
-
-        List<ObjectController> otherActivities = getOtherActivitiesWithoutThisAndWrapIfNecessary();
+        List<ObjectController> otherActivities = getOtherActivitiesWithoutThis();
 
         List<ActivityController> theOthers = CurrentActivity.getRegion().getTheAvailableOthersFor(this, otherActivities[0]);
 
