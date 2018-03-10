@@ -273,7 +273,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1581518321092048}
   m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: -0.697, y: -0.0036394596, z: -0.061}
+  m_LocalPosition: {x: -0.697, y: -0.0036394596, z: -0.098}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4802846307199204}
@@ -440,15 +440,15 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1338923857295246}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: -5.4222136, y: -0.01984061, z: -1.6630334}
-  m_LocalScale: {x: 1.4000001, y: 1.3999999, z: 1.4000001}
+  m_LocalRotation: {x: -0, y: -0.99986345, z: -0, w: -0.016528066}
+  m_LocalPosition: {x: -31.576, y: 5.089561, z: -43.816}
+  m_LocalScale: {x: 0.8400005, y: 0.84, z: 0.8400005}
   m_Children:
   - {fileID: 4702623728324590}
   - {fileID: 4156911613453332}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 270, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 178.106, z: 0}
 --- !u!4 &4846171934358194
 Transform:
   m_ObjectHideFlags: 1
@@ -1070,7 +1070,7 @@ MonoBehaviour:
   lookAtTarget: 0
   noTurning: 0
   time: 100
-  moveVector: {x: 0, y: 0, z: 0}
+  moveVector: {x: -0.17, y: 0, z: 0.01}
   isPhysical: 1
   makeGhost: 0
   toolToUse: {fileID: 0}
@@ -1090,4 +1090,4 @@ CapsuleCollider:
   m_Radius: 0.05
   m_Height: 1
   m_Direction: 1
-  m_Center: {x: -0.19, y: 0.5, z: -0.24}
+  m_Center: {x: -0.38, y: 0.5, z: -0.12}

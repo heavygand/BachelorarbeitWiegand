@@ -17,6 +17,10 @@ public class ActivityControllerEditor : Editor {
             user.interruptFromOutside();
         }
         Handles.EndGUI();
-		
+
+        if (user.Displaced) {
+
+            Handles.DrawLine(user.transform.position, user.CurrentActivity.WorkPlace + user.CurrentActivity.MoveVector);
+        }
 	}
 }

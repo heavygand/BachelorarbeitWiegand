@@ -69,7 +69,6 @@ public class ActivityController : MonoBehaviour {
     private Transform whatBurn;
 
     private bool toBurn;
-    private bool displaced;
     private bool startedDeactivating;
     private bool activityChangeRequested;
     private bool going;
@@ -89,8 +88,8 @@ public class ActivityController : MonoBehaviour {
 
     private Coroutine sliding;
     private Coroutine rotateRoutine;
-    private Coroutine doing;
-    public Coroutine Doing => doing;
+
+    public Coroutine Doing { get; private set; }
 
     private ActivityController myLeader;
     private ObjectController myActivity;
@@ -110,6 +109,8 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    public bool Displaced { get; set; }
+
     /// <summary>
     /// Initialisation
     /// </summary>
@@ -122,7 +123,8 @@ public class ActivityController : MonoBehaviour {
         animator = GetComponent<Animator>();
         navComponent = GetComponent<NavMeshAgent>();
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
-        alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
+        // TODO: Wieder einkommentieren
+        //alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
 
         // When we already have a current activity, then we can start going
         if (CurrentActivity != null) {
@@ -172,8 +174,9 @@ public class ActivityController : MonoBehaviour {
 
             Debug.Log($"{name}: I don't have to start going");
 
-            prepareActivity();
-        } else {
+            Doing = StartCoroutine(startDoing());
+        }
+        else {
 
             Debug.Log($"{name}: calling startGoing()#Detail10Log");
 
@@ -269,7 +272,7 @@ public class ActivityController : MonoBehaviour {
 
             stopGoing();
 
-            prepareActivity();
+            Doing = StartCoroutine(startDoing());
         }
     }
 
@@ -296,7 +299,12 @@ public class ActivityController : MonoBehaviour {
         animator.speed = 1f;
     }
 
-    private void prepareActivity() {
+    // Continues with the next activity, after the "useage"-time of the activity endet
+    private IEnumerator startDoing() {
+
+        /*
+         * PREPARATIONS
+        */
 
         Debug.Log($"{name}: preparing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
@@ -309,44 +317,22 @@ public class ActivityController : MonoBehaviour {
         // Disable the navcomponent, because he blocks the height of the avatar during an activity
         navComponent.enabled = false;
 
-        // Slide to another place if neccesary
-        if (!CurrentActivity.MoveVector.Equals(Vector3.zero)) {
-
-            sliding = StartCoroutine(slideToPlace(true));
-        }
-
-        // Starts the usage time, after which the activity will stop
-        if (!activityChangeRequested) {
-
-            doing = StartCoroutine(startDoing()); 
-        }
-        else {
-
-            Debug.Log($"{gameObject.name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
-
-            stopDoing();
-        }
-    }
-
-    // Continues with the next activity, after the "useage"-time of the activity endet
-    private IEnumerator startDoing() {
-
-        /*
-         * OTHER PREPARATIONS
-        */
-
-        // Starts to do the animation after a second. I do this because the rotation takes some time
+        // I do this because the rotation takes some time
         yield return new WaitForSeconds(1);
 
         if (activityChangeRequested) stopDoing();
-
-        Debug.Log($"{name}: starting {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // Activate animation. Standing does not have to be activated
         if (CurrentActivity.wichAnimation.ToString() != "stand" && !activityChangeRequested) {
 
             Debug.Log($"{name}: animation {CurrentActivity.wichAnimation} activated.#Detail10Log");
             animator.SetBool(CurrentActivity.wichAnimation.ToString(), true);
+        }
+
+        // Slide to another place if neccesary
+        if (!CurrentActivity.MoveVector.Equals(Vector3.zero)) {
+
+            sliding = StartCoroutine(slideToPlace(true));
         }
 
         // Organize group activity
@@ -359,6 +345,8 @@ public class ActivityController : MonoBehaviour {
 
             Debug.Log($"{name}: organizeGroupActivity() not neccesary, because I am a participant");
         }
+
+        Debug.Log($"{name}: starting {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // If we need a tool, then spawn it
         setToolAndHandsFields();
@@ -376,17 +364,18 @@ public class ActivityController : MonoBehaviour {
         // Activity time. Also check if my state changed every 20ms
         const float ms = 0.02f;
         int elapsedTime = 0;
-        bool timeIsOver = elapsedTime >= CurrentActivity.time * (1 / ms);
-        bool partnerIsAway = isWithOther && theOther.CurrentActivity != theOther.interruptedFor && theOther.NextActivity != theOther.interruptedFor;
+        bool timeIsOver = false;
+        bool partnerIsAway = false;
         while (!timeIsOver && !activityChangeRequested && !partnerIsAway) {
 
             adjustTool();
+
+            partnerIsAway = isWithOther && theOther.CurrentActivity != myActivity && theOther.NextActivity != myActivity;
 
             yield return new WaitForSeconds(ms);
             elapsedTime++;
 
             timeIsOver = elapsedTime >= CurrentActivity.time * (1 / ms);
-            partnerIsAway = isWithOther && theOther.CurrentActivity != theOther.interruptedFor && theOther.NextActivity != theOther.interruptedFor;
         }
 
         /*
@@ -406,7 +395,7 @@ public class ActivityController : MonoBehaviour {
 
             if (myParticipants == null) {
 
-                Debug.LogError($"{name}: I had to remove {CurrentActivity.getAvatar().name} from my participants, but the myParticipants list was null");
+                Debug.LogWarning($"{name}: I had to remove {CurrentActivity.getAvatar().name} from my participants, but the myParticipants list was null");
             }
             else {
 
@@ -448,7 +437,7 @@ public class ActivityController : MonoBehaviour {
             animator.SetBool(CurrentActivity.wichAnimation.ToString(), false);
         }
         // Re-place when displaced
-        if (displaced) {
+        if (Displaced) {
 
             Debug.Log($"{name}: I was displaced, so sliding back#Detail10Log");
 
@@ -490,10 +479,10 @@ public class ActivityController : MonoBehaviour {
 
     private void stopCoroutines() {
 
-        if (doing != null) {
+        if (Doing != null) {
 
-            StopCoroutine(doing);
-            doing = null;
+            StopCoroutine(Doing);
+            Doing = null;
             Debug.Log($"{name}: Coroutine doing stopped");
         }
         if (rotateRoutine != null) {
@@ -950,7 +939,7 @@ public class ActivityController : MonoBehaviour {
 
         for (int counter = 0; counter < 150; counter++) {
 
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.05f);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.15f);
 
             Debug.Log($"{gameObject.name}: Rotating...#Detail10Log");
 
@@ -966,10 +955,10 @@ public class ActivityController : MonoBehaviour {
     /// </summary>
     private IEnumerator slideToPlace(bool toMoveVector) {
 
-        displaced = toMoveVector;
+        Displaced = toMoveVector;
 
         // Delay
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
 
         Vector3 moveVector = CurrentActivity.MoveVector;
 
@@ -1030,8 +1019,8 @@ public class ActivityController : MonoBehaviour {
 
         // If the alarm starts, then stop doing activities
         // TODO remove this from update()
-        if (alarmText.text == "FIREALARM" && !startedDeactivating)
-            deactivateMe();
+        //if (alarmText.text == "FIREALARM" && !startedDeactivating)
+        //    deactivateMe();
     }
 
     private static int getPartnerPriority(ObjectController found) {
@@ -1086,7 +1075,7 @@ public class ActivityController : MonoBehaviour {
 
         if (forRegion == null) {
 
-            Debug.LogError($"{name}: findTargetIn(forRegion) has been called with forRegion == null !!");
+            Debug.LogWarning($"{name}: findTargetIn(forRegion) has been called with forRegion == null");
             return;
         }
 
@@ -1173,18 +1162,20 @@ public class ActivityController : MonoBehaviour {
     }
 
     private RegionController getRandomRegion() {
-
         Debug.Log($"{name}: I'm picking a random region (I'm in {myRegion.name})#Detail10Log");
 
         //Get the regions in the game and remove my current region
         List<RegionController> regions = new List<RegionController>(myRegion.getMaster().getRegions());
         regions.Remove(myRegion);
 
-        {
-            foreach (RegionController region in regions) {
+        foreach (RegionController region in regions) {
 
-                Debug.Log($"{name}: {region.name} was in the list of regions#Detail10Log");
-            }
+            Debug.Log($"{name}: {region.name} was in the list of regions#Detail10Log");
+        }
+        if(regions.Count == 0) {
+
+            Debug.Log($"{name}: There are no regions other than outside");
+            return null;
         }
 
         return regions[Random.Range(0, regions.Count)];
