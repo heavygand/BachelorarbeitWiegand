@@ -77,7 +77,6 @@ public class ActivityController : MonoBehaviour {
     private bool activityChangeRequested;
     private bool going;
     private bool findOutside;
-    private bool participationSignalForGroupLeader;
     private bool iAmParticipant => MyLeader != null;
 
     private List<ActivityController> myParticipants;
@@ -89,11 +88,11 @@ public class ActivityController : MonoBehaviour {
     private AvatarController fleeScript;
 
     private RegionController myRegion;
+    private RegionController oldRegion;
 
     private Coroutine sliding;
     private Coroutine rotateRoutine;
     private Coroutine doing;
-
     public Coroutine Doing => doing;
 
     private ActivityController myLeader;
@@ -145,7 +144,7 @@ public class ActivityController : MonoBehaviour {
     // Set a target
     private void setTarget() {
 
-        Debug.Log($"{name}: setTarget() called");
+        Debug.Log($"{name}: setTarget() called#Detail10Log");
 
         activityChangeRequested = false;
 
@@ -168,8 +167,8 @@ public class ActivityController : MonoBehaviour {
         // Target Activity found.
         Debug.Log($"{name}: Current Activity is {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}#Detail10Log");
 
-        Debug.Log($"{name}: {(iAmParticipant ? "I am a participant of " + MyLeader.name + "'s " + MyLeader.CurrentActivity.name : "I am no participant of anything (-> no leader)")}");
-        Debug.Log($"{name}: {(CurrentActivity.isAvatar ? "My current activity is another avatar -> " + CurrentActivity.getAvatar().name : "I'm gonna do my activity alone")}");
+        Debug.Log($"{name}: {(iAmParticipant ? "I am a participant of " + MyLeader.name + "'s " + MyLeader.CurrentActivity.name : "I am no participant of anything (-> no leader)")}#Detail10Log");
+        Debug.Log($"{name}: {(CurrentActivity.isAvatar ? "My current activity is another avatar -> " + CurrentActivity.getAvatar().name : "I'm gonna do my activity alone")}#Detail10Log");
 
         // Decide what to do now
         if (iAmParticipant && CurrentActivity.isAvatar) {
@@ -222,7 +221,8 @@ public class ActivityController : MonoBehaviour {
 
             navComponent.SetDestination(CurrentActivity.WorkPlace);
             Debug.Log($"{name}: I'm now going to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
-        } else {
+        }
+        else {
 
             Debug.LogError($"{name} wanted to go to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, but wasn't on the navmesh");
         }
@@ -244,10 +244,11 @@ public class ActivityController : MonoBehaviour {
         // When this is a destination-bubble, then set a new target and destroy this bubble
         if (other.gameObject == myBubble) {
 
-            setTarget();
-            destroyBubble();
-
             Debug.Log($"{name}: arrived at destinationBubble, but no activity was there (probably moved away)");
+
+            destroyBubble();
+            setTarget();
+
             return;
         }
 
@@ -302,11 +303,8 @@ public class ActivityController : MonoBehaviour {
 
         Debug.Log($"{name}: preparing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
-        // Organize group activity
-        StartCoroutine(organizeGroupActivityAfterTime());
-
         // Activate the object
-        StartCoroutine(CurrentActivity.activated());
+        CurrentActivity.IsActivated = true;
 
         // Rotate
         organizeLookRotation();
@@ -319,10 +317,6 @@ public class ActivityController : MonoBehaviour {
 
             sliding = StartCoroutine(slideToPlace(true));
         }
-
-        // When I am a participant of a groupactivity and when I'm starting the activity I was interrupted for, then mark myself as "isParticipating"
-        if (iAmParticipant && CurrentActivity == interruptedFor)
-            StartCoroutine(signalizeGroupActivityStartWithDelay());
 
         // Starts the usage time, after which the activity will stop
         if (!activityChangeRequested) {
@@ -358,6 +352,17 @@ public class ActivityController : MonoBehaviour {
             animator.SetBool(CurrentActivity.wichAnimation.ToString(), true);
         }
 
+        // Organize group activity
+        if (CurrentActivity.isGroupActivity && !iAmParticipant) {
+
+            yield return new WaitForSeconds(CurrentActivity.soundPlayDelay);
+            organizeGroupActivity();
+        }
+        else if (iAmParticipant) {
+
+            Debug.Log($"{name}: organizeGroupActivity() not neccesary, because I am a participant");
+        }
+
         // If we need a tool, then spawn it
         setToolAndHandsFields();
 
@@ -374,12 +379,17 @@ public class ActivityController : MonoBehaviour {
         // Activity time. Also check if my state changed every 20ms
         const float ms = 0.02f;
         int elapsedTime = 0;
-        while (elapsedTime < CurrentActivity.time * (1 / ms) && !activityChangeRequested && !(isWithOther && theOther.CurrentActivity==interruptedFor && theOther.activityChangeRequested)) {
+        bool timeIsOver = elapsedTime >= CurrentActivity.time * (1 / ms);
+        bool partnerIsAway = isWithOther && theOther.CurrentActivity != theOther.interruptedFor && theOther.NextActivity != theOther.interruptedFor;
+        while (!timeIsOver && !activityChangeRequested && !partnerIsAway) {
 
             adjustTool();
 
             yield return new WaitForSeconds(ms);
             elapsedTime++;
+
+            timeIsOver = elapsedTime >= CurrentActivity.time * (1 / ms);
+            partnerIsAway = isWithOther && theOther.CurrentActivity != theOther.interruptedFor && theOther.NextActivity != theOther.interruptedFor;
         }
 
         /*
@@ -387,19 +397,31 @@ public class ActivityController : MonoBehaviour {
         */
 
         // Stopped, because activity time is over
-        if (elapsedTime >= CurrentActivity.time * (1 / ms)) {
+        if (timeIsOver) {
 
-            Debug.Log($"{gameObject.name}: usage time is over for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+            Debug.Log($"{name}: usage time is over for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
         }
-        // Stopped, because my partner was interrupted
-        else if (isWithOther && theOther.CurrentActivity == interruptedFor && theOther.activityChangeRequested) {
+        // Stopped, because my partner was interrupted or away
+        else if (partnerIsAway) {
 
-            Debug.Log($"{gameObject.name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because my partner was interrupted");
+            Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because my partner was interrupted ({CurrentActivity.getAvatar().name})");
+            Debug.Log($"{CurrentActivity.getAvatar().name}: My former partner {name} stopped, because I was interrupted");
+
+            if (myParticipants == null) {
+
+                Debug.LogError($"{name}: I had to remove {CurrentActivity.getAvatar().name} from my participants, but the myParticipants list was null");
+            }
+            else {
+
+                myParticipants.Remove(theOther);
+
+                theOther.MyLeader = null;
+            }
         }
         // Stopped, because I was interrupted
         else if (activityChangeRequested) {
 
-            Debug.Log($"{gameObject.name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
+            Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
         } else {
 
             Debug.LogError($"{name}: Stopping {CurrentActivity.name} for an unknown reason");
@@ -458,9 +480,12 @@ public class ActivityController : MonoBehaviour {
         }
 
         // When I am the leader of a group activity, then wait until everyone started with my invoked groupactivity
-        while (!allParticipantsStartedAndDeorganize()) {
+        float timeAddition = 0.2f;
+        float currentTime = 0;
+        while (!allParticipantsStartedAndDeorganize(currentTime)) {
 
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(timeAddition);
+            currentTime += timeAddition;
         }
 
         Debug.Log($"{name}: done stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
@@ -491,35 +516,25 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
-    private IEnumerator signalizeGroupActivityStartWithDelay() {
-
-        yield return new WaitForSeconds(getMoreDelayIfWeHaveSoundPlayDelay());
-
-        participationSignalForGroupLeader = true;
-
-        Debug.Log($"{name}: I've now signalized participation for groupactivity {MyLeader.CurrentActivity.name} of {MyLeader.name} with {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
-        Debug.Log($"{MyLeader.name}: my participand {name} signalized participation in my groupactivity {MyLeader.CurrentActivity.name} with {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
-    }
-
-    private bool allParticipantsStartedAndDeorganize() {
+    private bool allParticipantsStartedAndDeorganize(float time) {
 
         if (iAmParticipant) {
 
             Debug.Log($"{name}: I was a participant");
             return true;
         }
-        if (myParticipants == null) {
 
-            Debug.Log($"{name}: Nothing to deorganize, because I have no participants");
-            return true;
-        }
+        // To get no nullpointerreferenceexception
+        if(myParticipants == null) myParticipants = new List<ActivityController>();
 
         // Wait untill all participants started the groupactivity
         foreach (ActivityController parti in myParticipants) {
 
-            if (!parti.participationSignalForGroupLeader) {
+            if (!parti.interruptedFor.IsActivated) {
 
-                Debug.Log($"{name}: Cannot proceed, because my participant {parti.name} of groupactivity {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")} hasn't started yet");
+                    Debug.Log($"{name}: Cannot proceed, because {parti.interruptedFor.name} is not activated yet");
+                    Debug.Log($"{parti.name}: My Leader {name} cannot proceed, because {parti.interruptedFor.name} is not activated yet");
+
                 return false;
             }
         }
@@ -545,10 +560,7 @@ public class ActivityController : MonoBehaviour {
         // Deorganize the group activity
         foreach (ActivityController parti in myParticipants) {
 
-            Debug.Log($"{name}: removing myself as leader of {parti.name} for groupactivity {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
-
             parti.MyLeader = null;
-            parti.participationSignalForGroupLeader = false;
         }
         myParticipants = null;
 
@@ -593,42 +605,27 @@ public class ActivityController : MonoBehaviour {
         return otherActivities;
     }
 
-    private IEnumerator organizeGroupActivityAfterTime() {
-
-        yield return new WaitForSeconds(getMoreDelayIfWeHaveSoundPlayDelay());
-
-        organizeGroupActivity();
-    }
-
     // When this is a group activity, then it has to be organized (pick and interrupt the others, etc)
     private void organizeGroupActivity() {
 
-        if (!CurrentActivity.isGroupActivity || iAmParticipant)
-            return;
-
         Debug.Log($"{name}: Organizing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
-
-        if (CurrentActivity.getRegion() == null) {
-
-            Debug.LogError($"{name}: The region of my activity {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")} is null!");
-            interrupt();
-            return;
-        }
 
         // When my group activity is another avatar
         if (CurrentActivity.isAvatar) {
 
+            // When I could not interrupt my partner
             if (!CurrentActivity.getAvatar().requestActivityChangeFor(myActivity, this)) {
                 
                 NextActivity = null;
                 interrupt();
             }
+            // else
             else {
 
                 myParticipants = new List<ActivityController> { CurrentActivity.getAvatar() };
-                Debug.Log($"{name}: {CurrentActivity.getAvatar().name} is now My partner");
+                Debug.Log($"{name}: {CurrentActivity.getAvatar().name} is now my participant and partner#Detail10Log");
             }
-
+            
             return;
         }
 
@@ -641,6 +638,12 @@ public class ActivityController : MonoBehaviour {
         if (theOthers.Count == 0) {
 
             Debug.LogWarning($"{name}: No participants found for groupactivity {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}!");
+
+            // When this was a doorbell, then go back to the old region
+            if (CurrentActivity == CurrentActivity.getRegion().doorBell) {
+
+                setRegion(oldRegion);
+            }
 
             NextActivity = null;
             interrupt();
@@ -655,8 +658,6 @@ public class ActivityController : MonoBehaviour {
         int i = 0;
         foreach (ActivityController participant in myParticipants) {
 
-            Debug.Log($"{name}: trying to interrupt the {participant.CurrentActivity.name} of {participant.name} with {otherActivities[i].name}");
-
             if (!participant.requestActivityChangeFor(otherActivities[i], this)) {
 
                 Debug.Log($"{name}: Could not interrupt {participant.name} with {otherActivities[i]}");
@@ -664,6 +665,7 @@ public class ActivityController : MonoBehaviour {
 
             i++;
         }
+        
     }
 
     // Does the activity still have children?
@@ -734,7 +736,7 @@ public class ActivityController : MonoBehaviour {
         // Both hands
         else {
 
-            Debug.Log($"{name}: Using my tool with both hands.");
+            Debug.Log($"{name}: Using my tool with both hands.#Detail10Log");
 
             Vector3 leftHandPos = leftHand.transform.position;
             Vector3 rightHandPos = rightHand.transform.position;
@@ -787,7 +789,7 @@ public class ActivityController : MonoBehaviour {
     private bool requestActivityChangeFor(ObjectController activity, ActivityController requester) {
 
         Debug.Log($"{name}: Checking if I can be interrupted through {activity.name} from {requester.name}");
-        Debug.Log($"{requester.name}: Trying to interrupt {name} with {activity.name}");
+        Debug.Log($"{requester.name}: Trying to interrupt the {CurrentActivity.name} of {name} with {activity.name}");
 
         int myPriority = CurrentActivity == null ? -1 : CurrentActivity.Priority;
 
@@ -799,7 +801,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         Debug.Log($"{name}: I refused the interruption through {activity.name} from {requester.name} his prio={activity.Priority}, my prio={myPriority}");
-        Debug.Log($"{requester.name}: {name} refused the interruption through {activity.name}, my prio={activity.Priority},  his prio={myPriority} ({CurrentActivity.name})");
+        Debug.Log($"{requester.name}: {name} refused the interruption through {activity.name}, my prio={activity.Priority}, his prio={myPriority} ({CurrentActivity.name})");
 
         return false;
     }
@@ -932,22 +934,6 @@ public class ActivityController : MonoBehaviour {
         Debug.Log($"{gameObject.name}: Nav resumed");
     }
 
-    public void setRegion(RegionController rc) {
-
-        RegionController oldRegion = myRegion;
-
-        myRegion = rc;
-
-        Debug.Log($"{name}: My region is now {(myRegion != null ? myRegion.name : "null")} (was {(oldRegion != null ? oldRegion.name : "null")})");
-
-        // Unregister in the region if he isn't the caller, myRegion variable will be nulled as a side effekt
-        if (oldRegion != null && oldRegion.getAttenders().Contains(this))
-            oldRegion.unregisterAvatar(this);
-
-        // When myRegion == null, then register for the outside area
-        StartCoroutine(checkIfOutside());
-    }
-
     private void organizeLookRotation() {
 
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();
@@ -1003,7 +989,7 @@ public class ActivityController : MonoBehaviour {
 
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.05f);
 
-            Debug.Log($"{gameObject.name}: Rotating...");
+            Debug.Log($"{gameObject.name}: Rotating...#Detail10Log");
 
             yield return new WaitForSeconds(0.01f);
         }
@@ -1060,13 +1046,9 @@ public class ActivityController : MonoBehaviour {
 
     private void destroyBubble() {
 
+        Debug.Log($"{name}: Destroying my bubble --- ({myBubble.name})");
         Destroy(myBubble);
         myBubble = null;
-    }
-
-    private int getMoreDelayIfWeHaveSoundPlayDelay() {
-
-        return CurrentActivity.soundPlayDelay + (CurrentActivity.soundPlayDelay == 0 ? 0 : 2);
     }
 
     private IEnumerator checkIfOutside() {
@@ -1112,8 +1094,10 @@ public class ActivityController : MonoBehaviour {
         Debug.Log(
                 $"{name}: last activity was {(lastActivity == null ? "null" : lastActivity.name)} is now {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))}#Detail10Log");
 
-        Debug.Log(
-                $"{name}: got {(NextActivity == null ? "null" : NextActivity.name)} from NextActivity. --- (current was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))})");
+        if (NextActivity != null) {
+            Debug.Log(
+                    $"{name}: got {NextActivity.name} from NextActivity. (current was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))})");
+        }
 
         // Proceed with activities, when available
         lastActivity = CurrentActivity;
@@ -1136,6 +1120,12 @@ public class ActivityController : MonoBehaviour {
     // Finds a destination. Gets the whole list of destinations for this region, and one "outside"-destination, wich means "change the region".
     // When the Avatar gets "outside", he will pick a destination in that new region
     private void findTargetIn(RegionController forRegion) {
+
+        if (forRegion == null) {
+
+            Debug.LogError($"{name}: findTargetIn(forRegion) has been called with forRegion == null !!");
+            return;
+        }
 
         Debug.Log($"{name}: Picking a random target in {forRegion.name}");
 
@@ -1197,7 +1187,8 @@ public class ActivityController : MonoBehaviour {
 
                     CurrentActivity = forRegion.doorBell;
                     NextActivity = foundActivity;
-                } else {
+                }
+                else {
 
                     CurrentActivity = foundActivity;
 
@@ -1211,8 +1202,7 @@ public class ActivityController : MonoBehaviour {
 
         retries++;
 
-        if (retries >= 3)
-            Debug.LogError($"{name} could not find any target after {retries} tries");
+        if (retries >= 3) Debug.LogError($"{name} could not find any target after {retries} tries");
 
         yield return new WaitForSeconds(waitTime);
 
@@ -1239,7 +1229,7 @@ public class ActivityController : MonoBehaviour {
 
     private bool activityIsOK(ObjectController activity2Check) {
 
-        Debug.Log($"{name}: checking {activity2Check.name}{(activity2Check.isAvatar ? " with " + activity2Check.getAvatar().name : "")}");
+        Debug.Log($"{name}: checking {activity2Check.name}{(activity2Check.isAvatar ? " with " + activity2Check.getAvatar().name : "")}#Detail10Log");
 
         // Check if the found activity is ok, the bool statements, these criteria have to fulfilled
         Hashtable criteria = new Hashtable {
@@ -1254,7 +1244,7 @@ public class ActivityController : MonoBehaviour {
                 "Activity must be important enough for the partner",
                 getPartnerPriority(activity2Check) < activity2Check.Priority
             }, {
-                "Activity must be the doorbell",
+                "Activity must not be the doorbell",
                 activity2Check != activity2Check.getRegion().doorBell
             }, {
                 "Activity must be findable. 'Cannot be Found'-bool was activated here",
@@ -1275,9 +1265,25 @@ public class ActivityController : MonoBehaviour {
             }
         }
 
-        Debug.Log($"{name}: {(allCriteriaOK ? "...was OK " : "...was not OK, because " + reason)}");
+        Debug.Log($"{name}: {(allCriteriaOK ? "...was OK " : "...was not OK, because " + reason)}#Detail10Log");
 
         return allCriteriaOK;
+    }
+
+    public void setRegion(RegionController rc) {
+
+        oldRegion = myRegion;
+
+        myRegion = rc;
+
+        Debug.Log($"{name}: My region is now {(myRegion != null ? myRegion.name : "null")} (was {(oldRegion != null ? oldRegion.name : "null")})");
+
+        // Unregister in the region if he isn't the caller, myRegion variable will be nulled as a side effekt
+        if (oldRegion != null && oldRegion.getAttenders().Contains(this))
+            oldRegion.unregisterAvatar(this);
+
+        // When myRegion == null, then register for the outside area
+        StartCoroutine(checkIfOutside());
     }
 
     public RegionController getRegion() {

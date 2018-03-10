@@ -198,7 +198,7 @@ public class RegionController : MonoBehaviour {
         List <ActivityController> theOthers = new List<ActivityController>(attenders);
         theOthers.Remove(asker);
 
-        if (logging) Debug.Log($"{asker.name}: {name} has {theOthers.Count} participants for {newActivity}");
+        if (logging) Debug.Log($"{asker.name}: {name} has {theOthers.Count} participants for {newActivity.name}");
 
         // For returning
         List<ActivityController> theOthers2 = new List<ActivityController>(theOthers);

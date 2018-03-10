@@ -92,13 +92,25 @@ public class ObjectController : MonoBehaviour {
 
     private RegionController myRegion;
     private int internalLoops;
-    private bool logging = true;
     public Vector3 MoveVector => rotateVector(moveVector);
 
     private ActivityController avatar;
     public bool isAvatar => avatar != null;
 
     private bool withOtherPerson;
+
+    private bool isActivated;
+    public bool IsActivated
+    {
+        get
+        {
+            return isActivated;
+        }
+        set
+        {
+            StartCoroutine(activate());
+        }
+    }
 
     public bool isMovable => isAvatar;
 
@@ -110,7 +122,8 @@ public class ObjectController : MonoBehaviour {
             // If the user doesn't have this as current activity anymore, then set and return null
             if (user != null && user.CurrentActivity != this && user.NextActivity != this) {
 
-                if (logging) Debug.Log($"{name}: has no user anymore");
+                Debug.Log($"{name}: has no user anymore#Detail10Log");
+                isActivated = false;
                 user = null;
             }
 
@@ -118,8 +131,9 @@ public class ObjectController : MonoBehaviour {
         }
         set
         {
-            if (user != null) Debug.Log($"{user.name}: I'm now the user of {name}");
+            isActivated = false;
             user = value;
+            if (user != null) Debug.Log($"{user.name}: I'm now the user of {name}#Detail10Log");
         }
     }
 
@@ -149,7 +163,7 @@ public class ObjectController : MonoBehaviour {
 
     public void setRegion(RegionController rc) {
 
-        Debug.Log($"{(isAvatar ? avatar.name + ": " : "")}{name}'s region is now {(rc != null ? rc.name : "null")} (was {(myRegion != null ? myRegion.name : "null")})");
+        Debug.Log($"{(isAvatar ? avatar.name + ": " : "")}{name}'s region is now {(rc != null ? rc.name : "null")} (was {(myRegion != null ? myRegion.name : "null")})#Detail10Log");
 
         myRegion = rc;
 
@@ -178,10 +192,12 @@ public class ObjectController : MonoBehaviour {
 		loops = internalLoops;
 	}
 
-    public IEnumerator activated() {
+    public IEnumerator activate() {
 
         // If there's a sound, then play it
         yield return new WaitForSeconds(soundPlayDelay);
+
+        isActivated = true;
 
         AudioSource audio = GetComponent<AudioSource>();
 
