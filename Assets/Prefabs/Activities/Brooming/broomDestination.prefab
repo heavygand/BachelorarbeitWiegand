@@ -25862,7 +25862,7 @@ MonoBehaviour:
   turnAngle: 0
   lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 100
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0

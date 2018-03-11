@@ -320,7 +320,12 @@ public class ActivityController : MonoBehaviour {
         // I do this because the rotation takes some time
         yield return new WaitForSeconds(1);
 
-        if (activityChangeRequested) stopDoing();
+        if (activityChangeRequested) {
+
+            stopDoing();
+            yield return new WaitForSeconds(2);
+            Debug.LogError($"{name}: Called stopDoing(), but Coroutine startDoing() was still not killed after two seconds");
+        }
 
         // Activate animation. Standing does not have to be activated
         if (CurrentActivity.wichAnimation.ToString() != "stand" && !activityChangeRequested) {
@@ -343,7 +348,7 @@ public class ActivityController : MonoBehaviour {
         }
         else if (iAmParticipant) {
 
-            Debug.Log($"{name}: organizeGroupActivity() not neccesary, because I am a participant");
+            Debug.Log($"{name}: organizeGroupActivity() not neccesary, because I am a participant#Detail10Log");
         }
 
         Debug.Log($"{name}: starting {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
@@ -359,7 +364,7 @@ public class ActivityController : MonoBehaviour {
          * ACTIVITY TIME LOOP #########
         */
 
-        Debug.Log($"{name}: my usage time for {CurrentActivity.name} runs now");
+        Debug.Log($"{name}: my usage time for {CurrentActivity.name} runs now#Detail10Log");
 
         // Activity time. Also check if my state changed every 20ms
         const float ms = 0.02f;
@@ -661,6 +666,7 @@ public class ActivityController : MonoBehaviour {
 
     private void putToolInHand(ObjectController.HandUsage handToUse) {
 
+        // Place right
         tool.transform.position = (handToUse == ObjectController.HandUsage.leftHand ?
                                         leftHand.transform.position :
                                         rightHand.transform.position);
@@ -733,6 +739,14 @@ public class ActivityController : MonoBehaviour {
         tool = Instantiate(CurrentActivity.toolToUse);
         tool.transform.parent = gameObject.transform;
         tool.transform.localScale = CurrentActivity.toolToUse.transform.localScale;
+        
+        // Rotate the tool once
+        Quaternion wrongTargetRot = tool.transform.rotation;
+        Quaternion targetRot = Quaternion.Euler(
+            wrongTargetRot.eulerAngles.x,
+            wrongTargetRot.eulerAngles.y + transform.rotation.eulerAngles.y,
+            wrongTargetRot.eulerAngles.z);
+        tool.transform.rotation = targetRot;
 
         leftHand = getHand("Left");
         rightHand = getHand("Right");

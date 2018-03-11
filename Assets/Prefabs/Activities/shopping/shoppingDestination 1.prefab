@@ -3822,7 +3822,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1445868038847880}
   m_LocalRotation: {x: 0.0000000016340611, y: 0.00000018724639, z: 0.008726465, w: 0.999962}
-  m_LocalPosition: {x: -39.56547, y: 1.2611445, z: -53.557}
+  m_LocalPosition: {x: -31.786, y: 5.367, z: -20.403606}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4365976285424620}
@@ -13559,10 +13559,10 @@ MonoBehaviour:
   cannotBeFound: 0
   Priority: 0
   wichAnimation: 2
-  turnAngle: 90
+  turnAngle: 0
   lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
