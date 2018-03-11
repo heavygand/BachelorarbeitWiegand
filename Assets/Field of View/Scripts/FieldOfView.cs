@@ -58,21 +58,14 @@ public class FieldOfView : MonoBehaviour {
                         if (!script.enabled) {
 
                             ActivityController script2 = (ActivityController)GetComponent(typeof(ActivityController));
-                            Debug.Log($"{gameObject.name}: Fire detected, script is OFF, activity off, avatar on");
-                            script2.deactivateMe(target);
-                        }
-
-                        if (script.enabled) {
-
-                            Debug.Log($"{gameObject.name}: Fire detected, script is ON, burning...");
-                            script.burn(target); 
+                            script2.sawFire();
                         }
                     }
 
                     //Debug.Log($"Script.enabled == {script.enabled} && LayerMask.LayerToName(currentLayer) == {LayerMask.LayerToName(currentLayer)}");
                     if (script.enabled && LayerMask.LayerToName(currentLayer) == "Feuermelder") {
 
-                        Debug.Log($"{gameObject.name}: Feuermelder detected, starting alarm...");
+                        Debug.Log($"{name}: Feuermelder detected, starting alarm...");
                         script.startAlarm(target);
                     }
                 }

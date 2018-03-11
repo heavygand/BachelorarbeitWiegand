@@ -37,6 +37,10 @@ public class CameraWASD : MonoBehaviour {
 
             transform.position = transform.position + Vector3.up/2;
         }
+        if (Input.GetKey(KeyCode.LeftShift)) {
 
-  }
+            transform.position = transform.position + Vector3.down / 2;
+        }
+
+    }
 }

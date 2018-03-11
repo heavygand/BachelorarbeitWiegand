@@ -27,6 +27,8 @@ public class RegionController : MonoBehaviour {
     [Tooltip("Only needed, when this region is private")]
     public GameObject myFire;
 
+    public List<ObjectController> rallyingPoints;
+
     // Use this for initialization
     void Start () {
 
@@ -58,7 +60,7 @@ public class RegionController : MonoBehaviour {
 	    foreach (ActivityController waiter in waiters2) {
 
 			if(logging) Debug.Log($"{waiter.name}: I've waited and got startGoing() from the Regioncontroller");
-			waiter.startGoing();
+			waiter.prepareGoing();
 			waiters.Remove(waiter);
 		}
 	}
@@ -103,7 +105,7 @@ public class RegionController : MonoBehaviour {
 		if (activities.Count > 0 && avatar.CurrentActivity == null) {
 
 		    if(logging) Debug.Log($"{avatar.name}: I'm starting in {name}#Detail10Log");
-			avatar.startGoing();
+			avatar.prepareGoing();
 		}
         // Avatar will have to wait, when there still are no activities
         else if(activities.Count == 0) {
@@ -230,5 +232,10 @@ public class RegionController : MonoBehaviour {
     public List<ActivityController> getAttenders() {
 
         return attenders;
+    }
+
+    public ObjectController getRallyingPoint() {
+
+        return rallyingPoints[Random.Range(0, rallyingPoints.Count)];
     }
 }

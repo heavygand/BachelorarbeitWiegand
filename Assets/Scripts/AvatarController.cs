@@ -6,7 +6,6 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -32,162 +31,21 @@ public class AvatarController : MonoBehaviour {
         getMyStuff();
 
         // Get the rallying Point
-        endTarget = GameObject.FindGameObjectWithTag("Rallying Point");
+        //endTarget = myRegion.getRallyingPoint();
         endTargetPos = endTarget.transform.position;
-
-        // Load targets
-        loadTargets4ThisFloor("destFloor");
 
         // Init Components
         alarmTextField = GameObject.Find("alarmTimer").GetComponent<Text>();
-        logic = GameObject.Find("Logic").GetComponent<FireManager>();
+        logic = GameObject.Find("GameLogic").GetComponentInChildren<FireManager>();
         animator = GetComponent<Animator>();
         navComponent = GetComponent<NavMeshAgent>();
 
-        // Speed for running
-        navComponent.speed = 4;
 
         // Init animator
-        animator.SetBool("panicMode", true);
         animator.SetBool("closeEnough", false);
         animator.applyRootMotion = false;
-
-        // Choose the closest destination
-        chooseFirstClosest();
-    }
-
-    /// <summary>
-    /// Loads all targets the given tag has to offer on this floor and fills the destinationlist
-    /// sorted by distance to the avatar
-    /// </summary>
-    /// <param name="nameTag"></param>
-    private void loadTargets4ThisFloor(string nameTag) {
-
-        // Get a list of destinations on this floor
-        destinations = GameObject.FindGameObjectsWithTag(nameTag);
-
-        // Sort by distance
-        sortedDests = new SortedList<float, GameObject>();
-        foreach (GameObject d in destinations) {
-
-            sortedDests.Add(Vector3.Distance(myPos, d.transform.position), d);
-        }
-    }
-
-    /// <summary>
-    /// Chooses and set the target that lies as closest to the avatar as destination
-    /// </summary>
-    private void chooseFirstClosest() {
-
-        // Target still not settet
-        targetSettet = false;
-
-        // Pick the first. This is the closest because they're sorted by distance
-        currTarget = sortedDests.First().Value;
-        currTargetPos = currTarget.transform.position;
-
-        // Start setting the destination
-        // I am doing navComponent.Resume(); in a coroutine because I had the problem, that the avatar wasn't
-        // able to reach the destination when it lies directly behind a corner, this fixed it.
-        StartCoroutine(setDestinationAfterSecs(0));
-    }
-
-    /// <summary>
-    /// Update manages calling the fire department, loading of new targets, reaching the destination
-    /// and the picture taking with the smartphone
-    /// </summary>
-    private void Update() {
-
-        // Only update if necessary
-        if (settingAlarm || stopped)
-            return;
-
-        // Check if we already ran start(), I had one case where this didn't happen
-        if (!hasStarted)
-            Start();
-
-        // Only continue when the target is set
-        if (!targetSettet)
-            return;
-
-        // Position and floor
-        getMyStuff();
-
-        // Check if I'm going to call the fire department
-        if (!settingAlarm && !calling && Random.Range(0, 1000) == 15)
-            callFireDepartment();
-
-        //Check if I'm close enough to the Target, then stop
-        if (Vector3.Distance(myPos, currTargetPos) < 1) {
-
-            //If this is the rallying Point or a window, then stay, else move on to the rallying point
-            if (Vector3.Distance(myPos, endTargetPos) < 1) {
-
-                animator.SetBool("closeEnough", true);
-                navComponent.isStopped = true;
-                stopped = true;
-
-                // Wave in case of no way to run
-                if (endIsWindow) {
-
-                    animator.SetBool("wave", true);
-                } else { // I'm at rallying point
-
-                    animator.applyRootMotion = true;
-
-                    // "Gaffen"
-                    transform.LookAt(GameObject.Find("House").transform);
-
-                    // Take a picture with smartphone (not PrefabSportler, he's naked)
-                    if (Random.Range(0, 2) == 1 && !gameObject.name.Contains("PrefabSportler")) {
-
-                        // Start the "hand up" animation
-                        animator.SetTrigger("holdSmartphone");
-
-                        // Spawn the smartphone into the hand
-                        StartCoroutine(phoneAfterSecs(0.5f));
-                    }
-                }
-            } else {
-
-                // Proceed to the rallying point if we reached a normal destination
-                Debug.Log($"{gameObject.name}: {currTarget.name} reached. I'm going to the rallying point!");
-                currTarget = endTarget;
-                currTargetPos = endTargetPos;
-                navComponent.SetDestination(currTargetPos);
-            }
-        } else if (!stopped) { // Still going
-
-            animator.SetBool("closeEnough", false);
-        }
-
-    }
-
-    /// <summary>
-    /// Shows the smartphone for the right hand after a given time
-    /// </summary>
-    /// <param name="time"></param>
-    /// <returns></returns>
-    private IEnumerator phoneAfterSecs(float time) {
-
-        yield return new WaitForSeconds(time);
-
-        // The smartphone for the right hand is directly under the parentnode
-        smartphone = transform.Find("Smartphone");
-
-        // He must have a smartphone
-        if (smartphone != null) {
-
-            smartphone.gameObject.SetActive(true);
-        }
-    }
-
-    /// <summary>
-    /// Finds the current position and floor
-    /// </summary>
-    private void getMyStuff() {
-
-        myPos = transform.position;
+        
+        gotoRallyingPoint();
     }
 
     /// <summary>
@@ -216,165 +74,124 @@ public class AvatarController : MonoBehaviour {
         // Console output
         Debug.Log($"{gameObject.name}: FEUER {fire.gameObject.name} GESEHEN!!");
 
-        // If this is no fire that is blocking a staircase then just activate the navMeshObstacle
-        // I didn't use a navMeshObstacle for staircase Fires, because other avatars that might have
-        // not seen this fire would eventually change their way because of this and this wouldn't be
-        // right.
-        if (!fire.gameObject.name.Contains("Treppenhaus")) {
-
-            fire.GetComponent<NavMeshObstacle>().enabled = true;
-            StartCoroutine(disableObstacle(3, fire));
-        }
-
-        // If this is a roomFire, then don't change the staircase
-        if (fire.name.StartsWith("Room")) {
-
-            Debug.Log($"{gameObject.name}: {fire.gameObject.name} is a RoomFire");
-            return;
-        }
-
-        // If we already have the rallying point as destination, then go through the destinations on this floor
-        if (currTargetPos == GameObject.FindGameObjectWithTag("Rallying Point").transform.position) {
-
-            // Choose the closest destination
-            chooseFirstClosest();
-
-            // If the staircase and the destination have different sides then do nothing, else, switch the staircase
-            Debug.Log($"{gameObject.name}: getSide({fire.name}) = {getSide(fire)} && getSide({currTarget.name}) = {getSide(currTarget)}");
-            if (getSide(fire) != getSide(currTarget)) {
-
-                return;
-            }
-        }
-
-        // When we reach this point, we want to have another destination
-        // Try to get a successor, if there is no, then go to a window
-        if (!setTargetToSuccessor()) {
-
-            gotoWindow(fire);
-        }
+        gotoRallyingPoint();
     }
 
     /// <summary>
-    /// Disables the navMeshObstacle for a given fire after some given seconds
+    /// Chooses and set the target that lies as closest to the avatar as destination
     /// </summary>
-    /// <param name="waitSeconds"></param>
-    /// <param name="fire"></param>
-    /// <returns></returns>
-    private IEnumerator disableObstacle(int waitSeconds, Transform fire) {
+    private void gotoRallyingPoint() {
 
-        yield return new WaitForSeconds(waitSeconds);
-        fire.GetComponent<NavMeshObstacle>().enabled = false;
-    }
-
-    /// <summary>
-    /// Picks the next destination in the sorteddestinationlist, if possible
-    /// </summary>
-    /// <param></param>
-    /// <returns></returns>
-    private bool setTargetToSuccessor() {
-
-        // Check how many we have
-        int length = sortedDests.Count;
-        int index = sortedDests.IndexOfValue(currTarget);
-        Debug.Log($"{gameObject.name}: index is {index} and the length is {length}");
-
-        // Return false if there are no successors anymore (length == 1)
-        if (length == 1) {
-
-            return false;
-        }
-
-        // if there are still some, then next one
+        // Target still not settet
         targetSettet = false;
-        Debug.Log($"{gameObject.name}: Searching for new Target because {currTarget.name} was not good");
 
-        currTarget = sortedDests.Values[index + 1];
-
-        currTargetPos = currTarget.transform.position;
-        StartCoroutine(setDestinationAfterSecs(0.1f));
-
-        // remove old destination, we don't want to pick this anymore
-        sortedDests.RemoveAt(index);
-
-        return true;
+        // Start setting the destination
+        // I am doing navComponent.Resume(); in a coroutine because I had the problem, that the avatar wasn't
+        // able to reach the destination when it lies directly behind a corner, this fixed it.
+        StartCoroutine(setDestinationAfterDelay(0));
     }
 
     /// <summary>
     /// Sets the destination of the navMeshAgent to the currentTarget after a given amount of seconds
     /// </summary>
-    /// <param name="seconds"></param>
+    /// <param name="delay"></param>
     /// <returns></returns>
-    private IEnumerator setDestinationAfterSecs(float seconds) {
+    private IEnumerator setDestinationAfterDelay(float delay) {
 
-        yield return new WaitForSeconds(seconds);
-        navComponent.SetDestination(currTargetPos);
-        Debug.Log($"{gameObject.name}: I'm now going to {currTarget.name}");
+        yield return new WaitForSeconds(delay);
+        navComponent.SetDestination(endTargetPos);
+        Debug.Log($"{name}: I'm now going to {endTarget.name}");
 
-        if (!targetSettet)
-            targetSettet = true;
+        if (!targetSettet) targetSettet = true;
     }
 
     /// <summary>
-    /// Get the staircase side of a fire
+    /// Update manages calling the fire department, loading of new targets, reaching the destination
+    /// and the picture taking with the smartphone
     /// </summary>
-    /// <param name="target"></param>
-    /// <returns></returns>
-    private string getSide(Transform target) {
+    private void Update() {
 
-        if (target.gameObject.name.Contains("links")) {
+        // Only update if necessary
+        if (settingAlarm || stopped) return;
 
-            return "links";
-        }
-        return "rechts";
-    }
+        // Check if we already ran start(), I had one case where this didn't happen
+        if (!hasStarted) Start();
 
-    /// <summary>
-    /// Get the staircase side of a destination
-    /// </summary>
-    /// <param name="target"></param>
-    /// <returns></returns>
-    private string getSide(GameObject target) {
+        // Only continue when the target is set
+        if (!targetSettet) return;
 
-        if (target.name.Contains("Destination1")) {
+        // Position and region
+        getMyStuff();
 
-            return "links";
-        }
-        return "rechts";
-    }
+        // Check if I'm going to call the fire department
+        if (!settingAlarm && !calling && Random.Range(0, 1000) == 15) callFireDepartment();
 
-    /// <summary>
-    /// Looks for the best window to flee and goes there
-    /// </summary>
-    /// <param name="fire"></param>
-    private void gotoWindow(Transform fire) {
+        //Check if I'm close enough to the Target, then stop
+        if (Vector3.Distance(myPos, currTargetPos) < 1) {
 
-        // Find all windows on this floor	
-        loadTargets4ThisFloor("window");
+            // If this is the rallying Point, then stay, else move on to the rallying point
+            if (Vector3.Distance(myPos, endTargetPos) < 1) {
 
-        // choose the closest
-        chooseFirstClosest();
+                animator.SetBool("closeEnough", true);
+                navComponent.isStopped = true;
+                stopped = true;
+                
+                animator.applyRootMotion = true;
 
-        // if the current fire is closer to the window than me, then choose the next window
-        foreach (KeyValuePair<float, GameObject> currentWindow in sortedDests) {
+                // "Gaffen"
+                transform.LookAt(GameObject.Find("House").transform);
 
-            Vector3 windowPos = currentWindow.Value.transform.position;
+                // Take a picture with smartphone (not PrefabSportler, he's naked)
+                if (Random.Range(0, 2) == 1 && !gameObject.name.Contains("PrefabSportler")) {
 
-            // If the fire is further away from the window, then there is nothing to do
-            if (Vector3.Distance(fire.position, windowPos) + 2 >= Vector3.Distance(myPos, windowPos)) {
+                    // Start the "hand up" animation
+                    animator.SetTrigger("holdSmartphone");
 
-                Debug.Log($"{gameObject.name}: {currTarget.name} is right");
-                break;
+                    // Spawn the smartphone into the hand
+                    StartCoroutine(phoneAfterDelay(0.5f));
+                }
+            } else {
+
+                // Proceed to the rallying point if we reached a normal destination
+                Debug.Log($"{gameObject.name}: {currTarget.name} reached. I'm going to the rallying point!");
+                currTarget = endTarget;
+                currTargetPos = endTargetPos;
+                navComponent.SetDestination(currTargetPos);
             }
+        } else if (!stopped) { // Still going
 
-            // If the fire is closer to the window than I am, then take the next window
-            Debug.Log($"{gameObject.name}: {currTarget.name} was not right");
-            setTargetToSuccessor();
+            animator.SetBool("closeEnough", false);
         }
 
-        endTarget = currTarget;
-        endTargetPos = currTargetPos;
-        endIsWindow = true;
+    }
+
+    /// <summary>
+    /// Shows the smartphone for the right hand after a given time
+    /// </summary>
+    /// <param name="delay"></param>
+    /// <returns></returns>
+    private IEnumerator phoneAfterDelay(float delay) {
+
+        yield return new WaitForSeconds(delay);
+
+        // The smartphone for the right hand is directly under the parentnode
+        smartphone = transform.Find("Smartphone");
+
+        // He must have a smartphone
+        if (smartphone != null) {
+
+            smartphone.gameObject.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// Finds the current position and floor
+    /// </summary>
+    private void getMyStuff() {
+
+        myPos = transform.position;
+        ActivityController ac = gameObject.GetComponent<ActivityController>();
+        myRegion = ac.myRegion;
     }
 
     /// <summary>
@@ -452,33 +269,31 @@ public class AvatarController : MonoBehaviour {
         // Do nothing if there is already an alarm
         if (alarmTextField.text == "FIREALARM") {
 
-            Debug.Log($"{gameObject.name}: startAlarm(): Alarm is already on.");
+            Debug.Log($"{name}: startAlarm(): Alarm is already on.");
             return;
         }
 
         // Ignore multiple sightings of the same firealarmbutton
         if (settingAlarm || alarmButton.gameObject == lastAlarm) {
 
-            Debug.Log($"{gameObject.name}: startAlarm(): I already saw {alarmButton.gameObject.name}.");
+            Debug.Log($"{name}: startAlarm(): I already saw {alarmButton.gameObject.name}.");
             return;
         }
 
-        lastAlarm = alarmButton.gameObject;
-
         settingAlarm = true;
+
+        lastAlarm = alarmButton.gameObject;
 
         // Set this alarmButton as new desination
         navComponent.SetDestination(alarmButton.position);
-        Debug.Log($"{gameObject.name}: Going to Feuermelder {alarmButton.gameObject.name}");
-        navComponent.SetDestination(alarmButton.position);
+        Debug.Log($"{name}: Going to Feuermelder {alarmButton.gameObject.name}");
 
         // Switch to walking
         animator.SetBool("panicMode", false);
 
         // Do animation after 2 seconds
         animator.SetTrigger("pushButton");
-
-        navComponent.SetDestination(alarmButton.position);
+        
         StartCoroutine(proceed(alarmButton));
     }
 
@@ -533,7 +348,6 @@ public class AvatarController : MonoBehaviour {
     private GameObject lastFire;
     private bool targetSettet;
     private bool hasStarted;
-    private bool endIsWindow;
     private GameObject lastAlarm;
     private Text alarmTextField;
     private FireManager logic;
@@ -543,4 +357,5 @@ public class AvatarController : MonoBehaviour {
     private Quaternion oldRotation;
     private Vector3 oldPosition;
     private Text calledTextField;
+    private RegionController myRegion;
 }

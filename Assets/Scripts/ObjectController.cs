@@ -90,6 +90,9 @@ public class ObjectController : MonoBehaviour {
     [Tooltip("The time in seconds, after wich the sound will start playing, when there is one")]
     public int soundPlayDelay;
 
+    [Tooltip("The time to wait before starting this (includes start going)")]
+    public int startDelay;
+
     private RegionController myRegion;
     private int internalLoops;
     public Vector3 MoveVector => rotateVector(moveVector);
@@ -115,6 +118,7 @@ public class ObjectController : MonoBehaviour {
     public bool isMovable => isAvatar;
 
     private ActivityController user;
+
     public ActivityController CurrentUser
     {
         get

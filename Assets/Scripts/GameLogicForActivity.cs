@@ -15,6 +15,7 @@ public class GameLogicForActivity : MonoBehaviour {
 	void Update () {
 
     }
+
     public RegionController getRandomRegionWithOut(List<RegionController> withoutRegions) {
 
         List<RegionController> localRegions = new List<RegionController>(regions);
@@ -26,6 +27,7 @@ public class GameLogicForActivity : MonoBehaviour {
 
         return getRandomRegion(localRegions);
     }
+
     public RegionController getRandomRegionWithOut(RegionController region) {
 
         List<RegionController> localRegions = new List<RegionController>(regions);

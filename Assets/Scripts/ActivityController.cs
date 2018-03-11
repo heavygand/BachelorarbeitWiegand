@@ -59,8 +59,7 @@ public class ActivityController : MonoBehaviour {
 
     private ObjectController lastActivity;
     private ObjectController interruptedFor;
-
-    private GameObject lastFire;
+    
     private GameObject tool;
     private GameObject leftHand;
     private GameObject rightHand;
@@ -68,8 +67,7 @@ public class ActivityController : MonoBehaviour {
     
     private Transform whatBurn;
 
-    private bool toBurn;
-    private bool startedDeactivating;
+    private bool panic;
     private bool activityChangeRequested;
     private bool going;
     private bool findOutside;
@@ -83,7 +81,7 @@ public class ActivityController : MonoBehaviour {
 
     private AvatarController fleeScript;
 
-    private RegionController myRegion;
+    public RegionController myRegion { get; set; }
     private RegionController oldRegion;
 
     private Coroutine sliding;
@@ -111,6 +109,28 @@ public class ActivityController : MonoBehaviour {
 
     public bool Displaced { get; set; }
 
+    public bool Panic {
+        get {
+            return panic;
+        }
+        set {
+            panic = value;
+
+            if (panic) {
+                // Speed for running
+                navComponent.speed = 4;
+                animator.SetBool("panicMode", true);
+                Debug.Log($"{name}: I'm in panic!");
+            }
+            else {
+                // Speed for going
+                navComponent.speed = 2;
+                animator.SetBool("panicMode", false);
+                Debug.Log($"{name}: Not in panic anymore");
+            }
+        }
+    }
+
     /// <summary>
     /// Initialisation
     /// </summary>
@@ -123,14 +143,14 @@ public class ActivityController : MonoBehaviour {
         animator = GetComponent<Animator>();
         navComponent = GetComponent<NavMeshAgent>();
         fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
-        // TODO: Wieder einkommentieren
-        //alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
+        
+        alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
 
         // When we already have a current activity, then we can start going
         if (CurrentActivity != null) {
 
             CurrentActivity.CurrentUser = this;
-            startGoing();
+            prepareGoing();
         }
         if (NextActivity != null) {
 
@@ -184,12 +204,12 @@ public class ActivityController : MonoBehaviour {
             // The bubble has to be smaller than the trigger collider of the destination
             if (CurrentActivity.isMovable) { createBubble(); }
 
-            startGoing();
+            prepareGoing();
         }
     }
 
     // START GOING
-    public void startGoing() {
+    public void prepareGoing() {
 
         // First set a target if we have no
         if (CurrentActivity == null) {
@@ -200,10 +220,6 @@ public class ActivityController : MonoBehaviour {
             return;
         }
 
-        /*
-		 * Start going
-		*/
-
         // Stop sliding, if we still do
         if (sliding != null) {
 
@@ -211,6 +227,15 @@ public class ActivityController : MonoBehaviour {
             StopCoroutine(sliding);
             sliding = null;
         }
+
+        StartCoroutine(startGoing());
+    }
+
+    private IEnumerator startGoing() {
+
+        // Wait for the start delay
+        Debug.Log($"{name}: Waiting {CurrentActivity.startDelay} seconds to start going");
+        yield return new WaitForSeconds(CurrentActivity.startDelay);
 
         // Reactivate stuff, that maybe was deactivated
         navComponent.enabled = true;
@@ -265,10 +290,9 @@ public class ActivityController : MonoBehaviour {
 
             Debug.Log($"{name}: arrived at {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
-            if (myBubble != null) {
+            if (Panic) Panic = false;
 
-                destroyBubble();
-            }
+            if (myBubble != null) destroyBubble();
 
             stopGoing();
 
@@ -292,10 +316,12 @@ public class ActivityController : MonoBehaviour {
         if (navComponent.isOnNavMesh) {
 
             navComponent.isStopped = true;
-        } else {
+        }
+        else {
 
             Debug.LogError($"{name}: soll stoppen, aber ist garnicht auf dem NavMesh. (CurrentActivity: {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")})");
         }
+
         animator.speed = 1f;
     }
 
@@ -410,10 +436,15 @@ public class ActivityController : MonoBehaviour {
             }
         }
         // Stopped, because I was interrupted
+        else if (activityChangeRequested && Panic) {
+
+            Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because panic");
+        }
         else if (activityChangeRequested) {
 
             Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
-        } else {
+        }
+        else {
 
             Debug.LogError($"{name}: Stopping {CurrentActivity.name} for an unknown reason");
         }
@@ -801,103 +832,17 @@ public class ActivityController : MonoBehaviour {
             stopGoing();
             setTarget();
         }
+
+        if (Panic) {
+
+            doSurprisedStoppingMovement();
+        }
     }
 
     // Did this to see, if there is only one reference to this, since I want to have interruption as private as possible
     public void interruptFromOutside() {
 
         interrupt();
-    }
-
-    /// <summary>
-    /// Deactivate this script when we saw a fire
-    /// </summary>
-    /// <param name="fire"></param>
-    public void deactivateMe(Transform fire) {
-
-        // Only accept a fire once
-        if (fire.gameObject == lastFire) {
-
-            Debug.Log($"{gameObject.name}: deactivateMe(): I already saw {fire.gameObject.name}.");
-
-            return;
-        }
-
-        Debug.Log($"{gameObject.name}: Deactivating Activity from Fire...");
-
-        lastFire = fire.gameObject;
-
-        // This is to call the burn() method later
-        toBurn = true;
-        whatBurn = fire;
-
-        // Do a stopping movement
-        navComponent.isStopped = true;
-        animator.applyRootMotion = true;
-        animator.SetTrigger("STOP");
-        animator.applyRootMotion = false;
-
-        deactivateMe();
-    }
-
-    /// <summary>
-    /// Starts deactivating all activities, and allows walking again
-    /// </summary>
-    private void deactivateMe() {
-
-        startedDeactivating = true;
-
-        // Start walking
-        animator.applyRootMotion = false;
-        StartCoroutine(resumeAfter(2.5f));
-
-        // Deactivate the last state in the animator
-        animator.SetBool(CurrentActivity.wichAnimation.ToString(), false);
-
-        // Deactivate this script, 3 seconds because some animations have to finish
-        StartCoroutine(deactivateAfter(3f));
-    }
-
-    /// <summary>
-    /// Activates the AvatarController (for fleeing) and if the cause for deactivation was
-    /// a fire, then also call burn(). Then deactivate this script.
-    /// </summary>
-    /// <param name="seconds"></param>
-    /// <returns></returns>
-    private IEnumerator deactivateAfter(float seconds) {
-
-        yield return new WaitForSeconds(seconds);
-
-        // Activate the fleeing script
-        if (!fleeScript.enabled)
-            fleeScript.enabled = true;
-        fleeScript.Start();
-
-        if (toBurn) {
-
-            fleeScript.burn(whatBurn);
-
-            Debug.Log($"{gameObject.name}: Deactivation: Called Burn()");
-        }
-
-        // Deactivate this script
-        ActivityController thisScript = (ActivityController)GetComponent(typeof(ActivityController));
-        thisScript.enabled = false;
-
-        Debug.Log($"{gameObject.name}: Deactivated Activity.");
-    }
-
-    /// <summary>
-    /// This Method resumes the navMeshAgent after some seconds
-    /// </summary>
-    /// <param name="seconds"></param>
-    /// <returns></returns>
-    private IEnumerator resumeAfter(float seconds) {
-
-        yield return new WaitForSeconds(seconds);
-        navComponent.isStopped = false;
-
-        Debug.Log($"{gameObject.name}: Nav resumed");
     }
 
     private void organizeLookRotation() {
@@ -1237,5 +1182,30 @@ public class ActivityController : MonoBehaviour {
     public RegionController getRegion() {
 
         return myRegion;
+    }
+
+    public void sawFire() {
+
+        if(Panic) return;
+        Panic = true;
+
+        Debug.Log($"{name}: I saw a fire in {myRegion.name}");
+
+        nextActivity = myRegion.getRallyingPoint();
+
+        // This also eventually stops going and sets target
+        interrupt();
+    }
+
+    // Do a surprised stopping movement
+    private void doSurprisedStoppingMovement() {
+
+        Debug.Log($"{name}: Doing Surprised animation");
+
+        navComponent.enabled = true;
+        navComponent.isStopped = true;
+        animator.applyRootMotion = true;
+        animator.SetTrigger("STOP");
+        animator.applyRootMotion = false;
     }
 }
