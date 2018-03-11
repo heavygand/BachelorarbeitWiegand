@@ -1022,7 +1022,7 @@ public class ActivityController : MonoBehaviour {
         yield return new WaitForSeconds(0.25f);
         if (myRegion == null) {
 
-            GameObject.Find("GameActivityController").GetComponentInChildren<RegionController>().registerAvatar(this);
+            GameObject.Find("GameLogic").GetComponentInChildren<RegionController>().registerAvatar(this);
         }
     }
 
@@ -1128,7 +1128,7 @@ public class ActivityController : MonoBehaviour {
 
                 findOutside = false;
 
-                findTargetIn(getRandomRegion());
+                findTargetIn(myRegion.getMaster().getRandomRegionWithOut(myRegion));
 
                 findOutside = true;
 
@@ -1173,26 +1173,6 @@ public class ActivityController : MonoBehaviour {
         yield return new WaitForSeconds(waitTime);
 
         setTarget();
-    }
-
-    private RegionController getRandomRegion() {
-        Debug.Log($"{name}: I'm picking a random region (I'm in {myRegion.name})#Detail10Log");
-
-        //Get the regions in the game and remove my current region
-        List<RegionController> regions = new List<RegionController>(myRegion.getMaster().getRegions());
-        regions.Remove(myRegion);
-
-        foreach (RegionController region in regions) {
-
-            Debug.Log($"{name}: {region.name} was in the list of regions#Detail10Log");
-        }
-        if(regions.Count == 0) {
-
-            Debug.Log($"{name}: There are no regions other than outside");
-            return null;
-        }
-
-        return regions[Random.Range(0, regions.Count)];
     }
 
     private bool activityIsOK(ObjectController activity2Check) {

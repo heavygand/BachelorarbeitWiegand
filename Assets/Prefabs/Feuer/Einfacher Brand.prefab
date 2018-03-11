@@ -53,6 +53,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4845895903764046}
+  - component: {fileID: 114673439815054740}
   m_Layer: 0
   m_Name: Einfacher Brand
   m_TagString: Untagged
@@ -444,3 +445,14 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
+--- !u!114 &114673439815054740
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1156399714457996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d20eadae9841a04e896d31184dae1bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -13,8 +13,42 @@ public class GameLogicForActivity : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
+
+    }
+    public RegionController getRandomRegionWithOut(List<RegionController> withoutRegions) {
+
+        List<RegionController> localRegions = new List<RegionController>(regions);
+
+        foreach (RegionController region in withoutRegions) {
+
+            localRegions.Remove(region); 
+        }
+
+        return getRandomRegion(localRegions);
+    }
+    public RegionController getRandomRegionWithOut(RegionController region) {
+
+        List<RegionController> localRegions = new List<RegionController>(regions);
+        localRegions.Remove(region);
+
+        return getRandomRegion(localRegions);
+    }
+
+    public RegionController getRandomRegion() {
+
+        return getRandomRegion(regions);
+    }
+
+    public RegionController getRandomRegion(List<RegionController> searchRegions) {
+
+        if (searchRegions.Count == 0) {
+
+            Debug.LogError($"{name}: Cannot find a random region in an empty list!");
+            return null;
+        }
+
+        return searchRegions[Random.Range(0, searchRegions.Count)];
+    }
 
     public void register(RegionController rc) {
         
@@ -27,4 +61,9 @@ public class GameLogicForActivity : MonoBehaviour {
     }
 
     private List<RegionController> regions = new List<RegionController>();
+
+    public RegionController getOutside() {
+
+        return GetComponentInChildren<RegionController>();
+    }
 }

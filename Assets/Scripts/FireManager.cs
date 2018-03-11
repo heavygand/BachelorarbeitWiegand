@@ -9,79 +9,84 @@ using UnityEngine.UI;
 
 public class FireManager : MonoBehaviour {
 
-    Feuer[] fires;
+    List<RegionController> fireRegions;
     public GameObject[] floors;
     public Text timer;
     internal bool alarmStarted;
     internal bool fireDepartmentCalled;
     internal GameObject drehleiter;
+    private bool activatable;
 
     // Use this for initialization
     void Start() {
-
-        ClearAllFires();
-        drehleiter = GameObject.Find("drehleiter_feuerwehr");
-        drehleiter.SetActive(false);
-    }
-
-    void EnableMeshRendererForGroup(bool enable, GameObject group) {
-        foreach (MeshRenderer renderer in group.transform.GetComponentsInChildren<MeshRenderer>()) {
-            renderer.enabled = enable;
-        }
-    }
-
-    void ShowBuildingLevel(int level) {
-        for (int l = 0; l < floors.Length; ++l) {
-            EnableMeshRendererForGroup(l <= level, floors[l]);
-        }
+        
+        activatable = true;
+        fireRegions = new List<RegionController>();
     }
 
     void AddRandomFire() {
 
-        fires[Random.Range(0, fires.Length - 1)].gameObject.SetActive(true);
+        GameLogicForActivity master = GetComponentInParent<GameLogicForActivity>();
+        RegionController randomRegion = master.getRandomRegionWithOut(fireRegions);
 
+        randomRegion.myFire.SetActive(true);
+        fireRegions.Add(randomRegion);
+
+        Debug.LogError($"Simulation: Fire Activated in {randomRegion.name}");
+        /*
         if (!alarmStarted) {
             StartCoroutine(this.startAlarmIn30());
-        }
+        }*/
     }
 
     void ClearAllFires() {
-        fires = FindObjectsOfType(typeof(Feuer)) as Feuer[];
-        foreach (Feuer fire in fires) {
 
-            if (fire.tag == "dontGoOut")
-                continue;
-            fire.gameObject.SetActive(false);
+        List<RegionController> tempFireRegions = new List<RegionController>(fireRegions);
+
+        foreach (RegionController fireRegion in tempFireRegions) {
+
+            fireRegion.myFire.SetActive(false);
+            fireRegions.Remove(fireRegion);
         }
     }
 
-
     void OnGUI() {
+
         if (GUI.Button(new Rect(10, 10, 200, 50), "Add random fire")) {
             AddRandomFire();
         }
-
         if (GUI.Button(new Rect(10, 70, 200, 50), "Clear all fires")) {
             ClearAllFires();
         }
+        if (GUI.Button(new Rect(10, 400, 200, 50), "Toggle Mouse Look (F)")) {
+            toggleMouseLook();
+        }
+    }
 
-        if (GUI.Button(new Rect(10, 400, 40, 40), "0")) {
-            ShowBuildingLevel(0);
-        }
-        if (GUI.Button(new Rect(60, 400, 40, 40), "1")) {
-            ShowBuildingLevel(1);
-        }
-        if (GUI.Button(new Rect(110, 400, 40, 40), "2")) {
-            ShowBuildingLevel(2);
-        }
-        if (GUI.Button(new Rect(160, 400, 40, 40), "3")) {
-            ShowBuildingLevel(3);
-        }
-        if (GUI.Button(new Rect(210, 400, 40, 40), "4")) {
-            ShowBuildingLevel(4);
-        }
-        if (GUI.Button(new Rect(260, 400, 40, 40), "R")) {
-            ShowBuildingLevel(5);
+    private void toggleMouseLook() {
+
+        if(!activatable) return;
+
+        activatable = false;
+
+        StartCoroutine(reactivateAfterDelay(0.5f));
+
+        MouseLook mouseLook = GameObject.Find("Spectator Camera").GetComponent<MouseLook>();
+
+        mouseLook.enabled = !mouseLook.isActiveAndEnabled;
+    }
+
+    private IEnumerator reactivateAfterDelay(float f) {
+
+        yield return new WaitForSeconds(f);
+        activatable = true;
+    }
+
+    private void Update() {
+
+        if (Input.GetKey(KeyCode.F)) {
+
+            toggleMouseLook();
         }
     }
 }

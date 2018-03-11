@@ -24,12 +24,15 @@ public class RegionController : MonoBehaviour {
     [Tooltip("Only needed, when this region is private")]
     public ObjectController doorBell;
 
+    [Tooltip("Only needed, when this region is private")]
+    public GameObject myFire;
+
     // Use this for initialization
     void Start () {
 
         logging = true;
 
-        master = GameObject.Find("GameActivityController").GetComponent<GameLogicForActivity>();
+        master = GameObject.Find("GameLogic").GetComponent<GameLogicForActivity>();
         master.register(this);
 
         if (isPrivate && doorBell == null) Debug.LogError($"ERROR: {name} is a private region, but has no doorbell!");

@@ -157,7 +157,7 @@ public class ObjectController : MonoBehaviour {
 		yield return new WaitForSeconds(0.25f);
 		if (myRegion == null) {
 
-			GameObject.Find("GameActivityController").GetComponentInChildren<RegionController>().registerActivity(this);
+			GameObject.Find("GameLogic").GetComponentInChildren<RegionController>().registerActivity(this);
 		}
     }
 
