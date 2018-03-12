@@ -10,8 +10,39 @@ public class RegionController : MonoBehaviour {
     private List<ActivityController> waiters = new List<ActivityController>();
     private List<ActivityController> attenders = new List<ActivityController>();
     private GameLogicForActivity master;
+    private TextMesh regionText;
 
     private bool logging;
+
+    public TextMesh RegionText {
+        get {
+            return regionText;
+        }
+        set {
+            regionText = value;
+        }
+    }
+
+    public bool HasAlarm {
+        get {
+            return hasAlarm;
+        }
+        set {
+            hasAlarm = value;
+
+            if (hasAlarm) {
+
+                RegionText.text = "FIREALARM";
+                RegionText.color = Color.red;
+                RegionText.fontStyle = FontStyle.Bold; 
+            }
+            else {
+
+                RegionText.text = name;
+                RegionText.color = Color.white;
+            }
+        }
+    }
 
     public GameLogicForActivity getMaster(){
 
@@ -27,12 +58,24 @@ public class RegionController : MonoBehaviour {
     [Tooltip("The fire that can break out in this region")]
     public GameObject myFire;
 
+    public GameObject statusText;
+
     public List<ObjectController> rallyingPoints;
+
+    private bool hasAlarm;
 
     // Use this for initialization
     void Start () {
 
         logging = true;
+        HasAlarm = false;
+
+        // Create statustext for region
+        GameObject textGO = Instantiate(statusText);
+        textGO.transform.parent = transform;
+        textGO.transform.localPosition = new Vector3(0, 14.65f, 0);
+        regionText = textGO.GetComponent<TextMesh>();
+        regionText.text = name;
 
         master = GameObject.Find("GameLogic").GetComponent<GameLogicForActivity>();
         master.register(this);
@@ -43,7 +86,25 @@ public class RegionController : MonoBehaviour {
 		StartCoroutine(awakeWaiters(0.5f));
 	}
 
-	private IEnumerator awakeWaiters(float waitTime) {
+    void Update() {
+
+        textLookAtCamera();
+    }
+
+    private void textLookAtCamera() {
+
+        // Look at the Camera
+        Transform textTransform = regionText.gameObject.transform;
+        textTransform.LookAt(Camera.main.transform);
+
+        Quaternion wrongTargetRot = textTransform.rotation;
+        textTransform.rotation = Quaternion.Euler(
+            wrongTargetRot.eulerAngles.x * -1,
+            wrongTargetRot.eulerAngles.y + 180,
+            wrongTargetRot.eulerAngles.z);
+    }
+
+    private IEnumerator awakeWaiters(float waitTime) {
 		
 		yield return new WaitForSeconds(waitTime);
 		awakeWaiters();

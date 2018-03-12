@@ -76,10 +76,7 @@ public class ActivityController : MonoBehaviour {
     private List<ActivityController> myParticipants;
     private Animator animator;
     private NavMeshAgent navComponent;
-    private Text alarmText;
     private int retries;
-
-    private AvatarController fleeScript;
 
     public RegionController myRegion { get; set; }
     private RegionController oldRegion;
@@ -92,7 +89,7 @@ public class ActivityController : MonoBehaviour {
     private ActivityController myLeader;
     private ObjectController myActivity;
     private Transform smartphone;
-    private bool calling;
+    private Object lastAlarm;
 
     public ActivityController MyLeader
     {
@@ -144,9 +141,6 @@ public class ActivityController : MonoBehaviour {
         myActivity = GetComponentInChildren<ObjectController>();
         animator = GetComponent<Animator>();
         navComponent = GetComponent<NavMeshAgent>();
-        fleeScript = (AvatarController)GetComponent(typeof(AvatarController));
-        
-        alarmText = GameObject.Find("alarmTimer").GetComponent<Text>();
 
         // When we already have a current activity, then we can start going
         if (CurrentActivity != null) {
@@ -292,7 +286,7 @@ public class ActivityController : MonoBehaviour {
 
             Debug.Log($"{name}: arrived at {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
-            if (Panic) Panic = false;
+            if (Panic) StartCoroutine(setPanicFalseAfterDelay());
 
             if (myBubble != null) destroyBubble();
 
@@ -359,7 +353,11 @@ public class ActivityController : MonoBehaviour {
         if (CurrentActivity.wichAnimation.ToString() != "stand" && !activityChangeRequested) {
 
             Debug.Log($"{name}: animation {CurrentActivity.wichAnimation} activated.#Detail10Log");
-            animator.SetBool(CurrentActivity.wichAnimation.ToString(), true);
+
+            if (name != "Cartoon_SportCar_B01") {
+
+                animator.SetBool(CurrentActivity.wichAnimation.ToString(), true); 
+            }
         }
 
         // Slide to another place if neccesary
@@ -371,7 +369,7 @@ public class ActivityController : MonoBehaviour {
         // Organize group activity
         if (CurrentActivity.isGroupActivity && !iAmParticipant) {
 
-            yield return new WaitForSeconds(CurrentActivity.soundPlayDelay);
+            yield return new WaitForSeconds(CurrentActivity.activationDelay);
             organizeGroupActivity();
         }
         else if (iAmParticipant) {
@@ -468,7 +466,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Stop doing this activity (standing does not have to be deactivated)
-        if (CurrentActivity != null && CurrentActivity.wichAnimation.ToString() != "stand") {
+        if (name != "Cartoon_SportCar_B01" && CurrentActivity != null && CurrentActivity.wichAnimation.ToString() != "stand") {
 
             Debug.Log($"{name}: Setting animator bool of {CurrentActivity.wichAnimation} to false#Detail10Log");
 
@@ -810,7 +808,7 @@ public class ActivityController : MonoBehaviour {
         return false;
     }
 
-    private IEnumerator interruptWith(ObjectController activity, ActivityController requester) {
+    public IEnumerator interruptWith(ObjectController activity, ActivityController requester) {
 
         Debug.Log($"{name}: Interruption {activity.name}{(activity.isAvatar ? " with " + activity.getAvatar().name : "")} accepted");
         Debug.Log($"{requester.name}: Sucessfully interrupted {name} with {activity.name}");
@@ -983,15 +981,14 @@ public class ActivityController : MonoBehaviour {
     /// </summary>
     void Update() {
 
-
         // Check if I'm going to call the fire department
-        // TODO das hier soll am rallying point zufällig geschehen und nicht unterwegs
-        if (Panic && going && Random.Range(0, 1000) == 15) callFireDepartment();
+        if (Panic && myRegion != null && myRegion == myRegion.getMaster().getOutside() && !going && Random.Range(0, 1000) == 15) callFireDepartment();
 
-        // If the alarm starts, then stop doing activities
-        // TODO remove this from update()
-        //if (alarmText.text == "FIREALARM" && !startedDeactivating)
-        //    deactivateMe();
+        // When the alarm starts, then stop doing activities
+        // There has to be alarm
+        // Not when I'm already outside
+        // Not when I already paniced
+        if (myRegion != null && myRegion.HasAlarm && myRegion != myRegion.getMaster().getOutside() && !Panic) setPanicAndInterrupt();
     }
 
     private static int getPartnerPriority(ObjectController found) {
@@ -1022,11 +1019,10 @@ public class ActivityController : MonoBehaviour {
         // He must have a smartphone
         if (smartphone != null) {
 
-            calling = true;
-
-            Debug.Log($"{name}: I'm calling th Firedepartment");
+            Debug.Log($"{name}: I'm calling the Firedepartment");
 
             // Stop
+            navComponent.enabled = true;
             navComponent.isStopped = true;
 
             // Do calling animation
@@ -1069,6 +1065,7 @@ public class ActivityController : MonoBehaviour {
         animator.SetBool("call", false);
         smartphone.gameObject.SetActive(false);
         myRegion.getMaster().getFireManager().called();
+        navComponent.enabled = true;
         navComponent.isStopped = false;
     }
 
@@ -1286,5 +1283,47 @@ public class ActivityController : MonoBehaviour {
         animator.applyRootMotion = true;
         animator.SetTrigger("STOP");
         animator.applyRootMotion = false;
+    }
+
+    private IEnumerator setPanicFalseAfterDelay() {
+
+        yield return new WaitForSeconds(5);
+
+        Panic = false;
+    }
+
+    /// <summary>
+    /// Starts a break from fleeing and triggers a given firealarm
+    /// </summary>
+    /// <param name="alarmButtonTransform"></param>
+    public void startAlarm(GameObject alarmButton) {
+
+        // Do nothing if there is already an alarm
+        if (myRegion.HasAlarm) {
+
+            Debug.Log($"{name}: Alarm is already on in {myRegion.name}.");
+            return;
+        }
+
+        // Ignore multiple sightings of the same firealarmbutton
+        if (alarmButton == lastAlarm) {
+
+            Debug.Log($"{name}: startAlarm(): I already saw {alarmButton.name}.");
+            return;
+        }
+
+        lastAlarm = alarmButton;
+
+        // Set this alarmButton as new desination
+        navComponent.SetDestination(alarmButton.transform.position);
+        Debug.Log($"{name}: Going to Feuermelder {alarmButton.name}");
+
+        // Switch to walking
+        animator.SetBool("panicMode", false);
+
+        // Do animation after 2 seconds
+        animator.SetTrigger("pushButton");
+
+        StartCoroutine(proceed(alarmButtonTransform));
     }
 }

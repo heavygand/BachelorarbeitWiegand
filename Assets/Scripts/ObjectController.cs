@@ -87,8 +87,8 @@ public class ObjectController : MonoBehaviour {
 
 	public Vector3 WorkPlace => getFootOfFirstCollider();
 
-    [Tooltip("The time in seconds, after wich the sound will start playing, when there is one")]
-    public int soundPlayDelay;
+    [Tooltip("The time in seconds, after wich this object is activated (may be sound or firealarm, etc)")]
+    public int activationDelay;
 
     [Tooltip("The time to wait before starting this (includes start going)")]
     public int startDelay;
@@ -111,7 +111,10 @@ public class ObjectController : MonoBehaviour {
         }
         set
         {
-            StartCoroutine(activate());
+            if (value) {
+
+                StartCoroutine(activate()); 
+            }
         }
     }
 
@@ -199,12 +202,14 @@ public class ObjectController : MonoBehaviour {
     public IEnumerator activate() {
 
         // If there's a sound, then play it
-        yield return new WaitForSeconds(soundPlayDelay);
+        yield return new WaitForSeconds(activationDelay);
 
         isActivated = true;
 
         AudioSource audio = GetComponent<AudioSource>();
 
         if (audio != null) audio.Play();
+
+        if(LayerMask.LayerToName(gameObject.layer) == "Feuermelder") myRegion.HasAlarm = true;
     }
 }

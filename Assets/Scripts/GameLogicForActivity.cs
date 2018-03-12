@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class GameLogicForActivity : MonoBehaviour {
 
-	// Use this for initialization
-	void Awake () {
+    private List<RegionController> regions = new List<RegionController>();
+    private FireManager fireManager;
+
+    // Use this for initialization
+    void Awake () {
 
         Debug.Log($"Simulation startet {System.DateTime.UtcNow.ToString("HH:mm dd MMMM, yyyy")} ######################################################################");
 
@@ -61,9 +64,6 @@ public class GameLogicForActivity : MonoBehaviour {
 
         return regions;
     }
-
-    private List<RegionController> regions = new List<RegionController>();
-    private FireManager fireManager;
 
     public RegionController getOutside() {
 

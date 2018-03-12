@@ -50,23 +50,22 @@ public class FieldOfView : MonoBehaviour {
                     visibleTargets.Add (target);
 
                     int currentLayer = (int)Math.Log(targetMask.value, 2);
-                    AvatarController script = (AvatarController)GetComponent(typeof(AvatarController));
+                    ActivityController script = (ActivityController)GetComponent(typeof(ActivityController));
 
                     if (LayerMask.LayerToName(currentLayer) == "Fires") {
 
                         // Find this avatar and his controller
                         if (!script.enabled) {
-
-                            ActivityController script2 = (ActivityController)GetComponent(typeof(ActivityController));
-                            script2.sawFire();
+                            
+                            script.sawFire();
                         }
                     }
 
                     //Debug.Log($"Script.enabled == {script.enabled} && LayerMask.LayerToName(currentLayer) == {LayerMask.LayerToName(currentLayer)}");
-                    if (script.enabled && LayerMask.LayerToName(currentLayer) == "Feuermelder") {
+                    if (LayerMask.LayerToName(currentLayer) == "Feuermelder" && script.Panic) {
 
                         Debug.Log($"{name}: Feuermelder detected, starting alarm...");
-                        script.startAlarm(target);
+                        StartCoroutine(script.interruptWith(target.gameObject.GetComponent<ObjectController>(), gameObject.GetComponent<ActivityController>()));
                     }
                 }
             }

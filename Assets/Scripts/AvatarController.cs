@@ -195,49 +195,6 @@ public class AvatarController : MonoBehaviour {
     }
 
     /// <summary>
-    /// Starts a break from fleeing and triggers a given firealarm
-    /// </summary>
-    /// <param name="alarmButton"></param>
-    public void startAlarm(Transform alarmButton) {
-
-        // If not started yet
-        if (!hasStarted) {
-
-            Start();
-        }
-
-        // Do nothing if there is already an alarm
-        if (alarmTextField.text == "FIREALARM") {
-
-            Debug.Log($"{name}: startAlarm(): Alarm is already on.");
-            return;
-        }
-
-        // Ignore multiple sightings of the same firealarmbutton
-        if (settingAlarm || alarmButton.gameObject == lastAlarm) {
-
-            Debug.Log($"{name}: startAlarm(): I already saw {alarmButton.gameObject.name}.");
-            return;
-        }
-
-        settingAlarm = true;
-
-        lastAlarm = alarmButton.gameObject;
-
-        // Set this alarmButton as new desination
-        navComponent.SetDestination(alarmButton.position);
-        Debug.Log($"{name}: Going to Feuermelder {alarmButton.gameObject.name}");
-
-        // Switch to walking
-        animator.SetBool("panicMode", false);
-
-        // Do animation after 2 seconds
-        animator.SetTrigger("pushButton");
-        
-        StartCoroutine(proceed(alarmButton));
-    }
-
-    /// <summary>
     /// Activates the firealarm and returns to the old destination
     /// </summary>
     /// <param name="alarmButton"></param>

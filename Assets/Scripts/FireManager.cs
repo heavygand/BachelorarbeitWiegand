@@ -10,11 +10,7 @@ using UnityEngine.UI;
 public class FireManager : MonoBehaviour {
 
     List<RegionController> fireRegions;
-    public GameObject[] floors;
-    public Text timer;
-    internal static bool alarmStarted;
     internal bool fireDepartmentCalled;
-    internal GameObject drehleiter;
     private bool activatable;
     private GameLogicForActivity master;
 
@@ -29,7 +25,7 @@ public class FireManager : MonoBehaviour {
 
     private void AddFireInHouse() {
 
-        activateFire(GameObject.Find("House").GetComponent<RegionController>());
+        activateFire(GameObject.Find("Wohnhaus").GetComponent<RegionController>());
     }
 
     void AddRandomFire() {
@@ -37,10 +33,6 @@ public class FireManager : MonoBehaviour {
         RegionController randomRegion = master.getRandomRegionWithOut(fireRegions);
 
         activateFire(randomRegion);
-        
-        if (!alarmStarted) {
-            StartCoroutine(startAlarmIn30());
-        }
     }
 
     void ClearAllFires() {
@@ -56,7 +48,16 @@ public class FireManager : MonoBehaviour {
     private void deactivateFire(RegionController fireRegion) {
 
         fireRegion.myFire.SetActive(false);
+        fireRegion.HasAlarm = false;
         fireRegions.Remove(fireRegion);
+
+        bool allOut = true;
+        foreach (RegionController region in fireRegions) {
+            
+            if(region.HasAlarm) allOut = false;
+        }
+
+        if(allOut) disableAudio();
     }
 
     void OnGUI() {
@@ -67,7 +68,7 @@ public class FireManager : MonoBehaviour {
         if (GUI.Button(new Rect(10, 70, 200, 50), "Clear all fires")) {
             ClearAllFires();
         }
-        if (GUI.Button(new Rect(10, 130, 200, 50), "Add fire in House")) {
+        if (GUI.Button(new Rect(10, 130, 200, 50), "Add fire in Wohnhaus")) {
             AddFireInHouse();
         }
         if (GUI.Button(new Rect(10, 400, 200, 50), "Toggle Mouse Look (F)")) {
@@ -108,37 +109,38 @@ public class FireManager : MonoBehaviour {
         fireRegions.Add(randomRegion);
 
         Debug.LogWarning($"Simulation: Fire Activated in {randomRegion.name}");
+
+        if (!randomRegion.HasAlarm) StartCoroutine(startAlarmIn30(randomRegion));
     }
+
     /// <summary>
     /// Actualizes the Textfield that shows the alarm and starts the alarm at the end
     /// </summary>
+    /// <param name="region"></param>
     /// <returns></returns>
-    private IEnumerator startAlarmIn30() {
-
-        alarmStarted = true;
+    private IEnumerator startAlarmIn30(RegionController region) {
+        
         bool timerStopped = false;
 
         // Start counting down on the textField
-        timer.text = "Alarm in: 30";
+        region.RegionText.text = "Alarm in: 30";
         for (int i = 29; i >= 0; i--) {
 
             yield return new WaitForSeconds(1);
 
             // This happens when someone sets the alarm from a fireAlarm
-            if (timer.text == "FIREALARM") {
+            if (region.HasAlarm) {
 
                 timerStopped = true;
                 break;
             }
-            timer.text = "Alarm in: " + i.ToString();
+            region.RegionText.text = "Alarm in: " + i;
         }
 
         // Set the alarmtext and sound
         if (!timerStopped) {
 
-            timer.text = "FIREALARM";
-            timer.color = Color.red;
-            timer.fontStyle = FontStyle.Bold;
+            region.HasAlarm = true;
 
             turnOnAudio();
         }
@@ -147,16 +149,22 @@ public class FireManager : MonoBehaviour {
     /// <summary>
     /// Turns the alarmsound on
     /// </summary>
-    /// <param name="fireManager"></param>
     public void turnOnAudio() {
 
         GetComponent<AudioSource>().Play();
     }
 
     /// <summary>
+    /// Turns the alarmsound on
+    /// </summary>
+    public void disableAudio() {
+
+        GetComponent<AudioSource>().Stop();
+    }
+
+    /// <summary>
     /// Changes firefighters textField if they were called
     /// </summary>
-    /// <param name="fireManager"></param>
     public void called() {
 
         if (fireDepartmentCalled) return;
