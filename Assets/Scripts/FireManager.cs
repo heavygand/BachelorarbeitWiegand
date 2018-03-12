@@ -16,12 +16,15 @@ public class FireManager : MonoBehaviour {
     internal bool fireDepartmentCalled;
     internal GameObject drehleiter;
     private bool activatable;
+    private GameLogicForActivity master;
 
     // Use this for initialization
     void Start() {
         
         activatable = true;
         fireRegions = new List<RegionController>();
+        master = GetComponentInParent<GameLogicForActivity>();
+        master.setFireManager(this);
     }
 
     private void AddFireInHouse() {
@@ -31,7 +34,6 @@ public class FireManager : MonoBehaviour {
 
     void AddRandomFire() {
 
-        GameLogicForActivity master = GetComponentInParent<GameLogicForActivity>();
         RegionController randomRegion = master.getRandomRegionWithOut(fireRegions);
 
         activateFire(randomRegion);
@@ -157,8 +159,7 @@ public class FireManager : MonoBehaviour {
     /// <param name="fireManager"></param>
     public void called() {
 
-        if (fireDepartmentCalled)
-            return;
+        if (fireDepartmentCalled) return;
 
         fireDepartmentCalled = true;
         Text calledTextField = GameObject.Find("feuerwehrText").GetComponent<Text>();

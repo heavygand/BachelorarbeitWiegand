@@ -91,6 +91,8 @@ public class ActivityController : MonoBehaviour {
 
     private ActivityController myLeader;
     private ObjectController myActivity;
+    private Transform smartphone;
+    private bool calling;
 
     public ActivityController MyLeader
     {
@@ -502,10 +504,11 @@ public class ActivityController : MonoBehaviour {
         }
 
         // When I am the leader of a group activity, then wait until everyone started with my invoked groupactivity
-        while (!allParticipantsStartedAndDeorganize()) {
+        while (!allParticipantsStartedAndDeorganize() && !Panic) {
 
             yield return new WaitForSeconds(0.2f);
         }
+        if(!iAmParticipant && Panic) deOrganize();
 
         Debug.Log($"{name}: done stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
@@ -536,15 +539,8 @@ public class ActivityController : MonoBehaviour {
     }
 
     private bool allParticipantsStartedAndDeorganize() {
-
-        if (iAmParticipant) {
-
-            Debug.Log($"{name}: I was a participant");
-            return true;
-        }
-
-        // To get no nullpointerreferenceexception
-        if(myParticipants == null) myParticipants = new List<ActivityController>();
+        
+        if(iAmParticipant || myParticipants == null) return true;
 
         // Wait untill all participants started the groupactivity
         foreach (ActivityController parti in myParticipants) {
@@ -564,14 +560,25 @@ public class ActivityController : MonoBehaviour {
          * 
          */
 
+        deOrganize();
+
+        return true;
+    }
+
+    private void deOrganize() {
+        
+        if(myParticipants == null) return;
+
+        Debug.Log($"{name}: Deorganizing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+
         // Deorganize the group activity
         foreach (ActivityController parti in myParticipants) {
 
             parti.MyLeader = null;
+
+            if (Panic) parti.setPanicAndInterrupt();
         }
         myParticipants = null;
-
-        return true;
     }
 
     private List<ObjectController> getOtherActivitiesWithoutThis() {
@@ -831,11 +838,11 @@ public class ActivityController : MonoBehaviour {
 
             stopGoing();
             setTarget();
-        }
 
-        if (Panic) {
+            if (Panic) {
 
-            doSurprisedStoppingMovement();
+                doSurprisedStoppingMovement();
+            }
         }
     }
 
@@ -976,6 +983,11 @@ public class ActivityController : MonoBehaviour {
     /// </summary>
     void Update() {
 
+
+        // Check if I'm going to call the fire department
+        // TODO das hier soll am rallying point zufällig geschehen und nicht unterwegs
+        if (Panic && going && Random.Range(0, 1000) == 15) callFireDepartment();
+
         // If the alarm starts, then stop doing activities
         // TODO remove this from update()
         //if (alarmText.text == "FIREALARM" && !startedDeactivating)
@@ -998,6 +1010,66 @@ public class ActivityController : MonoBehaviour {
         }
 
         return partnerPriority;
+    }
+
+    /// <summary>
+    /// Starts calling the fire department
+    /// </summary>
+    private void callFireDepartment() {
+
+        smartphone = getLeftSmartphone();
+
+        // He must have a smartphone
+        if (smartphone != null) {
+
+            calling = true;
+
+            Debug.Log($"{name}: I'm calling th Firedepartment");
+
+            // Stop
+            navComponent.isStopped = true;
+
+            // Do calling animation
+            animator.SetBool("call", true);
+            smartphone.gameObject.SetActive(true);
+            smartphone.gameObject.GetComponent<MeshRenderer>().enabled = true;
+
+            // Resume after some secs
+            StartCoroutine(resumeFromCalling(10));
+        }
+    }
+
+    /// <summary>
+    /// Get's the left hand smartphone, it's attached to the left hand for realistic movement while calling
+    /// </summary>
+    /// <returns></returns>
+    private Transform getLeftSmartphone() {
+
+        return transform
+            .Find("mixamorig:Hips")
+            .Find("mixamorig:Spine")
+            .Find("mixamorig:Spine1")
+            .Find("mixamorig:Spine2")
+            .Find("mixamorig:LeftShoulder")
+            .Find("mixamorig:LeftArm")
+            .Find("mixamorig:LeftForeArm")
+            .Find("mixamorig:LeftHand")
+            .Find("Smartphone");
+    }
+
+    /// <summary>
+    /// Resumes on the navMesh after a given amount of seconds, informs the gamelogic the firefighters are called
+    /// and hides the smartphone again
+    /// </summary>
+    /// <param name="seconds"></param>
+    /// <returns></returns>
+    private IEnumerator resumeFromCalling(int seconds) {
+
+        yield return new WaitForSeconds(seconds);
+        animator.SetBool("call", false);
+        smartphone.gameObject.SetActive(false);
+        myRegion.getMaster().getFireManager().called();
+        navComponent.isStopped = false;
     }
 
     private void tryNextInQueue() {
@@ -1185,11 +1257,18 @@ public class ActivityController : MonoBehaviour {
     }
 
     public void sawFire() {
-
-        if(Panic) return;
-        Panic = true;
+        
+        if (Panic) return;
 
         Debug.Log($"{name}: I saw a fire in {myRegion.name}");
+
+        setPanicAndInterrupt();
+    }
+
+    private void setPanicAndInterrupt() {
+
+        if (Panic) return;
+        Panic = true;
 
         nextActivity = myRegion.getRallyingPoint();
 

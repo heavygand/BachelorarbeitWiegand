@@ -63,9 +63,19 @@ public class GameLogicForActivity : MonoBehaviour {
     }
 
     private List<RegionController> regions = new List<RegionController>();
+    private FireManager fireManager;
 
     public RegionController getOutside() {
 
         return GetComponentInChildren<RegionController>();
+    }
+
+    public void setFireManager(FireManager fm) {
+
+        fireManager = fm;
+    }
+    public FireManager getFireManager() {
+
+        return fireManager;
     }
 }

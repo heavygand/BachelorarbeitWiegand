@@ -24,7 +24,7 @@ public class RegionController : MonoBehaviour {
     [Tooltip("Only needed, when this region is private")]
     public ObjectController doorBell;
 
-    [Tooltip("Only needed, when this region is private")]
+    [Tooltip("The fire that can break out in this region")]
     public GameObject myFire;
 
     public List<ObjectController> rallyingPoints;

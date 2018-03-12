@@ -124,7 +124,7 @@ public class AvatarController : MonoBehaviour {
         getMyStuff();
 
         // Check if I'm going to call the fire department
-        if (!settingAlarm && !calling && Random.Range(0, 1000) == 15) callFireDepartment();
+        //if (!settingAlarm && !calling && Random.Range(0, 1000) == 15) callFireDepartment();
 
         //Check if I'm close enough to the Target, then stop
         if (Vector3.Distance(myPos, currTargetPos) < 1) {
@@ -192,66 +192,6 @@ public class AvatarController : MonoBehaviour {
         myPos = transform.position;
         ActivityController ac = gameObject.GetComponent<ActivityController>();
         myRegion = ac.myRegion;
-    }
-
-    /// <summary>
-    /// Starts calling the fire department
-    /// </summary>
-    private void callFireDepartment() {
-
-        smartphone = getLeftSmartphone();
-
-        // He must have a smartphone
-        if (smartphone != null) {
-
-            calling = true;
-
-            Debug.Log($"{gameObject.name}: I'm calling th Firedepartment");
-
-            // Stop
-            navComponent.isStopped = true;
-
-            // Do calling animation
-            animator.SetBool("call", true);
-            smartphone.gameObject.SetActive(true);
-            smartphone.gameObject.GetComponent<MeshRenderer>().enabled = true;
-
-            // Resume after some secs
-            StartCoroutine(resumeFromCalling(10));
-        }
-    }
-
-    /// <summary>
-    /// Get's the left hand smartphone, it's attached to the left hand for realistic movement while calling
-    /// </summary>
-    /// <returns></returns>
-    private Transform getLeftSmartphone() {
-
-        return transform
-            .Find("mixamorig:Hips")
-            .Find("mixamorig:Spine")
-            .Find("mixamorig:Spine1")
-            .Find("mixamorig:Spine2")
-            .Find("mixamorig:LeftShoulder")
-            .Find("mixamorig:LeftArm")
-            .Find("mixamorig:LeftForeArm")
-            .Find("mixamorig:LeftHand")
-            .Find("Smartphone");
-    }
-
-    /// <summary>
-    /// Resumes on the navMesh after a given amount of seconds, informs the gamelogic the firefighters are called
-    /// and hides the smartphone again
-    /// </summary>
-    /// <param name="seconds"></param>
-    /// <returns></returns>
-    private IEnumerator resumeFromCalling(int seconds) {
-
-        yield return new WaitForSeconds(seconds);
-        animator.SetBool("call", false);
-        smartphone.gameObject.SetActive(false);
-        logic.called();
-        navComponent.isStopped = false;
     }
 
     /// <summary>
