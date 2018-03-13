@@ -23,7 +23,7 @@ public class FireManager : MonoBehaviour {
         master.setFireManager(this);
     }
 
-    private void AddFireInHouse() {
+    private void disableAlarm() {
 
         activateFire(GameObject.Find("Wohnhaus").GetComponent<RegionController>());
     }
@@ -43,6 +43,8 @@ public class FireManager : MonoBehaviour {
 
             deactivateFire(fireRegion);
         }
+
+        disableAudio();
     }
 
     private void deactivateFire(RegionController fireRegion) {
@@ -50,14 +52,6 @@ public class FireManager : MonoBehaviour {
         fireRegion.myFire.SetActive(false);
         fireRegion.HasAlarm = false;
         fireRegions.Remove(fireRegion);
-
-        bool allOut = true;
-        foreach (RegionController region in fireRegions) {
-            
-            if(region.HasAlarm) allOut = false;
-        }
-
-        if(allOut) disableAudio();
     }
 
     void OnGUI() {
@@ -65,11 +59,8 @@ public class FireManager : MonoBehaviour {
         if (GUI.Button(new Rect(10, 10, 200, 50), "Add random fire")) {
             AddRandomFire();
         }
-        if (GUI.Button(new Rect(10, 70, 200, 50), "Clear all fires")) {
+        if (GUI.Button(new Rect(10, 70, 200, 50), "Clear all fires and alarms")) {
             ClearAllFires();
-        }
-        if (GUI.Button(new Rect(10, 130, 200, 50), "Add fire in Wohnhaus")) {
-            AddFireInHouse();
         }
         if (GUI.Button(new Rect(10, 400, 200, 50), "Toggle Mouse Look (F)")) {
             toggleMouseLook();
@@ -165,13 +156,17 @@ public class FireManager : MonoBehaviour {
     /// <summary>
     /// Changes firefighters textField if they were called
     /// </summary>
-    public void called() {
+    public void called(ActivityController caller) {
 
         if (fireDepartmentCalled) return;
 
         fireDepartmentCalled = true;
+        Debug.LogWarning($"Fire department called, thanks to {caller.name}.");
+        //TODO: An dieser Stelle kann code eingebaut werden, der die Feuerwehr ruft
+        /*
         Text calledTextField = GameObject.Find("feuerwehrText").GetComponent<Text>();
         calledTextField.color = Color.red;
         calledTextField.fontStyle = FontStyle.Bold;
+        */
     }
 }

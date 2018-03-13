@@ -52,20 +52,21 @@ public class FieldOfView : MonoBehaviour {
                     int currentLayer = (int)Math.Log(targetMask.value, 2);
                     ActivityController script = (ActivityController)GetComponent(typeof(ActivityController));
 
-                    if (LayerMask.LayerToName(currentLayer) == "Fires") {
+                    if (LayerMask.LayerToName(currentLayer) == "Fires" && !script.FireSeen) {
 
-                        // Find this avatar and his controller
-                        if (!script.enabled) {
-                            
-                            script.sawFire();
-                        }
+                        script.sawFire();
                     }
 
-                    //Debug.Log($"Script.enabled == {script.enabled} && LayerMask.LayerToName(currentLayer) == {LayerMask.LayerToName(currentLayer)}");
-                    if (LayerMask.LayerToName(currentLayer) == "Feuermelder" && script.Panic) {
+                    // When this is a firealarm, then go there when...
+                    // ...there is no alarm
+                    // ...I have panic
+                    // ...no other avatar is currently activating this
+                    ObjectController fireAlarm = target.gameObject.GetComponent<ObjectController>();
+                    if (LayerMask.LayerToName(currentLayer) == "Feuermelder" && script.myRegion != null && !script.myRegion.HasAlarm && script.Panic && fireAlarm.CurrentUser == null) {
 
-                        Debug.Log($"{name}: Feuermelder detected, starting alarm...");
-                        StartCoroutine(script.interruptWith(target.gameObject.GetComponent<ObjectController>(), gameObject.GetComponent<ActivityController>()));
+                        Debug.Log($"{name}: Firealarm detected, starting alarm...");
+                        script.Panic = false;
+                        StartCoroutine(script.interruptWith(fireAlarm, script));
                     }
                 }
             }

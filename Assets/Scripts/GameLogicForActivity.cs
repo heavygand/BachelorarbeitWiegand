@@ -48,8 +48,8 @@ public class GameLogicForActivity : MonoBehaviour {
 
         if (searchRegions.Count == 0) {
 
-            Debug.LogError($"{name}: Cannot find a random region in an empty list!");
-            return null;
+            Debug.Log($"{name}: Cannot find a random region in an empty list: returning {regions[0].name}");
+            return regions[0];
         }
 
         return searchRegions[Random.Range(0, searchRegions.Count)];

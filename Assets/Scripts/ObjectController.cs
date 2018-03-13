@@ -210,6 +210,10 @@ public class ObjectController : MonoBehaviour {
 
         if (audio != null) audio.Play();
 
-        if(LayerMask.LayerToName(gameObject.layer) == "Feuermelder") myRegion.HasAlarm = true;
+        if (LayerMask.LayerToName(gameObject.layer) == "Feuermelder") {
+
+            myRegion.HasAlarm = true;
+            user.Panic = true;
+        }
     }
 }

@@ -114,7 +114,7 @@ MonoBehaviour:
   cannotBeFound: 1
   Priority: 99
   wichAnimation: 14
-  turnAngle: 0
+  turnAngle: 90
   lookAtNext: 0
   lookAtTarget: 0
   noTurning: 0
@@ -126,7 +126,7 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 2
   startDelay: 0
 --- !u!136 &136581117314271588
 CapsuleCollider:
