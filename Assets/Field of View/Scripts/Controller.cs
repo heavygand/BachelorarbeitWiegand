@@ -5,7 +5,9 @@ public class Controller : MonoBehaviour {
 
 	public float moveSpeed = 6;
 
+#pragma warning disable 108,114
 	Rigidbody rigidbody;
+#pragma warning restore 108,114
 	Camera viewCamera;
 	Vector3 velocity;
 

@@ -13,6 +13,7 @@ public class FireManager : MonoBehaviour {
     internal bool fireDepartmentCalled;
     private bool activatable;
     private GameLogicForActivity master;
+    private Coroutine alarmstarter;
 
     // Use this for initialization
     void Start() {
@@ -36,6 +37,8 @@ public class FireManager : MonoBehaviour {
     }
 
     void ClearAllFires() {
+
+        StopCoroutine(alarmstarter);
 
         List<RegionController> tempFireRegions = new List<RegionController>(fireRegions);
 
@@ -99,9 +102,12 @@ public class FireManager : MonoBehaviour {
         randomRegion.myFire.SetActive(true);
         fireRegions.Add(randomRegion);
 
-        Debug.LogWarning($"Simulation: Fire Activated in {randomRegion.name}");
+        Debug.Log($"Simulation: Fire Activated in {randomRegion.name}");
 
-        if (!randomRegion.HasAlarm) StartCoroutine(startAlarmIn30(randomRegion));
+        if (!randomRegion.HasAlarm) {
+
+            alarmstarter = StartCoroutine(startAlarmIn30(randomRegion));
+        }
     }
 
     /// <summary>

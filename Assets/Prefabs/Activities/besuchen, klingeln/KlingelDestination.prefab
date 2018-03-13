@@ -236,7 +236,8 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 1
   loops: 0
-  soundPlayDelay: 2
+  activationDelay: 2
+  startDelay: 0
 --- !u!136 &136615208776702798
 CapsuleCollider:
   m_ObjectHideFlags: 1

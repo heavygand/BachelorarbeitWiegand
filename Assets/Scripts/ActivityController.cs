@@ -119,10 +119,13 @@ public class ActivityController : MonoBehaviour {
         set {
             panic = value;
 
-            if (panic) {
+            if (panic && name != "Cartoon_SportCar_B01") {
+
                 // Speed for running
                 navComponent.speed = 4;
+                
                 animator.SetBool("panicMode", true);
+
                 Debug.Log($"{name}: I'm in panic!");
             }
             else {
@@ -440,11 +443,7 @@ public class ActivityController : MonoBehaviour {
             Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because my partner was interrupted ({CurrentActivity.getAvatar().name})");
             Debug.Log($"{CurrentActivity.getAvatar().name}: My former partner {name} stopped, because I was interrupted");
 
-            if (myParticipants == null) {
-
-                Debug.LogWarning($"{name}: I had to remove {CurrentActivity.getAvatar().name} from my participants, but the myParticipants list was null");
-            }
-            else {
+            if (myParticipants != null){
 
                 myParticipants.Remove(theOther);
 
@@ -634,6 +633,14 @@ public class ActivityController : MonoBehaviour {
 
                 myParticipants = new List<ActivityController> { CurrentActivity.getAvatar() };
                 Debug.Log($"{name}: {CurrentActivity.getAvatar().name} is now my participant and partner#Detail10Log");
+
+                // When there's another Avatar involved, look at him.
+                if (CurrentActivity.lookAtTarget) {
+
+                    // Look at the target
+                    Vector3 targetPos = CurrentActivity.gameObject.transform.position;
+                    transform.LookAt(new Vector3(targetPos.x, transform.position.y, targetPos.z));
+                }
             }
             
             return;
@@ -805,6 +812,9 @@ public class ActivityController : MonoBehaviour {
     }
 
     private bool requestActivityChangeFor(ObjectController activity, ActivityController requester) {
+
+        if(activity == null) Debug.LogError($"{name}: {requester.name} tried to interrupt me with a null activity");
+        if(requester == null) Debug.LogError($"{name}: someone who was null, tried to interrupt me with {activity.name}");
 
         Debug.Log($"{name}: Checking if I can be interrupted through {activity.name} from {requester.name}");
         Debug.Log($"{requester.name}: Trying to interrupt the {CurrentActivity.name} of {name} with {activity.name}");
@@ -1004,7 +1014,7 @@ public class ActivityController : MonoBehaviour {
         // There has to be alarm
         // Not when I'm already at the rallying point
         // Not when I already paniced
-        if (myRegion != null && myRegion.HasAlarm && !arrivedAtRP && !Panic) setPanicAndInterrupt();
+        if (myRegion != null && myRegion.HasAlarm && !arrivedAtRP && !Panic && name != "Cartoon_SportCar_B01") setPanicAndInterrupt();
     }
 
     private static int getPartnerPriority(ObjectController found) {
@@ -1120,7 +1130,7 @@ public class ActivityController : MonoBehaviour {
 
         if (forRegion == null) {
 
-            Debug.LogWarning($"{name}: findTargetIn(forRegion) has been called with forRegion == null");
+            Debug.Log($"{name}: findTargetIn(forRegion) has been called with forRegion == null");
             return;
         }
 
@@ -1284,7 +1294,7 @@ public class ActivityController : MonoBehaviour {
 
     private void setPanicAndInterrupt() {
 
-        if (Panic) return;
+        if (Panic || name == "Cartoon_SportCar_B01") return;
         Panic = true;
 
         nextActivity = myRegion.getRallyingPoint();
