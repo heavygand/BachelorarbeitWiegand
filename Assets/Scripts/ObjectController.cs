@@ -129,7 +129,7 @@ public class ObjectController : MonoBehaviour {
             // If the user doesn't have this as current activity anymore, then set and return null
             if (user != null && user.CurrentActivity != this && user.NextActivity != this) {
 
-                Debug.Log($"{name}: has no user anymore#Detail10Log");
+                user.log4Me("has no user anymore#Detail10Log");
                 isActivated = false;
                 user = null;
             }
@@ -140,7 +140,7 @@ public class ObjectController : MonoBehaviour {
         {
             isActivated = false;
             user = value;
-            if (user != null) Debug.Log($"{user.name}: I'm now the user of {name}#Detail10Log");
+            if (user != null) user.log4Me("I'm now the user of {name}#Detail10Log");
         }
     }
 
@@ -169,8 +169,11 @@ public class ObjectController : MonoBehaviour {
     }
 
     public void setRegion(RegionController rc) {
+        
+        if (isAvatar) {
 
-        Debug.Log($"{(isAvatar ? avatar.name + ": " : "")}{name}'s region is now {(rc != null ? rc.name : "null")} (was {(myRegion != null ? myRegion.name : "null")})#Detail10Log");
+            avatar.log4Me($"{name}'s region is now {(rc != null ? rc.name : "null")} (was {(myRegion != null ? myRegion.name : "null")})#Detail10Log");
+        }
 
         myRegion = rc;
 

@@ -119,7 +119,7 @@ public class RegionController : MonoBehaviour {
 
 	    foreach (ActivityController waiter in waiters2) {
 
-			Debug.Log($"{waiter.name}: I've waited and got startGoing() from the Regioncontroller");
+            waiter.log4Me($"I've waited and got startGoing() from the Regioncontroller");
 			waiter.prepareGoing();
 			waiters.Remove(waiter);
 		}
@@ -156,7 +156,7 @@ public class RegionController : MonoBehaviour {
 
         if (avatar.getRegion() == this) return;
 
-        Debug.Log($"{avatar.name}: I am now registered in {name}#Detail10Log");
+        avatar.log4Me($"I am now registered in {name}#Detail10Log");
 
 		attenders.Add(avatar);
 		avatar.setRegion(this);
@@ -164,13 +164,13 @@ public class RegionController : MonoBehaviour {
         // Start this avatar if we already have an activity and only if he has no activity yet
 		if (activities.Count > 0 && avatar.CurrentActivity == null) {
 
-		    Debug.Log($"{avatar.name}: I'm starting in {name}#Detail10Log");
+            avatar.log4Me($"I'm starting in {name}#Detail10Log");
 			avatar.prepareGoing();
 		}
         // Avatar will have to wait, when there still are no activities
         else if(activities.Count == 0) {
 
-            Debug.Log($"{avatar.name}: I'm waiting in {name}, because there still were no activities");
+            avatar.log4Me($"I'm waiting in {name}, because there still were no activities");
 			waiters.Add(avatar);
 		}
         // Do nothing
@@ -181,7 +181,7 @@ public class RegionController : MonoBehaviour {
 
     public void registerActivity(ObjectController activity) {
 		
-		Debug.Log($"{(activity.isAvatar ? activity.getAvatar().name+": my " : "")}activity {activity.name} is in {name}#Detail10Log");
+		if(activity.isAvatar) activity.getAvatar().log4Me($"My activity {activity.name} is in {name}#Detail10Log");
 
         activities.Add(activity);
 		activity.setRegion(this);
@@ -206,8 +206,8 @@ public class RegionController : MonoBehaviour {
     }
 
     public void unregisterAvatar(ActivityController avatar) {
-        
-        Debug.Log($"{avatar.name}: I have left region {name}#Detail10Log");
+
+        avatar.log4Me($"I have left region {name}#Detail10Log");
 
         attenders.Remove(avatar);
 
@@ -224,7 +224,7 @@ public class RegionController : MonoBehaviour {
         ActivityController avatar = other.GetComponent<ActivityController>();
         if (avatar != null) {
 
-            Debug.Log($"{avatar.name}: I have entered {name}#Detail10Log");
+            avatar.log4Me($"I have entered {name}#Detail10Log");
             registerAvatar(avatar);
         }
 
@@ -256,13 +256,13 @@ public class RegionController : MonoBehaviour {
 
 	public List<ActivityController> getTheAvailableOthersFor(ActivityController asker, ObjectController newActivity) {
 
-        Debug.Log($"{asker.name}: {name} has {attenders.Count} inhabitants");
+        asker.log4Me($"{name} has {attenders.Count} inhabitants");
 
         // For iteration
         List <ActivityController> theOthers = new List<ActivityController>(attenders);
         theOthers.Remove(asker);
 
-        Debug.Log($"{asker.name}: {name} has {theOthers.Count} participants for {newActivity.name}");
+        asker.log4Me($"{name} has {theOthers.Count} participants for {newActivity.name}");
 
         // For returning
         List<ActivityController> theOthers2 = new List<ActivityController>(theOthers);
@@ -281,7 +281,7 @@ public class RegionController : MonoBehaviour {
 
                 theOthers2.Remove(other);
 
-				Debug.Log($"{asker.name}: {other.name} in {name} could not participate in {newActivity.name} because he is doing something more important: {other.CurrentActivity.name}");
+				asker.log4Me($"{other.name} in {name} could not participate in {newActivity.name} because he is doing something more important: {other.CurrentActivity.name}");
             }
 		}
 

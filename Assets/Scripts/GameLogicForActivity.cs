@@ -7,15 +7,8 @@ public class GameLogicForActivity : MonoBehaviour {
     private List<RegionController> regions = new List<RegionController>();
     private FireManager fireManager;
 
-    // Use this for initialization
-    void Awake () {
-
-        Debug.Log($"Simulation startet {System.DateTime.UtcNow.ToString("HH:mm dd MMMM, yyyy")} ######################################################################");
-
-    }
-	
-	// Update is called once per frame
-	void Update () {
+    // Update is called once per frame
+    void Update () {
 
     }
 

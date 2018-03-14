@@ -4,11 +4,14 @@
 /// Matrikelnummer: 30204300
 /// </summary>
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// This Script manages all activities and deactivates itself in case of alarm
@@ -57,6 +60,15 @@ public class ActivityController : MonoBehaviour {
     [Tooltip("The destination bubble for partner activities")]
     public GameObject bubble;
 
+    [Tooltip("Toggles the display of the debug log")]
+    public bool showDebugWindow;
+
+    [Tooltip("Determines the detail of the log in the scene view")]
+    public bool detailLog;
+
+    [Tooltip("Determines if the caller and the line number shall be shown")]
+    public bool showPlace;
+
     private ObjectController lastActivity;
     private ObjectController interruptedFor;
     private ObjectController secondLastActivity;
@@ -65,7 +77,11 @@ public class ActivityController : MonoBehaviour {
     private GameObject leftHand;
     private GameObject rightHand;
     private GameObject myBubble;
-    
+
+    string lastMessage;
+    string secondToLastMessage;
+    public List<string> log;
+
     private Transform whatBurn;
 
     private bool panic;
@@ -105,8 +121,8 @@ public class ActivityController : MonoBehaviour {
         {
             myLeader = value;
 
-            Debug.Log($"{name}: {(myLeader != null ? "My leader is now " + myLeader.name : "I have no leader anymore")}");
-            Debug.Log($"{(myLeader != null ? myLeader.name + ": I'm now the leader of " + name : "I'm not the leader of "+name+" anymore")}");
+            log4Me($"{name}: {(myLeader != null ? "My leader is now " + myLeader.name : "I have no leader anymore")}");
+            log4Me($"{(myLeader != null ? myLeader.name + ": I'm now the leader of " + name : "I'm not the leader of "+name+" anymore")}");
         }
     }
 
@@ -126,13 +142,13 @@ public class ActivityController : MonoBehaviour {
                 
                 animator.SetBool("panicMode", true);
 
-                Debug.Log($"{name}: I'm in panic!");
+                log4Me($"{name}: I'm in panic!");
             }
             else {
                 // Speed for going
                 navComponent.speed = 2;
                 animator.SetBool("panicMode", false);
-                Debug.Log($"{name}: Not in panic anymore");
+                log4Me($"{name}: Not in panic anymore");
             }
         }
     }
@@ -166,7 +182,7 @@ public class ActivityController : MonoBehaviour {
     // Set a target
     private void setTarget() {
 
-        Debug.Log($"{name}: setTarget() called#Detail10Log");
+        log4Me($"{name}: setTarget() called#Detail10Log");
 
         activityChangeRequested = false;
 
@@ -183,27 +199,27 @@ public class ActivityController : MonoBehaviour {
 
             float waitTime = 0.5f;
 
-            Debug.Log($"{name} setting target failed, trying again in {waitTime}s#Detail10Log");
+            log4Me($"{name} setting target failed, trying again in {waitTime}s#Detail10Log");
 
             StartCoroutine(tryAgainAfterTime(waitTime));
             return;
         }
         // Target Activity found.
-        Debug.Log($"{name}: Current Activity is {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}#Detail10Log");
+        log4Me($"{name}: Current Activity is {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}#Detail10Log");
 
-        Debug.Log($"{name}: {(iAmParticipant ? "I am a participant of " + MyLeader.name + "'s " + MyLeader.CurrentActivity.name : "I am no participant of anything (-> no leader)")}#Detail10Log");
-        Debug.Log($"{name}: {(CurrentActivity.isAvatar ? "My current activity is another avatar -> " + CurrentActivity.getAvatar().name : "I'm gonna do my activity alone")}#Detail10Log");
+        log4Me($"{name}: {(iAmParticipant ? "I am a participant of " + MyLeader.name + "'s " + MyLeader.CurrentActivity.name : "I am no participant of anything (-> no leader)")}#Detail10Log");
+        log4Me($"{name}: {(CurrentActivity.isAvatar ? "My current activity is another avatar -> " + CurrentActivity.getAvatar().name : "I'm gonna do my activity alone")}#Detail10Log");
 
         // Decide what to do now
         if (iAmParticipant && CurrentActivity.isAvatar) {
 
-            Debug.Log($"{name}: I don't have to start going");
+            log4Me($"{name}: I don't have to start going");
 
             Doing = StartCoroutine(startDoing());
         }
         else {
 
-            Debug.Log($"{name}: calling startGoing()#Detail10Log");
+            log4Me($"{name}: calling startGoing()#Detail10Log");
 
             // It is possible, that the other avatar is not there anymore, when we arrive, so this bubble will signalise, that we arrived but noone was there.
             // The bubble has to be smaller than the trigger collider of the destination
@@ -219,7 +235,7 @@ public class ActivityController : MonoBehaviour {
         // First set a target if we have no
         if (CurrentActivity == null) {
 
-            Debug.Log($"{name}: calling setTarget, because my currentactivity was null#Detail10Log");
+            log4Me($"{name}: calling setTarget, because my currentactivity was null#Detail10Log");
 
             setTarget();
             return;
@@ -228,7 +244,7 @@ public class ActivityController : MonoBehaviour {
         // Stop sliding, if we still do
         if (sliding != null) {
 
-            Debug.Log($"{name}: stopping to slide, because I want to start going");
+            log4Me($"{name}: stopping to slide, because I want to start going");
             StopCoroutine(sliding);
             sliding = null;
         }
@@ -239,7 +255,7 @@ public class ActivityController : MonoBehaviour {
     private IEnumerator startGoing() {
 
         // Wait for the start delay
-        Debug.Log($"{name}: Waiting {CurrentActivity.startDelay} seconds to start going");
+        log4Me($"{name}: Waiting {CurrentActivity.startDelay} seconds to start going");
         yield return new WaitForSeconds(CurrentActivity.startDelay);
 
         // Reactivate stuff, that maybe was deactivated
@@ -250,7 +266,7 @@ public class ActivityController : MonoBehaviour {
         if (navComponent.isOnNavMesh) {
 
             navComponent.SetDestination(CurrentActivity.WorkPlace);
-            Debug.Log($"{name}: I'm now going to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+            log4Me($"{name}: I'm now going to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
         }
         else {
 
@@ -274,7 +290,7 @@ public class ActivityController : MonoBehaviour {
         // When this is a destination-bubble, then set a new target and destroy this bubble
         if (other.gameObject == myBubble) {
 
-            Debug.Log($"{name}: arrived at destinationBubble, but no activity was there (probably moved away)");
+            log4Me($"{name}: arrived at destinationBubble, but no activity was there (probably moved away)");
 
             destroyBubble();
             setTarget();
@@ -293,7 +309,7 @@ public class ActivityController : MonoBehaviour {
             otherScript == CurrentActivity &&
             going) {
 
-            Debug.Log($"{name}: arrived at {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+            log4Me($"{name}: arrived at {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
             
             if (myBubble != null) destroyBubble();
 
@@ -317,7 +333,7 @@ public class ActivityController : MonoBehaviour {
 
     private void stopGoing() {
 
-        Debug.Log($"{name}: I stopped going#Detail10Log");
+        log4Me($"{name}: I stopped going#Detail10Log");
 
         going = false;
 
@@ -347,7 +363,7 @@ public class ActivityController : MonoBehaviour {
          * PREPARATIONS
         */
 
-        Debug.Log($"{name}: preparing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"{name}: preparing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // Activate the object
         CurrentActivity.IsActivated = true;
@@ -371,7 +387,7 @@ public class ActivityController : MonoBehaviour {
         // Activate animation. Standing does not have to be activated
         if (CurrentActivity.wichAnimation.ToString() != "stand" && !activityChangeRequested) {
 
-            Debug.Log($"{name}: animation {CurrentActivity.wichAnimation} activated.#Detail10Log");
+            log4Me($"{name}: animation {CurrentActivity.wichAnimation} activated.#Detail10Log");
 
             if (name != "Cartoon_SportCar_B01") {
 
@@ -393,10 +409,10 @@ public class ActivityController : MonoBehaviour {
         }
         else if (iAmParticipant) {
 
-            Debug.Log($"{name}: organizeGroupActivity() not neccesary, because I am a participant#Detail10Log");
+            log4Me($"{name}: organizeGroupActivity() not neccesary, because I am a participant#Detail10Log");
         }
 
-        Debug.Log($"{name}: starting {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"{name}: starting {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // If we need a tool, then spawn it
         setToolAndHandsFields();
@@ -409,7 +425,7 @@ public class ActivityController : MonoBehaviour {
          * ACTIVITY TIME LOOP #########
         */
 
-        Debug.Log($"{name}: my usage time for {CurrentActivity.name} runs now#Detail10Log");
+        log4Me($"{name}: my usage time for {CurrentActivity.name} runs now#Detail10Log");
 
         // Activity time. Also check if my state changed every 20ms
         const float ms = 0.02f;
@@ -435,13 +451,13 @@ public class ActivityController : MonoBehaviour {
         // Stopped, because activity time is over
         if (timeIsOver) {
 
-            Debug.Log($"{name}: usage time is over for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+            log4Me($"{name}: usage time is over for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
         }
         // Stopped, because my partner was interrupted or away
         else if (partnerIsAway) {
 
-            Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because my partner was interrupted ({CurrentActivity.getAvatar().name})");
-            Debug.Log($"{CurrentActivity.getAvatar().name}: My former partner {name} stopped, because I was interrupted");
+            log4Me($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because my partner was interrupted ({CurrentActivity.getAvatar().name})");
+            log4Me($"{CurrentActivity.getAvatar().name}: My former partner {name} stopped, because I was interrupted");
 
             if (myParticipants != null){
 
@@ -453,11 +469,11 @@ public class ActivityController : MonoBehaviour {
         // Stopped, because I was interrupted
         else if (activityChangeRequested && Panic) {
 
-            Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because panic");
+            log4Me($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because panic");
         }
         else if (activityChangeRequested) {
 
-            Debug.Log($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
+            log4Me($"{name}: stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because interrupted");
         }
         else {
 
@@ -468,13 +484,13 @@ public class ActivityController : MonoBehaviour {
 
     private void stopDoing() {
 
-        Debug.Log($"{gameObject.name}: stops doing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}#Detail10Log");
+        log4Me($"{gameObject.name}: stops doing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}#Detail10Log");
 
         stopCoroutines();
 
         if (!checkFurtherChildDestinations()) {
 
-            Debug.Log($"{name}: There were no childDestinations, destroying my tool#Detail10Log");
+            log4Me($"{name}: There were no childDestinations, destroying my tool#Detail10Log");
 
             Destroy(tool);
             tool = null;
@@ -483,14 +499,14 @@ public class ActivityController : MonoBehaviour {
         // Stop doing this activity (standing does not have to be deactivated)
         if (name != "Cartoon_SportCar_B01" && CurrentActivity != null && CurrentActivity.wichAnimation.ToString() != "stand") {
 
-            Debug.Log($"{name}: Setting animator bool of {CurrentActivity.wichAnimation} to false#Detail10Log");
+            log4Me($"{name}: Setting animator bool of {CurrentActivity.wichAnimation} to false#Detail10Log");
 
             animator.SetBool(CurrentActivity.wichAnimation.ToString(), false);
         }
         // Re-place when displaced
         if (Displaced) {
 
-            Debug.Log($"{name}: I was displaced, so sliding back#Detail10Log");
+            log4Me($"{name}: I was displaced, so sliding back#Detail10Log");
 
             sliding = StartCoroutine(slideToPlace(false));
         }
@@ -501,17 +517,17 @@ public class ActivityController : MonoBehaviour {
 
     private IEnumerator continueWhenDoneStopping() {
 
-        Debug.Log($"{name}: Started Coroutine continueWhenDoneStopping()#Detail10Log");
+        log4Me($"{name}: Started Coroutine continueWhenDoneStopping()#Detail10Log");
 
         while (name != "Cartoon_SportCar_B01" && animator.GetAnimatorTransitionInfo(0).duration != 0) {
 
-            Debug.Log($"{name}: Cannot proceed, because I'm still {animator.GetAnimatorTransitionInfo(0).duration}s in a transition from {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
+            log4Me($"{name}: Cannot proceed, because I'm still {animator.GetAnimatorTransitionInfo(0).duration}s in a transition from {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
 
             yield return new WaitForSeconds(0.2f);
         }
         while (name != "Cartoon_SportCar_B01" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
-            Debug.Log($"{name}: Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} has exit time");
+            log4Me($"{name}: Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} has exit time");
 
             yield return new WaitForSeconds(0.2f);
         }
@@ -523,7 +539,7 @@ public class ActivityController : MonoBehaviour {
         }
         if(!iAmParticipant && Panic) deOrganize();
 
-        Debug.Log($"{name}: done stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"{name}: done stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // The end. Proceed as usual
         setTarget();
@@ -535,19 +551,19 @@ public class ActivityController : MonoBehaviour {
 
             StopCoroutine(Doing);
             Doing = null;
-            Debug.Log($"{name}: Coroutine doing stopped");
+            log4Me($"{name}: Coroutine doing stopped");
         }
         if (rotateRoutine != null) {
 
             StopCoroutine(rotateRoutine);
             rotateRoutine = null;
-            Debug.Log($"{name}: Coroutine rotateRoutine stopped");
+            log4Me($"{name}: Coroutine rotateRoutine stopped");
         }
         if (sliding != null) {
 
             StopCoroutine(sliding);
             sliding = null;
-            Debug.Log($"{name}: Coroutine sliding stopped");
+            log4Me($"{name}: Coroutine sliding stopped");
         }
     }
 
@@ -560,8 +576,8 @@ public class ActivityController : MonoBehaviour {
 
             if (!Panic && !parti.interruptedFor.IsActivated) {
 
-                    Debug.Log($"{name}: Cannot proceed, because {parti.interruptedFor.name} is not activated yet");
-                    Debug.Log($"{parti.name}: My Leader {name} cannot proceed, because {parti.interruptedFor.name} is not activated yet");
+                    log4Me($"{name}: Cannot proceed, because {parti.interruptedFor.name} is not activated yet");
+                    log4Me($"{parti.name}: My Leader {name} cannot proceed, because {parti.interruptedFor.name} is not activated yet");
 
                 return false;
             }
@@ -582,7 +598,7 @@ public class ActivityController : MonoBehaviour {
         
         if(myParticipants == null) return;
 
-        Debug.Log($"{name}: Deorganizing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"{name}: Deorganizing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // Deorganize the group activity
         foreach (ActivityController parti in myParticipants) {
@@ -609,7 +625,7 @@ public class ActivityController : MonoBehaviour {
             Debug.LogError($"{name}: Parent {parentOfCurrAct.name} has 0 other activities");
         }
 
-        Debug.Log($"{name}: Parent {parentOfCurrAct.name} had {otherActivities.Count} groupactivitychild without {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"{name}: Parent {parentOfCurrAct.name} had {otherActivities.Count} groupactivitychild without {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         return otherActivities;
     }
@@ -617,7 +633,7 @@ public class ActivityController : MonoBehaviour {
     // When this is a group activity, then it has to be organized (pick and interrupt the others, etc)
     private void organizeGroupActivity() {
 
-        Debug.Log($"{name}: Organizing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"{name}: Organizing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         // When my group activity is another avatar
         if (CurrentActivity.isAvatar) {
@@ -632,7 +648,7 @@ public class ActivityController : MonoBehaviour {
             else {
 
                 myParticipants = new List<ActivityController> { CurrentActivity.getAvatar() };
-                Debug.Log($"{name}: {CurrentActivity.getAvatar().name} is now my participant and partner#Detail10Log");
+                log4Me($"{name}: {CurrentActivity.getAvatar().name} is now my participant and partner#Detail10Log");
 
                 // When there's another Avatar involved, look at him.
                 if (CurrentActivity.lookAtTarget) {
@@ -653,7 +669,7 @@ public class ActivityController : MonoBehaviour {
 
         if (theOthers.Count == 0) {
 
-            Debug.LogWarning($"{name}: No participants found for groupactivity {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}!");
+            log4Me($"{name}: No participants found for groupactivity {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}!");
 
             // When this was a doorbell, then go back to the old region
             if (CurrentActivity == CurrentActivity.getRegion().doorBell) {
@@ -668,7 +684,7 @@ public class ActivityController : MonoBehaviour {
 
         myParticipants = theOthers.GetRange(0, (theOthers.Count > otherActivities.Count ? otherActivities.Count : theOthers.Count));
 
-        Debug.Log($"{name}: {myParticipants.Count} participants picked{(myParticipants.Count == 1 ? ": just " + myParticipants[0].name : "")}");
+        log4Me($"{name}: {myParticipants.Count} participants picked{(myParticipants.Count == 1 ? ": just " + myParticipants[0].name : "")}");
 
         // And try to interrupt them with one place in the groupactivity
         int i = 0;
@@ -676,7 +692,7 @@ public class ActivityController : MonoBehaviour {
 
             if (!participant.requestActivityChangeFor(otherActivities[i], this)) {
 
-                Debug.Log($"{name}: Could not interrupt {participant.name} with {otherActivities[i]}");
+                log4Me($"{name}: Could not interrupt {participant.name} with {otherActivities[i]}");
             }
 
             i++;
@@ -694,7 +710,7 @@ public class ActivityController : MonoBehaviour {
         // When the activity still has children
         if (!activityChangeRequested && componentsInChildren.Length >= 2 && componentsInChildren[1] != null) {
 
-            Debug.Log($"{name}: Proceeding to {componentsInChildren[1].name} after this");
+            log4Me($"{name}: Proceeding to {componentsInChildren[1].name} after this");
 
             // Then go there first
             NextActivity = componentsInChildren[1];
@@ -704,7 +720,7 @@ public class ActivityController : MonoBehaviour {
         // Else check if we still have loops
         if (!activityChangeRequested && CurrentActivity.loops > 0) {
 
-            Debug.Log($"{name}: No childDestinations anymore, but I still have {CurrentActivity.loops} loops. Will start over again.");
+            log4Me($"{name}: No childDestinations anymore, but I still have {CurrentActivity.loops} loops. Will start over again.");
 
             CurrentActivity.loops--;
 
@@ -717,7 +733,7 @@ public class ActivityController : MonoBehaviour {
         // Loops was 0, proceed normally
         CurrentActivity.resetLoops();
 
-        Debug.Log(
+        log4Me(
                 $"{name}: No childDestinations and no loops. Continuing normally after {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}.#Detail10Log");
 
         return false;
@@ -739,7 +755,7 @@ public class ActivityController : MonoBehaviour {
         // No hand
         if (CurrentActivity.handToUse == ObjectController.HandUsage.noHand) {
 
-            Debug.Log($"{name}: Using my tool without hands.");
+            log4Me($"{name}: Using my tool without hands.");
 
             tool.transform.position = transform.position;
         }
@@ -747,13 +763,13 @@ public class ActivityController : MonoBehaviour {
         else if (CurrentActivity.handToUse == ObjectController.HandUsage.leftHand
             || CurrentActivity.handToUse == ObjectController.HandUsage.rightHand) {
 
-            Debug.Log($"{name}: Using my tool with one hand: {CurrentActivity.handToUse}.");
+            log4Me($"{name}: Using my tool with one hand: {CurrentActivity.handToUse}.");
             putToolInHand(CurrentActivity.handToUse);
         }
         // Both hands
         else {
 
-            Debug.Log($"{name}: Using my tool with both hands.#Detail10Log");
+            log4Me($"{name}: Using my tool with both hands.#Detail10Log");
 
             Vector3 leftHandPos = leftHand.transform.position;
             Vector3 rightHandPos = rightHand.transform.position;
@@ -788,12 +804,12 @@ public class ActivityController : MonoBehaviour {
 
         if (CurrentActivity.toolToUse == null) {
 
-            Debug.Log($"{name}: There is no tool to use for me#Detail10Log");
+            log4Me($"{name}: There is no tool to use for me#Detail10Log");
 
             return;
         }
 
-        Debug.Log($"{name}: I have to use a {CurrentActivity.toolToUse.name} for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"{name}: I have to use a {CurrentActivity.toolToUse.name} for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
         tool = Instantiate(CurrentActivity.toolToUse);
         tool.transform.parent = gameObject.transform;
@@ -816,8 +832,9 @@ public class ActivityController : MonoBehaviour {
         if(activity == null) Debug.LogError($"{name}: {requester.name} tried to interrupt me with a null activity");
         if(requester == null) Debug.LogError($"{name}: someone who was null, tried to interrupt me with {activity.name}");
 
-        Debug.Log($"{name}: Checking if I can be interrupted through {activity.name} from {requester.name}");
-        Debug.Log($"{requester.name}: Trying to interrupt the {CurrentActivity.name} of {name} with {activity.name}");
+        log4Me($"{name}: Checking if I can be interrupted through {activity.name} from {requester.name}");
+        log4Me($"{requester.name}: Trying to interrupt {(CurrentActivity != null ? CurrentActivity.name : "no activity")} of {name} with {activity.name}");
+
 
         int myPriority = CurrentActivity == null ? -1 : CurrentActivity.Priority;
 
@@ -828,8 +845,8 @@ public class ActivityController : MonoBehaviour {
             return true;
         }
 
-        Debug.Log($"{name}: I refused the interruption through {activity.name} from {requester.name} his prio={activity.Priority}, my prio={myPriority}");
-        Debug.Log($"{requester.name}: {name} refused the interruption through {activity.name}, my prio={activity.Priority}, his prio={myPriority} ({CurrentActivity.name})");
+        log4Me($"{name}: I refused the interruption through {activity.name} from {requester.name} his prio={activity.Priority}, my prio={myPriority}");
+        log4Me($"{requester.name}: {name} refused the interruption through {activity.name}, my prio={activity.Priority}, his prio={myPriority} ({CurrentActivity.name})");
 
         return false;
     }
@@ -839,8 +856,8 @@ public class ActivityController : MonoBehaviour {
         if(requester == null) Debug.LogError($"{name}: Requester war null in interruptWith()");
         if(activity == null) Debug.LogError($"{name}: activity war null in interruptWith()");
 
-        Debug.Log($"{name}: Interruption {activity.name}{(activity.isAvatar ? " with " + activity.getAvatar().name : "")} accepted");
-        Debug.Log($"{requester.name}: Sucessfully interrupted {name} with {activity.name}");
+        log4Me($"{name}: Interruption {activity.name}{(activity.isAvatar ? " with " + activity.getAvatar().name : "")} accepted");
+        log4Me($"{requester.name}: Sucessfully interrupted {name} with {activity.name}");
 
         MyLeader = requester;
 
@@ -855,13 +872,13 @@ public class ActivityController : MonoBehaviour {
 
     private void interrupt() {
 
-        Debug.Log($"{name}: I'm interrupting myself");
+        log4Me($"{name}: I'm interrupting myself");
 
         activityChangeRequested = true;
 
         if (going) {
 
-            Debug.Log($"{name}: was going, therefore stopping and setting new target#Detail10Log");
+            log4Me($"{name}: was going, therefore stopping and setting new target#Detail10Log");
 
             stopGoing();
             setTarget();
@@ -934,7 +951,7 @@ public class ActivityController : MonoBehaviour {
 
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.15f);
 
-            Debug.Log($"{gameObject.name}: Rotating...#Detail10Log");
+            log4Me($"{gameObject.name}: Rotating...#Detail10Log");
 
             yield return new WaitForSeconds(0.01f);
         }
@@ -966,7 +983,7 @@ public class ActivityController : MonoBehaviour {
         // Move to pos
         while (Vector3.Distance(transform.position, targetPos) >= 0.05f) {
 
-            Debug.Log($"{name}: Sliding to place...");
+            log4Me($"{name}: Sliding to place...");
             transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime / 3);
             yield return new WaitForSeconds(0);
         }
@@ -986,12 +1003,12 @@ public class ActivityController : MonoBehaviour {
         myBubble.name = name + "'s destination Bubble to " + CurrentActivity.getAvatar().name;
         myBubble.transform.position = CurrentActivity.WorkPlace;
 
-        Debug.Log($"{name}: instantiated a bubble at {myBubble.transform.position}");
+        log4Me($"{name}: instantiated a bubble at {myBubble.transform.position}");
     }
 
     private void destroyBubble() {
 
-        Debug.Log($"{name}: Destroying my bubble --- ({myBubble.name})");
+        log4Me($"{name}: Destroying my bubble --- ({myBubble.name})");
         Destroy(myBubble);
         myBubble = null;
     }
@@ -1045,7 +1062,7 @@ public class ActivityController : MonoBehaviour {
         // He must have a smartphone
         if (smartphone != null) {
 
-            Debug.Log($"{name}: I'm calling the Firedepartment");
+            log4Me($"{name}: I'm calling the Firedepartment");
 
             // Stop
             navComponent.enabled = true;
@@ -1097,11 +1114,11 @@ public class ActivityController : MonoBehaviour {
 
     private void tryNextInQueue() {
 
-        Debug.Log(
+        log4Me(
                 $"{name}: last activity was {(lastActivity == null ? "null" : lastActivity.name)} is now {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))}#Detail10Log");
 
         if (NextActivity != null) {
-            Debug.Log(
+            log4Me(
                     $"{name}: got {NextActivity.name} from NextActivity. (current was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))})");
         }
 
@@ -1113,7 +1130,7 @@ public class ActivityController : MonoBehaviour {
 
         if (interruptedFor != null && lastActivity != interruptedFor && CurrentActivity != interruptedFor) {
 
-            Debug.Log($"{name}: lastactivity and currentactivity were not {interruptedFor.name}, so iAmPartnerFor = null");
+            log4Me($"{name}: lastactivity and currentactivity were not {interruptedFor.name}, so iAmPartnerFor = null");
 
             interruptedFor = null;
         }
@@ -1130,11 +1147,11 @@ public class ActivityController : MonoBehaviour {
 
         if (forRegion == null) {
 
-            Debug.Log($"{name}: findTargetIn(forRegion) has been called with forRegion == null");
+            log4Me($"{name}: findTargetIn(forRegion) has been called with forRegion == null");
             return;
         }
 
-        Debug.Log($"{name}: Picking a random target in {forRegion.name}");
+        log4Me($"{name}: Picking a random target in {forRegion.name}");
 
         //Get the activities in my region
         List<ObjectController> activities = forRegion.getActivities();
@@ -1158,14 +1175,14 @@ public class ActivityController : MonoBehaviour {
             // When there were no activities in the region (should not happen)
             else if (activities.Count == 0) {
 
-                Debug.Log($"{name}: could not find any activities in {forRegion.name}.");
+                log4Me($"{name}: could not find any activities in {forRegion.name}.");
 
                 return;
             }
             // Outside of this region
             else if (target == activities.Count) {
 
-                Debug.Log($"{name}: I rather change my region :)");
+                log4Me($"{name}: I rather change my region :)");
 
                 findOutside = false;
 
@@ -1182,7 +1199,7 @@ public class ActivityController : MonoBehaviour {
                 return;
             }
 
-            Debug.Log($"{name}: found {foundActivity.name}{(foundActivity.isAvatar ? " with " + foundActivity.getAvatar().name : "")}.#Detail10Log");
+            log4Me($"{name}: found {foundActivity.name}{(foundActivity.isAvatar ? " with " + foundActivity.getAvatar().name : "")}.#Detail10Log");
 
             // Check if found activity is ok
             if (activityIsOK(foundActivity)) {
@@ -1190,7 +1207,7 @@ public class ActivityController : MonoBehaviour {
                 // When this is a private region, and it's not my current region, then ring the doorbell first
                 if (forRegion.isPrivate && forRegion != myRegion) {
 
-                    Debug.Log($"{name}: other region {forRegion.name} is private, so ringing doorbell first.");
+                    log4Me($"{name}: other region {forRegion.name} is private, so ringing doorbell first.");
 
                     CurrentActivity = forRegion.doorBell;
                     NextActivity = foundActivity;
@@ -1199,7 +1216,7 @@ public class ActivityController : MonoBehaviour {
 
                     CurrentActivity = foundActivity;
 
-                    Debug.Log($"{name}: Currentactivity is now {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")} in {forRegion.name}");
+                    log4Me($"{name}: Currentactivity is now {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")} in {forRegion.name}");
                 }
             }
         }
@@ -1218,7 +1235,7 @@ public class ActivityController : MonoBehaviour {
 
     private bool activityIsOK(ObjectController activity2Check) {
 
-        Debug.Log($"{name}: checking {activity2Check.name}{(activity2Check.isAvatar ? " with " + activity2Check.getAvatar().name : "")}#Detail10Log");
+        log4Me($"{name}: checking {activity2Check.name}{(activity2Check.isAvatar ? " with " + activity2Check.getAvatar().name : "")}#Detail10Log");
 
         // Check if the found activity is ok, the bool statements, these criteria have to fulfilled
         Hashtable criteria = new Hashtable {
@@ -1257,7 +1274,7 @@ public class ActivityController : MonoBehaviour {
             }
         }
 
-        Debug.Log($"{name}: {(allCriteriaOK ? "...was OK " : "...was not OK, because " + reason)}#Detail10Log");
+        log4Me($"{name}: {(allCriteriaOK ? "...was OK " : "...was not OK, because " + reason)}#Detail10Log");
 
         return allCriteriaOK;
     }
@@ -1268,7 +1285,7 @@ public class ActivityController : MonoBehaviour {
 
         myRegion = rc;
 
-        Debug.Log($"{name}: My region is now {(myRegion != null ? myRegion.name : "null")} (was {(oldRegion != null ? oldRegion.name : "null")})");
+        log4Me($"{name}: My region is now {(myRegion != null ? myRegion.name : "null")} (was {(oldRegion != null ? oldRegion.name : "null")})");
 
         // Unregister in the region if he isn't the caller, myRegion variable will be nulled as a side effekt
         if (oldRegion != null && oldRegion.getAttenders().Contains(this))
@@ -1287,7 +1304,7 @@ public class ActivityController : MonoBehaviour {
         
         fireSeen = true;
 
-        Debug.Log($"{name}: I saw a fire in {myRegion.name}");
+        log4Me($"{name}: I saw a fire in {myRegion.name}");
 
         setPanicAndInterrupt();
     }
@@ -1306,13 +1323,25 @@ public class ActivityController : MonoBehaviour {
     // Do a surprised stopping movement
     private void doSurprisedStoppingMovement() {
 
-        Debug.Log($"{name}: Doing Surprised animation");
+        log4Me($"{name}: Doing Surprised animation");
 
         navComponent.enabled = true;
         navComponent.isStopped = true;
         animator.applyRootMotion = true;
         animator.SetTrigger("STOP");
         animator.applyRootMotion = false;
+    }
+
+    public void log4Me(string logString, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = null) {
+
+        if(log == null) log = new List<string>();
+
+        string toLog = $"{DateTime.Now:HH:mm:ss.fff}*{caller}:{lineNumber}#{logString}";
+
+        if (logString != secondToLastMessage && logString != lastMessage) log.Add(toLog);
+
+        secondToLastMessage = lastMessage;
+        lastMessage = logString;
     }
 
     private IEnumerator setPanicFalseAfterDelay() {
