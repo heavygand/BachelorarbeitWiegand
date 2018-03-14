@@ -189,7 +189,7 @@ public class ObjectController : MonoBehaviour {
 
 	private Vector3 rotateVector(Vector3 unturnedVector) {
 
-        return transform.localRotation * unturnedVector;
+        return transform.rotation * unturnedVector;
     }
 
     public RegionController getRegion() {

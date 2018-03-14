@@ -1,11 +1,6 @@
-﻿/// <summary>
-/// Modyfied by Christian Wiegand
-/// </summary>
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class FireManager : MonoBehaviour {
 
@@ -22,11 +17,6 @@ public class FireManager : MonoBehaviour {
         fireRegions = new List<RegionController>();
         master = GetComponentInParent<GameLogicForActivity>();
         master.setFireManager(this);
-    }
-
-    private void disableAlarm() {
-
-        activateFire(GameObject.Find("Wohnhaus").GetComponent<RegionController>());
     }
 
     void AddRandomFire() {
@@ -59,15 +49,23 @@ public class FireManager : MonoBehaviour {
 
     void OnGUI() {
 
-        if (GUI.Button(new Rect(10, 10, 200, 50), "Add random fire")) {
+        if (GUI.Button(new Rect(10, 10, 200, 50), "Add random fire (E)")) {
             AddRandomFire();
         }
-        if (GUI.Button(new Rect(10, 70, 200, 50), "Clear all fires and alarms")) {
+        if (GUI.Button(new Rect(10, 70, 200, 50), "Clear all fires and alarms (C)")) {
             ClearAllFires();
         }
-        if (GUI.Button(new Rect(10, 400, 200, 50), "Toggle Mouse Look (F)")) {
+        if (GUI.Button(new Rect(10, 130, 200, 50), "Toggle Pause (T)")) {
+            setPause();
+        }
+        if (GUI.Button(new Rect(10, 190, 200, 50), "Toggle Mouse Look (F)")) {
             toggleMouseLook();
         }
+    }
+
+    private static void setPause() {
+        Debug.Break();
+        Cursor.visible = true;
     }
 
     private void toggleMouseLook() {
@@ -81,6 +79,7 @@ public class FireManager : MonoBehaviour {
         MouseLook mouseLook = GameObject.Find("Spectator Camera").GetComponent<MouseLook>();
 
         mouseLook.enabled = !mouseLook.isActiveAndEnabled;
+        Cursor.visible = !mouseLook.isActiveAndEnabled;
     }
 
     private IEnumerator reactivateAfterDelay(float f) {
@@ -94,6 +93,18 @@ public class FireManager : MonoBehaviour {
         if (Input.GetKey(KeyCode.F)) {
 
             toggleMouseLook();
+        }
+        if (Input.GetKey(KeyCode.E)) {
+
+            AddRandomFire();
+        }
+        if (Input.GetKey(KeyCode.C)) {
+
+            ClearAllFires();
+        }
+        if (Input.GetKey(KeyCode.T)) {
+
+            setPause();
         }
     }
 
