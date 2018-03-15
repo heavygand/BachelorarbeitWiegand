@@ -164,7 +164,8 @@ public class ObjectController : MonoBehaviour {
 		yield return new WaitForSeconds(0.25f);
 		if (myRegion == null) {
 
-			GameObject.Find("GameLogic").GetComponentInChildren<RegionController>().registerActivity(this);
+            // Register outside
+            GameObject.Find("GameLogic").GetComponent<GameLogic>().outside.registerActivity(this);
 		}
     }
 
@@ -213,10 +214,17 @@ public class ObjectController : MonoBehaviour {
 
         if (audio != null) audio.Play();
 
+        // When it's a firealarm, then set alarm and panic
         if (LayerMask.LayerToName(gameObject.layer) == "Feuermelder") {
 
             myRegion.HasAlarm = true;
             user.Panic = true;
+        }
+        // When it's a firealarm, then set alarm and panic
+        if (tag == "FireFighter Point") {
+
+            Debug.Log("Reached firefighterpoint");
+            myRegion.getMaster().activateFirstPerson();
         }
     }
 }

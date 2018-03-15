@@ -125,9 +125,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4444868030033744}
-  - component: {fileID: 54800560516436660}
   - component: {fileID: 114435641723775358}
   - component: {fileID: 136192319449778536}
+  - component: {fileID: 54703933351731432}
   m_Layer: 0
   m_Name: TalkDestination
   m_TagString: Untagged
@@ -1151,7 +1151,7 @@ GameObject:
   m_Layer: 0
   m_Name: MaleAttender
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -2101,7 +2101,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1971464618436650}
   m_LocalRotation: {x: -0, y: 0.72263753, z: -0, w: 0.6912272}
-  m_LocalPosition: {x: -77.32, y: 0.3704524, z: -46.25}
+  m_LocalPosition: {x: -26, y: 1.482, z: -45.34}
   m_LocalScale: {x: 0.84, y: 0.84, z: 0.84}
   m_Children:
   - {fileID: 4328165443567750}
@@ -2393,7 +2393,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!54 &54800560516436660
+--- !u!54 &54703933351731432
 Rigidbody:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -2551,6 +2551,10 @@ MonoBehaviour:
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
   bubble: {fileID: 1514474999493290, guid: 612696b421061e146860be199b1c82dc, type: 2}
+  showDebugWindow: 0
+  detailLog: 0
+  showPlace: 0
+  log: []
 --- !u!136 &136192319449778536
 CapsuleCollider:
   m_ObjectHideFlags: 1
@@ -2573,7 +2577,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.21
+  m_Radius: 0.3
   m_Height: 1.68
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
@@ -3002,7 +3006,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1971464618436650}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.23
+  m_Radius: 0.3
   m_Speed: 2
   m_Acceleration: 8
   avoidancePriority: 50

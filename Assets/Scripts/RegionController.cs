@@ -9,7 +9,7 @@ public class RegionController : MonoBehaviour {
     private List<ObjectController> disabledActivities = new List<ObjectController>();
     private List<ActivityController> waiters = new List<ActivityController>();
     private List<ActivityController> attenders = new List<ActivityController>();
-    private GameLogicForActivity master;
+    private GameLogic master;
     private TextMesh regionText;
 
     public TextMesh RegionText {
@@ -44,7 +44,7 @@ public class RegionController : MonoBehaviour {
         }
     }
 
-    public GameLogicForActivity getMaster(){
+    public GameLogic getMaster(){
 
         return master;
     }
@@ -67,6 +67,10 @@ public class RegionController : MonoBehaviour {
     // Use this for initialization
     void Start () {
 
+        if (name == "Region") {
+            name = transform.parent.gameObject.name; 
+        }
+
         // Create statustext for region
         GameObject textGO = Instantiate(statusText);
         textGO.transform.parent = transform;
@@ -76,13 +80,25 @@ public class RegionController : MonoBehaviour {
         
         HasAlarm = false;
 
-        master = GameObject.Find("GameLogic").GetComponent<GameLogicForActivity>();
+        master = GameObject.Find("GameLogic").GetComponent<GameLogic>();
         master.register(this);
 
         if (isPrivate && doorBell == null) Debug.LogError($"ERROR: {name} is a private region, but has no doorbell!");
         
         StartCoroutine(hide(0.5f));
 		StartCoroutine(awakeWaiters(0.5f));
+
+        foreach (ObjectController rallyingPoint in transform.parent.gameObject.GetComponentsInChildren<ObjectController>()) {
+
+            if (rallyingPoint.name.StartsWith("Rallying Point")) {
+
+                rallyingPoints.Add(rallyingPoint);
+                registerActivity(rallyingPoint);
+            }
+        }
+
+        // Fire Fighter Point
+        registerActivity(GetComponentInChildren<ObjectController>());
 	}
 
     void Update() {
@@ -113,7 +129,7 @@ public class RegionController : MonoBehaviour {
 
 		if(waiters.Count == 0) return;
 
-		Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
+		//Debug.Log($"Regioncontroller: die liste der waiters ist {waiters.Count} lang.");
 
 	    List<ActivityController> waiters2 = new List<ActivityController>(waiters);
 
@@ -312,5 +328,10 @@ public class RegionController : MonoBehaviour {
     public void disableAudio() {
 
         GetComponent<AudioSource>().Stop();
+    }
+
+    public ObjectController getFireFighterPoint() {
+
+        return GetComponentInChildren<ObjectController>();
     }
 }

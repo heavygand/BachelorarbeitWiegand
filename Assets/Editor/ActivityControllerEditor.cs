@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine.AI;
 
 [CustomEditor (typeof (ActivityController))]
 public class ActivityControllerEditor : Editor {
@@ -13,11 +14,11 @@ public class ActivityControllerEditor : Editor {
 
         user = (ActivityController)target;
 
-        string buttonText = $"change Activity for {user.name}";
+        string buttonText = $"Set panic and interrupt {user.name}";
         Handles.BeginGUI();
         if (GUILayout.Button(buttonText, GUILayout.Width(buttonText.Length * 7), GUILayout.Height(30))) {
-            Debug.Log("Activitätswechselbutton gedrückt");
-            user.interruptFromOutside();
+            
+            user.setPanicAndInterrupt();
         }
 
         if (user.showDebugWindow) {
@@ -26,6 +27,20 @@ public class ActivityControllerEditor : Editor {
         }
 
         Handles.EndGUI();
+
+        if (user.Going) {
+
+            Handles.color = Color.red;
+
+            Vector3 pos = user.transform.position;
+            NavMeshAgent navAgent = user.getNavMeshAgent();
+            Vector3 dest = navAgent.destination;
+
+            Handles.DrawLine(pos, dest);
+
+            Handles.color = Color.cyan;
+            Handles.Label(pos + Vector3.up * 2, $"Distance to target calc: {Vector3.Distance(pos, dest)}");
+        }
     }
 
     private GUIStyle GetGuiStyle() {
@@ -45,27 +60,23 @@ public class ActivityControllerEditor : Editor {
         string output = null;
         List<string> userLog = user.log;
 
-        if (userLog == null) {
+        for (int i = userLog.Count-1; i >= 0; i--) {
 
-            output = "No entries";
-        }
-        else {
+            string line = userLog[i];
 
-            foreach (string line in userLog) {
-
-                string time = substringBefore(line, "*");
-                string place = substringBefore(substringAfter(line, "*"), "#");
-                string message = substringAfter(line, "#");
+            string time = substringBefore(line, "*");
+            string place = substringBefore(substringAfter(line, "*"), "#");
+            string message = substringAfter(line, "#");
                 
-                bool detail10LogIsOk = !line.EndsWith("#Detail10Log") || user.detailLog;
+            bool detail10LogIsOk = !line.EndsWith("#Detail10Log") || user.detailLog;
 
-                // Check if line is ok to show
-                if (detail10LogIsOk) {
+            // Check if line is ok to show
+            if (detail10LogIsOk) {
 
-                    output += $"\n{substringBefore(time, ".")}{(user.showPlace?" "+place:"")} {substringBefore(message, "#Detail10Log")}";
-                }
+                output += $"\n{substringBefore(time, ".")}{(user.showPlace?" "+place:"")} {substringBefore(message, "#Detail10Log")}";
             }
         }
+
         return output;
     }
 

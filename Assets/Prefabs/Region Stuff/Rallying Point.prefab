@@ -20,8 +20,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4581971117549848}
   - component: {fileID: 114963321479217778}
-  - component: {fileID: 135068129538331470}
   - component: {fileID: 54017056683586470}
+  - component: {fileID: 136981430913131052}
   m_Layer: 0
   m_Name: Rallying Point
   m_TagString: Untagged
@@ -52,8 +52,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1130190742629908}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -76.3, y: 0.3631, z: -45.39}
+  m_LocalRotation: {x: -0.011292121, y: -0.40759876, z: -0.028769398, w: 0.912638}
+  m_LocalPosition: {x: -0.45000076, y: -0.029999912, z: -11.539999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4978178855248162}
@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cannotBeFound: 1
-  Priority: 0
+  Priority: 98
   wichAnimation: 2
   turnAngle: 0
   lookAtNext: 0
@@ -157,8 +157,8 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 2
---- !u!135 &135068129538331470
-SphereCollider:
+--- !u!136 &136981430913131052
+CapsuleCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
@@ -166,6 +166,7 @@ SphereCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  serializedVersion: 2
   m_Radius: 2
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 2, z: 0}

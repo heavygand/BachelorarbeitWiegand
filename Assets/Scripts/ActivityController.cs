@@ -84,9 +84,9 @@ public class ActivityController : MonoBehaviour {
 
     private Transform whatBurn;
 
-    private bool panic;
     private bool activityChangeRequested;
     private bool going;
+    public bool Going => going;
     private bool findOutside;
     private bool iAmParticipant => MyLeader != null;
 
@@ -128,6 +128,9 @@ public class ActivityController : MonoBehaviour {
 
     public bool Displaced { get; set; }
 
+    private bool panic;
+    private Coroutine noCollisionCheck;
+
     public bool Panic {
         get {
             return panic;
@@ -135,7 +138,7 @@ public class ActivityController : MonoBehaviour {
         set {
             panic = value;
 
-            if (panic && name != "Cartoon_SportCar_B01") {
+            if (panic && tag != "Vehicle") {
 
                 // Speed for running
                 navComponent.speed = 4;
@@ -246,6 +249,17 @@ public class ActivityController : MonoBehaviour {
         }
 
         StartCoroutine(startGoing());
+        noCollisionCheck = StartCoroutine(noCollisionChecker());
+    }
+
+    private IEnumerator noCollisionChecker() {
+        /*
+        while (Vector3.Distance(transform.position, CurrentActivity.WorkPlace)) {
+
+            yield return new WaitForSeconds(1);
+
+        }*/
+        yield return new WaitForSeconds(1);
     }
 
     private IEnumerator startGoing() {
@@ -272,7 +286,7 @@ public class ActivityController : MonoBehaviour {
             Debug.LogError($"{name} wanted to go to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, but wasn't on the navmesh");
         }
 
-        if (name != "Cartoon_SportCar_B01") {
+        if (tag != "Vehicle") {
 
             // Set Animator ready for going
             animator.SetBool("closeEnough", false);
@@ -336,8 +350,8 @@ public class ActivityController : MonoBehaviour {
 
         going = false;
 
-        if (name != "Cartoon_SportCar_B01") {
-
+        if (tag != "Vehicle") {
+            
             animator.applyRootMotion = true;
             animator.SetBool("closeEnough", true);
         }
@@ -352,7 +366,9 @@ public class ActivityController : MonoBehaviour {
             Debug.LogError($"{name}: soll stoppen, aber ist garnicht auf dem NavMesh. (CurrentActivity: {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")})");
         }
 
-        animator.speed = 1f;
+        if (tag != "Vehicle") {
+            animator.speed = 1f; 
+        }
     }
 
     // Continues with the next activity, after the "useage"-time of the activity endet
@@ -371,7 +387,9 @@ public class ActivityController : MonoBehaviour {
         organizeLookRotation();
 
         // Disable the navcomponent, because he blocks the height of the avatar during an activity
-        navComponent.enabled = false;
+        if (CurrentActivity.makeGhost) {
+            navComponent.enabled = false; 
+        }
 
         // I do this because the rotation takes some time
         yield return new WaitForSeconds(1);
@@ -388,7 +406,7 @@ public class ActivityController : MonoBehaviour {
 
             log4Me($"{name}: animation {CurrentActivity.wichAnimation} activated.#Detail10Log");
 
-            if (name != "Cartoon_SportCar_B01") {
+            if (tag != "Vehicle") {
 
                 animator.SetBool(CurrentActivity.wichAnimation.ToString(), true); 
             }
@@ -496,7 +514,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Stop doing this activity (standing does not have to be deactivated)
-        if (name != "Cartoon_SportCar_B01" && CurrentActivity != null && CurrentActivity.wichAnimation.ToString() != "stand") {
+        if (tag != "Vehicle" && CurrentActivity != null && CurrentActivity.wichAnimation.ToString() != "stand") {
 
             log4Me($"{name}: Setting animator bool of {CurrentActivity.wichAnimation} to false#Detail10Log");
 
@@ -518,13 +536,13 @@ public class ActivityController : MonoBehaviour {
 
         log4Me($"{name}: Started Coroutine continueWhenDoneStopping()#Detail10Log");
 
-        while (name != "Cartoon_SportCar_B01" && animator.GetAnimatorTransitionInfo(0).duration != 0) {
+        while (tag != "Vehicle" && animator.GetAnimatorTransitionInfo(0).duration != 0) {
 
             log4Me($"{name}: Cannot proceed, because I'm still {animator.GetAnimatorTransitionInfo(0).duration}s in a transition from {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
 
             yield return new WaitForSeconds(0.2f);
         }
-        while (name != "Cartoon_SportCar_B01" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
+        while (tag != "Vehicle" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
             log4Me($"{name}: Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} has exit time");
 
@@ -573,7 +591,7 @@ public class ActivityController : MonoBehaviour {
         // Wait untill all participants started the groupactivity
         foreach (ActivityController parti in myParticipants) {
 
-            if (!Panic && !parti.interruptedFor.IsActivated) {
+            if (!Panic && parti.interruptedFor != null && !parti.interruptedFor.IsActivated) {
 
                     log4Me($"{name}: Cannot proceed, because {parti.interruptedFor.name} is not activated yet");
                     log4Me($"{parti.name}: My Leader {name} cannot proceed, because {parti.interruptedFor.name} is not activated yet");
@@ -739,6 +757,9 @@ public class ActivityController : MonoBehaviour {
     }
 
     private void putToolInHand(ObjectController.HandUsage handToUse) {
+
+        if (tag == "Vehicle")
+            return;
 
         // Place right
         tool.transform.position = (handToUse == ObjectController.HandUsage.leftHand ?
@@ -1017,7 +1038,7 @@ public class ActivityController : MonoBehaviour {
         yield return new WaitForSeconds(0.25f);
         if (myRegion == null) {
 
-            GameObject.Find("GameLogic").GetComponentInChildren<RegionController>().registerAvatar(this);
+            GameObject.Find("GameLogic").GetComponent<GameLogic>().outside.registerAvatar(this);
         }
     }
 
@@ -1030,7 +1051,7 @@ public class ActivityController : MonoBehaviour {
         // There has to be alarm
         // Not when I'm already at the rallying point
         // Not when I already paniced
-        if (myRegion != null && myRegion.HasAlarm && !arrivedAtRP && !Panic && name != "Cartoon_SportCar_B01") setPanicAndInterrupt();
+        if (myRegion != null && myRegion.HasAlarm && !arrivedAtRP && !Panic && tag != "Vehicle") setPanicAndInterrupt();
     }
 
     private static int getPartnerPriority(ObjectController found) {
@@ -1118,7 +1139,7 @@ public class ActivityController : MonoBehaviour {
 
         if (NextActivity != null) {
             log4Me(
-                    $"{name}: got {NextActivity.name} from NextActivity. (current was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))})");
+                    $"{name}: got {NextActivity.name} in {NextActivity.getRegion().name} from NextActivity. (current was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))})");
         }
 
         // Proceed with activities, when available
@@ -1249,9 +1270,6 @@ public class ActivityController : MonoBehaviour {
                 "Activity must be important enough for the partner",
                 getPartnerPriority(activity2Check) < activity2Check.Priority
             }, {
-                "Activity must not be the doorbell",
-                activity2Check != activity2Check.getRegion().doorBell
-            }, {
                 "Activity must be findable. 'Cannot be Found'-bool was activated here",
                 !activity2Check.cannotBeFound
             }, {
@@ -1308,7 +1326,7 @@ public class ActivityController : MonoBehaviour {
         setPanicAndInterrupt();
     }
 
-    private void setPanicAndInterrupt() {
+    public void setPanicAndInterrupt() {
 
         if (Panic || name == "Cartoon_SportCar_B01") return;
         Panic = true;
@@ -1348,5 +1366,10 @@ public class ActivityController : MonoBehaviour {
         yield return new WaitForSeconds(5);
 
         Panic = false;
+    }
+
+    public NavMeshAgent getNavMeshAgent() {
+
+        return navComponent;
     }
 }
