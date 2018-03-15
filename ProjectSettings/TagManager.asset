@@ -49,6 +49,7 @@ TagManager:
   - melder0
   - Vehicle
   - FireFighter Point
+  - Canvas
   layers:
   - Default
   - TransparentFX

@@ -22,7 +22,7 @@ public class GameLogic : MonoBehaviour {
 
             toggleMouseLook();
         }
-        if (Input.GetKeyDown(KeyCode.E)) {
+        if (Input.GetKeyDown(KeyCode.U)) {
 
             AddRandomFire();
         }
@@ -42,7 +42,7 @@ public class GameLogic : MonoBehaviour {
 
     void OnGUI() {
 
-        if (GUI.Button(new Rect(10, 10, 200, 50), "Add random fire (E)")) {
+        if (GUI.Button(new Rect(10, 10, 200, 50), "Add random fire (U)")) {
             AddRandomFire();
         }
         if (GUI.Button(new Rect(10, 70, 200, 50), "Clear fires (C)")) {
@@ -56,7 +56,7 @@ public class GameLogic : MonoBehaviour {
         }
         if (GUI.Button(new Rect(10, 250, 200, 50), "Call Firefighters (G)")) {
 
-            activateFireFighters(fireRegions[0] == null ? getRandomRegion() : fireRegions[0]);
+            activateFireFighters(fireRegions.Count==0 ? getRandomRegion() : fireRegions[0]);
         }
     }
 
@@ -208,12 +208,11 @@ public class GameLogic : MonoBehaviour {
     }
 
     /// <summary>
-    /// Changes firefighters textField if they were called
+    /// Firefighters called
     /// </summary>
     public void called(ActivityController caller) {
 
-        if (fireDepartmentCalled)
-            return;
+        if (fireDepartmentCalled) return;
 
         fireDepartmentCalled = true;
         Debug.Log($"Fire department called, thanks to {caller.name}.");
@@ -234,6 +233,7 @@ public class GameLogic : MonoBehaviour {
 
         FeuerwehrwagenController fireFighterScript = fireFighters.GetComponent<FeuerwehrwagenController>();
         fireFighterScript.muteSiren();
+        fireFighters.GetComponent<AudioListener>().enabled = false;
 
         firstPersonController.SetActive(true);
         firstPersonController.transform.position = fireFighterScript.spawnPoint.transform.position;

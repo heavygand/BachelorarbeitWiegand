@@ -180,6 +180,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         StartCoroutine(checkIfOutside());
+        noCollisionCheck = StartCoroutine(noCollisionChecker());
     }
 
     // Set a target
@@ -249,17 +250,6 @@ public class ActivityController : MonoBehaviour {
         }
 
         StartCoroutine(startGoing());
-        noCollisionCheck = StartCoroutine(noCollisionChecker());
-    }
-
-    private IEnumerator noCollisionChecker() {
-        /*
-        while (Vector3.Distance(transform.position, CurrentActivity.WorkPlace)) {
-
-            yield return new WaitForSeconds(1);
-
-        }*/
-        yield return new WaitForSeconds(1);
     }
 
     private IEnumerator startGoing() {
@@ -348,6 +338,7 @@ public class ActivityController : MonoBehaviour {
 
         log4Me($"{name}: I stopped going#Detail10Log");
 
+        stopCoroutines();
         going = false;
 
         if (tag != "Vehicle") {
@@ -563,7 +554,13 @@ public class ActivityController : MonoBehaviour {
     }
 
     private void stopCoroutines() {
+        
+        if (noCollisionCheck != null) {
 
+            StopCoroutine(noCollisionCheck);
+            noCollisionCheck = null;
+            log4Me($"{name}: Coroutine noCollisionCheck stopped");
+        }
         if (Doing != null) {
 
             StopCoroutine(Doing);
@@ -1246,7 +1243,7 @@ public class ActivityController : MonoBehaviour {
 
         retries++;
 
-        if (retries >= 3) Debug.LogError($"{name} could not find any target after {retries} tries");
+        if (retries >= 5) Debug.LogError($"{name} could not find any target after {retries} tries");
 
         yield return new WaitForSeconds(waitTime);
 
@@ -1371,5 +1368,18 @@ public class ActivityController : MonoBehaviour {
     public NavMeshAgent getNavMeshAgent() {
 
         return navComponent;
+    }
+
+    private IEnumerator noCollisionChecker() {
+
+        while (Doing==null && navComponent != null && Vector3.Distance(transform.position, navComponent.destination) >= 0.5f) {
+
+            yield return new WaitForSeconds(2);
+        }
+
+        if (navComponent == null) Debug.LogError($"{name}: NavComponent was null!");
+
+        log4Me($"{name}: I arrived, but did not collide, so I'm stopping now");
+        stopGoing();
     }
 }

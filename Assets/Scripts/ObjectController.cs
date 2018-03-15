@@ -140,7 +140,7 @@ public class ObjectController : MonoBehaviour {
         {
             isActivated = false;
             user = value;
-            if (user != null) user.log4Me("I'm now the user of {name}#Detail10Log");
+            if (user != null) user.log4Me($"I'm now the user of {name}#Detail10Log");
         }
     }
 

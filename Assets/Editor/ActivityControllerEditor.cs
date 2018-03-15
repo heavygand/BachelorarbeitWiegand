@@ -23,27 +23,30 @@ public class ActivityControllerEditor : Editor {
 
         if (user.showDebugWindow) {
 
-            GUI.Box(new Rect(0, 60, 800, 1400), $"{user.name} Debug Window\n{readLog()}", GetGuiStyle()); 
+            GUI.Box(new Rect(0, 60, 800, 1400), $"{user.name} Debug Window\n{readLog()}", GetDebugStyle()); 
         }
 
         Handles.EndGUI();
 
-        if (user.Going) {
+        Vector3 pos = user.transform.position;
+        if (user.CurrentActivity!=null && (user.Going || user.getNavMeshAgent() != null && !user.getNavMeshAgent().isStopped)) {
 
             Handles.color = Color.red;
 
-            Vector3 pos = user.transform.position;
             NavMeshAgent navAgent = user.getNavMeshAgent();
             Vector3 dest = navAgent.destination;
 
             Handles.DrawLine(pos, dest);
+            
+            Handles.Label(pos + Vector3.up * 2, $"MOVING to {user.CurrentActivity.name}{(user.CurrentActivity.isAvatar ? " with " + user.CurrentActivity.getAvatar().name : "")}, distance: {Vector3.Distance(pos, dest)}", GetDebugStyle());
+        }
+        else {
 
-            Handles.color = Color.cyan;
-            Handles.Label(pos + Vector3.up * 2, $"Distance to target calc: {Vector3.Distance(pos, dest)}");
+            Handles.Label(pos + Vector3.up * 2, $"STOPPED", GetDebugStyle());
         }
     }
 
-    private GUIStyle GetGuiStyle() {
+    private GUIStyle GetDebugStyle() {
 
         GUIStyle style = new GUIStyle(GUI.skin.box) {
             alignment = TextAnchor.UpperLeft,
