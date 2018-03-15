@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
 
@@ -32,10 +30,13 @@ public class ActivityControllerEditor : Editor {
 
     private GUIStyle GetGuiStyle() {
 
-        GUIStyle style = new GUIStyle(GUI.skin.box);
-        style.alignment = TextAnchor.UpperLeft;
-        style.normal.background = MakeTex(2, 2, Color.black);
-        style.normal.textColor = Color.green;
+        GUIStyle style = new GUIStyle(GUI.skin.box) {
+            alignment = TextAnchor.UpperLeft,
+            normal = {
+                background = MakeTex(2, 2, Color.black),
+                textColor = Color.green
+            }
+        };
         return style;
     }
 
@@ -46,7 +47,7 @@ public class ActivityControllerEditor : Editor {
 
         if (userLog == null) {
 
-            output = $"No entries";
+            output = "No entries";
         }
         else {
 

@@ -33,13 +33,13 @@ public class RegionController : MonoBehaviour {
                 RegionText.text = "FIREALARM";
                 RegionText.color = Color.red;
                 RegionText.fontStyle = FontStyle.Bold;
-                getMaster().getFireManager().turnOnAudio();
+                turnOnAudio();
             }
             else {
 
                 RegionText.text = name;
                 RegionText.color = Color.white;
-                // the audio disabling is managed from the firemanager
+                disableAudio();
             }
         }
     }
@@ -296,5 +296,21 @@ public class RegionController : MonoBehaviour {
     public ObjectController getRallyingPoint() {
 
         return rallyingPoints[Random.Range(0, rallyingPoints.Count)];
+    }
+
+    /// <summary>
+    /// Turns the alarmsound on
+    /// </summary>
+    public void turnOnAudio() {
+
+        GetComponent<AudioSource>().Play();
+    }
+
+    /// <summary>
+    /// Turns the alarmsound on
+    /// </summary>
+    public void disableAudio() {
+
+        GetComponent<AudioSource>().Stop();
     }
 }

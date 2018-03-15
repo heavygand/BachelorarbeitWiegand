@@ -64,7 +64,7 @@ public class FieldOfView : MonoBehaviour {
                     ObjectController fireAlarm = target.gameObject.GetComponent<ObjectController>();
                     if (LayerMask.LayerToName(currentLayer) == "Feuermelder" && script.myRegion != null && !script.myRegion.HasAlarm && script.Panic && fireAlarm.CurrentUser == null) {
 
-                        Debug.Log($"{name}: Firealarm detected, starting alarm...");
+                        script.log4Me("Firealarm detected, starting alarm...");
                         script.Panic = false;
                         StartCoroutine(script.interruptWith(fireAlarm, script));
                     }

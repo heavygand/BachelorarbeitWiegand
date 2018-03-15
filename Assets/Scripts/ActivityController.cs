@@ -221,10 +221,6 @@ public class ActivityController : MonoBehaviour {
 
             log4Me($"{name}: calling startGoing()#Detail10Log");
 
-            // It is possible, that the other avatar is not there anymore, when we arrive, so this bubble will signalise, that we arrived but noone was there.
-            // The bubble has to be smaller than the trigger collider of the destination
-            if (CurrentActivity.isMovable) { createBubble(); }
-
             prepareGoing();
         }
     }
@@ -264,7 +260,10 @@ public class ActivityController : MonoBehaviour {
 
         // Look where to go and set the navmesh destination
         if (navComponent.isOnNavMesh) {
-
+            
+            // It is possible, that the other avatar is not there anymore, when we arrive, so this bubble will signalise, that we arrived but noone was there.
+            // The bubble has to be smaller than the trigger collider of the destination
+            if (CurrentActivity.isMovable) { createBubble(); }
             navComponent.SetDestination(CurrentActivity.WorkPlace);
             log4Me($"{name}: I'm now going to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
         }
@@ -1107,7 +1106,7 @@ public class ActivityController : MonoBehaviour {
         yield return new WaitForSeconds(seconds);
         animator.SetBool("call", false);
         smartphone.gameObject.SetActive(false);
-        myRegion.getMaster().getFireManager().called(this);
+        myRegion.getMaster().called(this);
         navComponent.enabled = true;
         navComponent.isStopped = false;
     }
