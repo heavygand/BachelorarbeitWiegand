@@ -3,14 +3,11 @@ using System.Collections;
 public class PlayerRayCasting : MonoBehaviour {
     public float distanceToSee;
     public string ObjectName = "nothing";
-    private Color highlightColor;
     Material originalMaterial, tempMaterial;
     Renderer rend;
     ActivityController avatar;
 
     void Start() {
-
-        highlightColor = Color.green;
     }
 
     // Update is called once per frame

@@ -94600,14 +94600,13 @@ GameObject:
   - component: {fileID: 2067017563}
   - component: {fileID: 2067017561}
   - component: {fileID: 2067017565}
-  - component: {fileID: 2067017568}
-  - component: {fileID: 2067017569}
-  - component: {fileID: 2067017566}
   - component: {fileID: 2067017567}
-  - component: {fileID: 2067017571}
-  - component: {fileID: 2067017570}
+  - component: {fileID: 2067017573}
+  - component: {fileID: 2067017572}
+  - component: {fileID: 2067017568}
+  - component: {fileID: 2067017566}
   m_Layer: 0
-  m_Name: Flowchart
+  m_Name: Flowchart1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -94638,9 +94637,9 @@ MonoBehaviour:
     width: 1114
     height: 859
   selectedBlocks:
-  - {fileID: 2067017562}
+  - {fileID: 2067017567}
   selectedCommands:
-  - {fileID: 2067017565}
+  - {fileID: 2067017566}
   variables: []
   description: 
   stepPause: 0
@@ -94706,8 +94705,6 @@ MonoBehaviour:
   commandList:
   - {fileID: 2067017561}
   - {fileID: 2067017565}
-  - {fileID: 2067017568}
-  - {fileID: 2067017566}
 --- !u!114 &2067017563
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -94764,28 +94761,30 @@ MonoBehaviour:
   setSayDialog: {fileID: 0}
 --- !u!114 &2067017566
 MonoBehaviour:
-  m_ObjectHideFlags: 2
+  m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2067017559}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 841589fc622bc494aa5405f416fa1301, type: 3}
+  m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemId: 5
+  itemId: 13
   indentLevel: 0
-  text: Go Right
-  description: going right
-  targetBlock: {fileID: 2067017567}
-  hideIfVisited: 0
-  interactable:
-    booleanRef: {fileID: 0}
-    booleanVal: 1
-  setMenuDialog: {fileID: 0}
-  hideThisOption:
-    booleanRef: {fileID: 0}
-    booleanVal: 0
+  storyText: Linke Maustaste geklickt
+  description: 
+  character: {fileID: 0}
+  portrait: {fileID: 0}
+  voiceOverClip: {fileID: 0}
+  showAlways: 1
+  showCount: 1
+  extendPrevious: 0
+  fadeWhenDone: 1
+  waitForClick: 1
+  stopVoiceover: 1
+  waitForVO: 0
+  setSayDialog: {fileID: 0}
 --- !u!114 &2067017567
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -94799,8 +94798,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodeRect:
     serializedVersion: 2
-    x: 685
-    y: 224
+    x: 622
+    y: 263
     width: 120
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
@@ -94808,10 +94807,24 @@ MonoBehaviour:
   itemId: 6
   blockName: Right
   description: 
-  eventHandler: {fileID: 0}
+  eventHandler: {fileID: 2067017568}
   commandList:
-  - {fileID: 2067017571}
+  - {fileID: 2067017566}
 --- !u!114 &2067017568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2067017559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 000864f8e9e1748a39807861d0e60e29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentBlock: {fileID: 2067017567}
+  keyPressType: 0
+  keyCode: 323
+--- !u!114 &2067017572
 MonoBehaviour:
   m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
@@ -94819,23 +94832,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 2067017559}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 841589fc622bc494aa5405f416fa1301, type: 3}
+  m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemId: 3
+  itemId: 12
   indentLevel: 0
-  text: Go Left
-  description: going left
-  targetBlock: {fileID: 2067017569}
-  hideIfVisited: 0
-  interactable:
-    booleanRef: {fileID: 0}
-    booleanVal: 1
-  setMenuDialog: {fileID: 0}
-  hideThisOption:
-    booleanRef: {fileID: 0}
-    booleanVal: 0
---- !u!114 &2067017569
+  storyText: I'm right2
+  description: 
+  character: {fileID: 0}
+  portrait: {fileID: 0}
+  voiceOverClip: {fileID: 0}
+  showAlways: 1
+  showCount: 1
+  extendPrevious: 0
+  fadeWhenDone: 1
+  waitForClick: 1
+  stopVoiceover: 1
+  waitForVO: 0
+  setSayDialog: {fileID: 0}
+--- !u!114 &2067017573
 MonoBehaviour:
   m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
@@ -94848,70 +94863,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodeRect:
     serializedVersion: 2
-    x: 192
-    y: 226
+    x: 726
+    y: 370
     width: 120
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
-  itemId: 4
-  blockName: Left
+  itemId: 9
+  blockName: right2
   description: 
   eventHandler: {fileID: 0}
   commandList:
-  - {fileID: 2067017570}
---- !u!114 &2067017570
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2067017559}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemId: 8
-  indentLevel: 0
-  storyText: I'm left
-  description: 
-  character: {fileID: 0}
-  portrait: {fileID: 0}
-  voiceOverClip: {fileID: 0}
-  showAlways: 1
-  showCount: 1
-  extendPrevious: 0
-  fadeWhenDone: 1
-  waitForClick: 1
-  stopVoiceover: 1
-  waitForVO: 0
-  setSayDialog: {fileID: 0}
---- !u!114 &2067017571
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2067017559}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemId: 7
-  indentLevel: 0
-  storyText: I'm right
-  description: 
-  character: {fileID: 0}
-  portrait: {fileID: 0}
-  voiceOverClip: {fileID: 0}
-  showAlways: 1
-  showCount: 1
-  extendPrevious: 0
-  fadeWhenDone: 1
-  waitForClick: 1
-  stopVoiceover: 1
-  waitForVO: 0
-  setSayDialog: {fileID: 0}
+  - {fileID: 2067017572}
 --- !u!1 &2067277943
 GameObject:
   m_ObjectHideFlags: 0
