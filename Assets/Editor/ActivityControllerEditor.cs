@@ -16,6 +16,7 @@ public class ActivityControllerEditor : Editor {
 
         string buttonText = $"Set panic and interrupt {user.name}";
         Handles.BeginGUI();
+
         if (GUILayout.Button(buttonText, GUILayout.Width(buttonText.Length * 7), GUILayout.Height(30))) {
             
             user.setPanicAndInterrupt();
@@ -28,8 +29,13 @@ public class ActivityControllerEditor : Editor {
 
         Handles.EndGUI();
 
+        organizeLabelAboveHead();
+    }
+
+    private void organizeLabelAboveHead() {
+
         Vector3 pos = user.transform.position;
-        if (user.CurrentActivity!=null && (user.Going || user.getNavMeshAgent() != null && !user.getNavMeshAgent().isStopped)) {
+        if (user.CurrentActivity != null && (user.Going || user.getNavMeshAgent() != null && user.getNavMeshAgent().isOnNavMesh && !user.getNavMeshAgent().isStopped)) {
 
             Handles.color = Color.red;
 
@@ -37,12 +43,15 @@ public class ActivityControllerEditor : Editor {
             Vector3 dest = navAgent.destination;
 
             Handles.DrawLine(pos, dest);
-            
-            Handles.Label(pos + Vector3.up * 2, $"MOVING to {user.CurrentActivity.name}{(user.CurrentActivity.isAvatar ? " with " + user.CurrentActivity.getAvatar().name : "")}, distance: {Vector3.Distance(pos, dest)}", GetDebugStyle());
+
+            Handles.Label(
+                pos + Vector3.up*2,
+                $"MOVING to {user.CurrentActivity.name}{(user.CurrentActivity.isAvatar ? " with " + user.CurrentActivity.getAvatar().name : "")}, distance: {Vector3.Distance(pos, dest)}",
+                GetDebugStyle());
         }
         else {
 
-            Handles.Label(pos + Vector3.up * 2, $"STOPPED", GetDebugStyle());
+            Handles.Label(pos + Vector3.up*2, $"STOPPED", GetDebugStyle());
         }
     }
 

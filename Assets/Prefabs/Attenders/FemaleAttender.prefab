@@ -2482,6 +2482,8 @@ MonoBehaviour:
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
   bubble: {fileID: 1514474999493290, guid: 612696b421061e146860be199b1c82dc, type: 2}
+  selectionArrow: {fileID: 1877058498054280, guid: 6a73ae6be1f8d4e47b110bbafb702116,
+    type: 2}
   showDebugWindow: 0
   detailLog: 0
   showPlace: 0

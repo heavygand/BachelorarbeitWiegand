@@ -6,6 +6,7 @@ public class PlayerRayCasting : MonoBehaviour {
     private Color highlightColor;
     Material originalMaterial, tempMaterial;
     Renderer rend;
+    ActivityController avatar;
 
     void Start() {
 
@@ -14,9 +15,8 @@ public class PlayerRayCasting : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
+
         RaycastHit hitInfo;
-        GameObject currRend;
-        GameObject avatar = null;
 
         //Draws ray in scene view during playmode; the multiplication in the second parameter controls how long the line will be
         Debug.DrawRay(transform.position, transform.forward * distanceToSee, Color.magenta);
@@ -30,20 +30,45 @@ public class PlayerRayCasting : MonoBehaviour {
 
         if (Physics.Raycast(transform.position, transform.forward, out hitInfo, distanceToSee)) {
 
-            currRend = hitInfo.collider.gameObject;
+            GameObject currRend = hitInfo.collider.gameObject;
 
             ObjectController objectController = currRend.GetComponent<ObjectController>();
 
+            // When this is no avatar
             if (objectController == null || !objectController.isAvatar) {
 
-                ObjectName = "nothing";
+                deselect();
                 return;
             }
+            // This is an avatar:
 
-            avatar = currRend.transform.parent.gameObject; 
-            ObjectName = avatar.name;
+            // When this is the same avatar, do nothing
 
+            //When this is another avatar
+            if(avatar != currRend.transform.parent.gameObject.GetComponent<ActivityController>()) {
 
+                if(avatar != null) avatar.removeArrow();
+                
+                // Because the huge collider of the talkdestination
+                avatar = currRend.transform.parent.gameObject.GetComponent<ActivityController>();
+                ObjectName = avatar.name;
+                avatar.showArrow();
+            }
+        }
+        // Nothing is hit
+        else {
+
+            deselect();
+        }
+    }
+
+    private void deselect() {
+
+        ObjectName = "nothing";
+
+        if (avatar != null) {
+            avatar.removeArrow();
+            avatar = null;
         }
     }
 }

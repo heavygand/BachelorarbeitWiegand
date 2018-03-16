@@ -224,7 +224,7 @@ public class ObjectController : MonoBehaviour {
         if (tag == "FireFighter Point") {
 
             Debug.Log("Reached firefighterpoint");
-            myRegion.getMaster().activateFirstPerson();
+            StartCoroutine(myRegion.getMaster().activateFirstPerson());
         }
     }
 }

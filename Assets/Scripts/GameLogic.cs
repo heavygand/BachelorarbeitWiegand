@@ -229,12 +229,14 @@ public class GameLogic : MonoBehaviour {
         ac.prepareGoing();
     }
 
-    public void activateFirstPerson() {
+    public IEnumerator activateFirstPerson() {
 
         FeuerwehrwagenController fireFighterScript = fireFighters.GetComponent<FeuerwehrwagenController>();
         fireFighterScript.muteSiren();
-        fireFighters.GetComponent<AudioListener>().enabled = false;
 
+        yield return new WaitForSeconds(1);
+
+        fireFighters.GetComponent<AudioListener>().enabled = false;
         firstPersonController.SetActive(true);
         firstPersonController.transform.position = fireFighterScript.spawnPoint.transform.position;
     }

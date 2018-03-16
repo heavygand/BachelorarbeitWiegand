@@ -59,6 +59,8 @@ public class ActivityController : MonoBehaviour {
 
     [Tooltip("The destination bubble for partner activities")]
     public GameObject bubble;
+    
+    public GameObject selectionArrow;
 
     [Tooltip("Toggles the display of the debug log")]
     public bool showDebugWindow;
@@ -130,6 +132,7 @@ public class ActivityController : MonoBehaviour {
 
     private bool panic;
     private Coroutine noCollisionCheck;
+    private GameObject arrow;
 
     public bool Panic {
         get {
@@ -195,7 +198,7 @@ public class ActivityController : MonoBehaviour {
         // Take the next activity if there is one, and save the last activity
         tryNextInQueue();
 
-        // Get a random Target, if we have no
+        // Get a random Target, if we have no activity yet
         if (CurrentActivity == null)
             findTarget();
 
@@ -366,7 +369,7 @@ public class ActivityController : MonoBehaviour {
     private IEnumerator startDoing() {
 
         /*
-         * PREPARATIONS
+         * PREPARATIONS FOR THE ACTIVITY
         */
 
         log4Me($"{name}: preparing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
@@ -382,9 +385,10 @@ public class ActivityController : MonoBehaviour {
             navComponent.enabled = false; 
         }
 
-        // I do this because the rotation takes some time
+        // Wait for rotation
         yield return new WaitForSeconds(1);
 
+        // Check if interrupted
         if (activityChangeRequested) {
 
             stopDoing();
@@ -430,7 +434,10 @@ public class ActivityController : MonoBehaviour {
         ActivityController theOther = CurrentActivity.getAvatar();
 
         /*
-         * ACTIVITY TIME LOOP #########
+         * 
+         * ######### ACTIVITY TIME LOOP #########
+         * 
+         * 
         */
 
         log4Me($"{name}: my usage time for {CurrentActivity.name} runs now#Detail10Log");
@@ -527,12 +534,14 @@ public class ActivityController : MonoBehaviour {
 
         log4Me($"{name}: Started Coroutine continueWhenDoneStopping()#Detail10Log");
 
+        // Still doing transition
         while (tag != "Vehicle" && animator.GetAnimatorTransitionInfo(0).duration != 0) {
 
             log4Me($"{name}: Cannot proceed, because I'm still {animator.GetAnimatorTransitionInfo(0).duration}s in a transition from {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
 
             yield return new WaitForSeconds(0.2f);
         }
+        // Still doing activity animation
         while (tag != "Vehicle" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
             log4Me($"{name}: Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} has exit time");
@@ -549,9 +558,15 @@ public class ActivityController : MonoBehaviour {
 
         log4Me($"{name}: done stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
-        // The end. Proceed as usual
+        // Proceed as usual
         setTarget();
     }
+
+    /*
+     * 
+     * ######### END OF NORMAL WORKFLOW #########
+     *
+     */
 
     private void stopCoroutines() {
         
@@ -916,8 +931,7 @@ public class ActivityController : MonoBehaviour {
     private void organizeLookRotation() {
 
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();
-
-        // When there's another Avatar involved, look at him.
+        
         if (CurrentActivity.noTurning) {
 
             // NO ROTATION
@@ -1044,10 +1058,12 @@ public class ActivityController : MonoBehaviour {
     /// </summary>
     void Update() {
 
-        // When the alarm starts, then stop doing activities
-        // There has to be alarm
-        // Not when I'm already at the rallying point
-        // Not when I already paniced
+        // Hinweis: Könnte in einer langsameren Coroutine sein
+
+        // Go into panic mode and stop doing activities, when...
+        // ... there is an alarm in my region
+        // ... when I'm not already at the rallying point
+        // ... when I not already paniced
         if (myRegion != null && myRegion.HasAlarm && !arrivedAtRP && !Panic && tag != "Vehicle") setPanicAndInterrupt();
     }
 
@@ -1380,6 +1396,20 @@ public class ActivityController : MonoBehaviour {
         if (navComponent == null) Debug.LogError($"{name}: NavComponent was null!");
 
         log4Me($"{name}: I arrived, but did not collide, so I'm stopping now");
+        // TODO: ACHTUNG! NEBENLÄUFIG!
         stopGoing();
+    }
+
+    public void showArrow() {
+
+        arrow = Instantiate(selectionArrow);
+        arrow.transform.parent = transform;
+        arrow.transform.localPosition = Vector3.zero;
+        arrow.transform.localEulerAngles = Vector3.zero;
+    }
+
+    public void removeArrow() {
+
+        Destroy(arrow);
     }
 }

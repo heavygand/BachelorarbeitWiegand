@@ -2362,6 +2362,19 @@ AudioListener:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 45825616}
   m_Enabled: 1
+--- !u!114 &45825618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 45825616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc08a1d2f6656d146a42692cde5a7e18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  distanceToSee: 2
+  ObjectName: 
 --- !u!4 &45825621 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4299172710470052, guid: 1b1f4e3644ffcd84dbc99adad6b3973f,
@@ -23900,6 +23913,7 @@ MonoBehaviour:
   currentActivity: {fileID: 2030989477}
   nextActivity: {fileID: 0}
   bubble: {fileID: 0}
+  selectionArrow: {fileID: 0}
   showDebugWindow: 0
   detailLog: 0
   showPlace: 0
@@ -31706,15 +31720,15 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4990785645050640, guid: eb96cc6088389a54081a3a8503e88249, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -12.13
+      value: -14.401
       objectReference: {fileID: 0}
     - target: {fileID: 4990785645050640, guid: eb96cc6088389a54081a3a8503e88249, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 0.07
+      value: -0.161
       objectReference: {fileID: 0}
     - target: {fileID: 4990785645050640, guid: eb96cc6088389a54081a3a8503e88249, type: 2}
       propertyPath: m_LocalPosition.z
-      value: -16.3
+      value: -18.237
       objectReference: {fileID: 0}
     - target: {fileID: 4990785645050640, guid: eb96cc6088389a54081a3a8503e88249, type: 2}
       propertyPath: m_LocalRotation.x
@@ -51001,19 +51015,6 @@ AudioListener:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1101826466}
   m_Enabled: 1
---- !u!114 &1101826474
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1101826466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc08a1d2f6656d146a42692cde5a7e18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  distanceToSee: 2
-  ObjectName: 
 --- !u!1 &1102304696
 GameObject:
   m_ObjectHideFlags: 0
