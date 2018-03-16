@@ -183,6 +183,11 @@ public class ObjectController : MonoBehaviour {
 
     public Vector3 getFootOfFirstCollider() {
 
+        if(transform.parent.gameObject.tag == "Player" || tag == "Player") {
+            
+            return transform.position;
+        }
+
 		Bounds bounds = GetComponents<Collider>()[0].bounds;
 		Vector3 center = new Vector3(bounds.center.x, bounds.center.y - bounds.size.y/2, bounds.center.z);
 		return center;

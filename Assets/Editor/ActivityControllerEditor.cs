@@ -9,6 +9,8 @@ public class ActivityControllerEditor : Editor {
     ActivityController user;
     
     string log;
+    private string lastMessage;
+    private string secondToLastMessage;
 
     void OnSceneGUI() {
 
@@ -49,13 +51,17 @@ public class ActivityControllerEditor : Editor {
                 $"MOVING to {user.CurrentActivity.name}{(user.CurrentActivity.isAvatar ? " with " + user.CurrentActivity.getAvatar().name : "")}, distance: {Vector3.Distance(pos, dest)}",
                 GetDebugStyle());
         }
+        else if (user.isPlayer) {
+
+            Handles.Label(pos + Vector3.up * 2, $"PLAYER", GetDebugStyle());
+        }
         else {
 
             Handles.Label(pos + Vector3.up*2, $"STOPPED", GetDebugStyle());
         }
     }
 
-    private GUIStyle GetDebugStyle() {
+    public static GUIStyle GetDebugStyle() {
 
         GUIStyle style = new GUIStyle(GUI.skin.box) {
             alignment = TextAnchor.UpperLeft,
@@ -83,16 +89,19 @@ public class ActivityControllerEditor : Editor {
             bool detail10LogIsOk = !line.EndsWith("#Detail10Log") || user.detailLog;
 
             // Check if line is ok to show
-            if (detail10LogIsOk) {
+            if (message != secondToLastMessage && message != lastMessage && detail10LogIsOk) {
 
                 output += $"\n{substringBefore(time, ".")}{(user.showPlace?" "+place:"")} {substringBefore(message, "#Detail10Log")}";
             }
+
+            secondToLastMessage = lastMessage;
+            lastMessage = message;
         }
 
         return output;
     }
 
-    private Texture2D MakeTex(int width, int height, Color col) {
+    private static Texture2D MakeTex(int width, int height, Color col) {
         Color[] pix = new Color[width * height];
         for (int i = 0; i < pix.Length; ++i) {
             pix[i] = col;

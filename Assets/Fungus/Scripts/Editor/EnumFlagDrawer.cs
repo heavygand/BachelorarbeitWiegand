@@ -22,7 +22,9 @@ namespace Fungus
                 propName = property.name;
 
             EditorGUI.BeginProperty(position, label, property);
+#pragma warning disable 618
             Enum enumNew = EditorGUI.EnumMaskField(position, propName, targetEnum);
+#pragma warning restore 618
             property.intValue = (int)Convert.ChangeType(enumNew, targetEnum.GetType());
             EditorGUI.EndProperty();
         }
@@ -33,6 +35,7 @@ namespace Fungus
             string[] separatedPaths = prop.propertyPath.Split('.');
 
             // Go down to the root of this serialized property
+            // ReSharper disable once RedundantCast
             System.Object reflectionTarget = prop.serializedObject.targetObject as object;
             // Walk down the path to get the target object
             foreach (var path in separatedPaths)

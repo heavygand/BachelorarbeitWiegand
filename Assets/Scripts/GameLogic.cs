@@ -36,7 +36,7 @@ public class GameLogic : MonoBehaviour {
         }
         if (Input.GetKeyDown(KeyCode.G)) {
 
-            activateFireFighters(fireRegions[0]==null?getRandomRegion(): fireRegions[0]);
+            activateFireFighters(fireRegions.Count<=0?getRandomRegion(): fireRegions[0]);
         }
     }
 
@@ -239,5 +239,6 @@ public class GameLogic : MonoBehaviour {
         fireFighters.GetComponent<AudioListener>().enabled = false;
         firstPersonController.SetActive(true);
         firstPersonController.transform.position = fireFighterScript.spawnPoint.transform.position;
+        
     }
 }

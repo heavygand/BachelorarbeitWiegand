@@ -37,7 +37,9 @@ namespace Fungus
             var executeHandler = (ExecuteHandler)target;
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PrefixLabel(new GUIContent("On Event"));
+#pragma warning disable 618
             executeHandler.ExecuteMethods = (ExecuteMethod)EditorGUILayout.EnumMaskField(executeHandler.ExecuteMethods,
+#pragma warning restore 618
                                                                                          EditorStyles.popup,
                                                                                          GUILayout.ExpandWidth(false));
             EditorGUILayout.EndHorizontal();

@@ -124,7 +124,8 @@ public class ActivityController : MonoBehaviour {
             myLeader = value;
 
             log4Me($"{(myLeader != null ? "My leader is now " + myLeader.name : "I have no leader anymore")}");
-            myLeader.log4Me($"{(myLeader != null ? " I'm now the leader of " + name : "I'm not the leader of "+name+" anymore")}");
+
+            if (myLeader != null) myLeader.log4Me($"{(myLeader != null ? " I'm now the leader of " + name : "I'm not the leader of " + name + " anymore")}");
         }
     }
 
@@ -132,6 +133,7 @@ public class ActivityController : MonoBehaviour {
 
     private bool panic;
     private GameObject arrow;
+    public bool isPlayer;
 
     public bool Panic {
         get {
@@ -164,9 +166,23 @@ public class ActivityController : MonoBehaviour {
     void Start() {
 
         // Init Components
+        myActivity = GetComponentInChildren<ObjectController>();
+
+        isPlayer = tag == "Player";
+        if (isPlayer) {
+
+            ObjectController[] componentsInChildren = GetComponentsInChildren<ObjectController>();
+
+            foreach (ObjectController child in componentsInChildren) {
+                
+                if(child.name == "playingTheGame") CurrentActivity = child;
+            }
+
+            return;
+        }
+
         findOutside = true;
 
-        myActivity = GetComponentInChildren<ObjectController>();
         animator = GetComponent<Animator>();
         navComponent = GetComponent<NavMeshAgent>();
         navComponent.isStopped = true;
@@ -234,6 +250,8 @@ public class ActivityController : MonoBehaviour {
 
     // START GOING
     public void prepareGoing() {
+
+        if(isPlayer) return;
 
         // First set a target if we have no
         if (CurrentActivity == null) {
@@ -454,7 +472,11 @@ public class ActivityController : MonoBehaviour {
 
             adjustTool();
 
-            partnerIsAway = isWithOther && theOther.CurrentActivity != myActivity && theOther.NextActivity != myActivity;
+            if (isWithOther) {
+
+                partnerIsAway = !theOther.isPlayer && theOther.CurrentActivity != myActivity && theOther.NextActivity != myActivity;
+                organizeLookRotation();
+            }
 
             yield return new WaitForSeconds(ms);
             elapsedTime++;
@@ -507,7 +529,8 @@ public class ActivityController : MonoBehaviour {
         stopCoroutines();
 
         if (!checkFurtherChildDestinations()) {
-
+            
+            destroyTool();
             log4Me($"There were no childDestinations#Detail10Log");
         }
 
@@ -555,8 +578,6 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
         if(!iAmParticipant && Panic) deOrganize();
-
-        destroyTool();
 
         log4Me($"done stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
 
@@ -758,8 +779,7 @@ public class ActivityController : MonoBehaviour {
         // Loops was 0, proceed normally
         CurrentActivity.resetLoops();
 
-        log4Me(
-                $"{name}: No childDestinations and no loops. Continuing normally after {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}.#Detail10Log");
+        log4Me($"{name}: No childDestinations and no loops. Continuing normally after {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}.#Detail10Log");
 
         return false;
     }
@@ -855,6 +875,7 @@ public class ActivityController : MonoBehaviour {
         rightHand = getHand("Right");
     }
 
+    // Interruption with resistance
     private bool requestActivityChangeFor(ObjectController activity, ActivityController requester) {
 
         if(activity == null) Debug.LogError($"{name}: {requester.name} tried to interrupt me with a null activity");
@@ -878,7 +899,7 @@ public class ActivityController : MonoBehaviour {
 
         return false;
     }
-
+    // Interruption without resistance
     public IEnumerator interruptWith(ObjectController activity, ActivityController requester) {
 
         if(requester == null) Debug.LogError($"{name}: Requester war null in interruptWith()");
@@ -916,12 +937,6 @@ public class ActivityController : MonoBehaviour {
                 doSurprisedStoppingMovement();
             }
         }
-    }
-
-    // Did this to see, if there is only one reference to this, since I want to have interruption as private as possible
-    public void interruptFromOutside() {
-
-        interrupt();
     }
 
     private void organizeLookRotation() {
@@ -1318,6 +1333,8 @@ public class ActivityController : MonoBehaviour {
     }
 
     public void setRegion(RegionController rc) {
+        
+        if(isPlayer) return;
 
         oldRegion = myRegion;
 
@@ -1418,7 +1435,7 @@ public class ActivityController : MonoBehaviour {
         
     }
 
-    public void showArrow() {
+    public void select() {
 
         arrow = Instantiate(selectionArrow);
         arrow.transform.parent = transform;
@@ -1426,7 +1443,7 @@ public class ActivityController : MonoBehaviour {
         arrow.transform.localEulerAngles = Vector3.zero;
     }
 
-    public void removeArrow() {
+    public void deselect() {
 
         Destroy(arrow);
         arrow = null;
