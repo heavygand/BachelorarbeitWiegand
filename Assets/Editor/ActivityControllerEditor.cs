@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.AI;
+using UnityEngine.Assertions.Comparers;
 
 [CustomEditor (typeof (ActivityController))]
 public class ActivityControllerEditor : Editor {
@@ -11,6 +13,10 @@ public class ActivityControllerEditor : Editor {
     string log;
     private string lastMessage;
     private string secondToLastMessage;
+    private Vector3 pos;
+    private string activityName;
+    private string region;
+    private string lastNotDetailMessage;
 
     void OnSceneGUI() {
 
@@ -19,11 +25,21 @@ public class ActivityControllerEditor : Editor {
         string buttonText = $"Set panic and interrupt {user.name}";
         Handles.BeginGUI();
 
+        /*
+         * 
+         * ACTIVITY CHANGE BUTTON
+         * 
+         */
         if (GUILayout.Button(buttonText, GUILayout.Width(buttonText.Length * 7), GUILayout.Height(30))) {
             
             user.setPanicAndInterrupt();
         }
 
+        /*
+         * 
+         * DEBUG WINDOW
+         * 
+         */
         if (user.showDebugWindow) {
 
             GUI.Box(new Rect(0, 60, 800, 1400), $"{user.name} Debug Window\n{readLog()}", GetDebugStyle()); 
@@ -31,13 +47,25 @@ public class ActivityControllerEditor : Editor {
 
         Handles.EndGUI();
 
+        /*
+         * 
+         * LABEL ABOVE HEAD
+         * 
+         */
         organizeLabelAboveHead();
     }
 
     private void organizeLabelAboveHead() {
 
-        Vector3 pos = user.transform.position;
-        if (user.CurrentActivity != null && (user.Going || user.getNavMeshAgent() != null && user.getNavMeshAgent().isOnNavMesh && !user.getNavMeshAgent().isStopped)) {
+        pos = user.transform.position;
+
+        activityName = "null";
+        if(user.CurrentActivity != null) activityName = $"{ user.CurrentActivity.name }{ (user.CurrentActivity.isAvatar ? " with " + user.CurrentActivity.getAvatar().name : "")}";
+
+        region = "null";
+        if (user.getRegion() != null) region = $"{user.getRegion().name}";
+
+        if (user.Going) {
 
             Handles.color = Color.red;
 
@@ -45,20 +73,42 @@ public class ActivityControllerEditor : Editor {
             Vector3 dest = navAgent.destination;
 
             Handles.DrawLine(pos, dest);
+            
+            drawLabel($"Going to {activityName}, distance: {truncate(Vector3.Distance(pos, dest), 1)}");
+        }
+        else if (user.thinking || user.Doing) {
 
-            Handles.Label(
-                pos + Vector3.up*2,
-                $"MOVING to {user.CurrentActivity.name}{(user.CurrentActivity.isAvatar ? " with " + user.CurrentActivity.getAvatar().name : "")}, distance: {Vector3.Distance(pos, dest)}",
-                GetDebugStyle());
+            for (int i = user.log.Count - 1; i >= 0 ; i--) {
+
+                string currentLog = user.log[i];
+
+                if (!isDetail10Log(currentLog)) {
+
+                    drawLabel(substringAfter(currentLog, "#"));
+                    break;
+                }
+            }
         }
         else if (user.isPlayer) {
 
-            Handles.Label(pos + Vector3.up * 2, $"PLAYER", GetDebugStyle());
+            drawLabel($"PLAYER is playing");
         }
         else {
 
-            Handles.Label(pos + Vector3.up*2, $"STOPPED", GetDebugStyle());
+            drawLabel($"UNKNOWN STATUS");
         }
+    }
+
+    private void drawLabel(string content) {
+
+        Handles.Label(pos + Vector3.up * 2, $"{(user.Panic?"PANIC! ":"")}In {region}: {content}", GetDebugStyle());
+    }
+
+    public static float truncate(float value, int digits) {
+
+        double mult = Math.Pow(10.0, digits);
+        double result = Math.Truncate(mult * value) / mult;
+        return (float)result;
     }
 
     public static GUIStyle GetDebugStyle() {
@@ -86,7 +136,7 @@ public class ActivityControllerEditor : Editor {
             string place = substringBefore(substringAfter(line, "*"), "#");
             string message = substringAfter(line, "#");
                 
-            bool detail10LogIsOk = !line.EndsWith("#Detail10Log") || user.detailLog;
+            bool detail10LogIsOk = !isDetail10Log(line) || user.detailLog;
 
             // Check if line is ok to show
             if (message != secondToLastMessage && message != lastMessage && detail10LogIsOk) {
@@ -99,6 +149,11 @@ public class ActivityControllerEditor : Editor {
         }
 
         return output;
+    }
+
+    private static bool isDetail10Log(string line) {
+
+        return line.EndsWith("#Detail10Log");
     }
 
     private static Texture2D MakeTex(int width, int height, Color col) {

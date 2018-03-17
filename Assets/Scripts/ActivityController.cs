@@ -87,10 +87,12 @@ public class ActivityController : MonoBehaviour {
     private Transform whatBurn;
 
     private bool activityChangeRequested;
-    private bool going;
-    public bool Going => going;
     private bool findOutside;
     private bool iAmParticipant => MyLeader != null;
+
+    public bool thinking => !Going && !Doing;
+    public bool Going => navComponent!=null && navComponent.isOnNavMesh && !navComponent.isStopped;
+    public bool Doing => doingRoutine != null;
 
     private List<ActivityController> myParticipants;
     private Animator animator;
@@ -103,7 +105,7 @@ public class ActivityController : MonoBehaviour {
     private Coroutine sliding;
     private Coroutine rotateRoutine;
 
-    public Coroutine Doing { get; private set; }
+    public Coroutine doingRoutine { get; private set; }
 
     private ActivityController myLeader;
     private ObjectController myActivity;
@@ -152,7 +154,7 @@ public class ActivityController : MonoBehaviour {
                 log4Me($"I'm in panic!");
             }
             else {
-                // Speed for going
+                // Speed for Going
                 navComponent.speed = 2;
                 animator.SetBool("panicMode", false);
                 log4Me($"Not in panic anymore");
@@ -187,7 +189,7 @@ public class ActivityController : MonoBehaviour {
         navComponent = GetComponent<NavMeshAgent>();
         navComponent.isStopped = true;
 
-        // When we already have a current activity, then we can start going
+        // When we already have a current activity, then we can start Going
         if (CurrentActivity != null) {
 
             CurrentActivity.CurrentUser = this;
@@ -236,9 +238,9 @@ public class ActivityController : MonoBehaviour {
         // Decide what to do now
         if (iAmParticipant && CurrentActivity.isAvatar) {
 
-            log4Me($"I don't have to start going");
+            log4Me($"I don't have to start Going");
 
-            Doing = StartCoroutine(startDoing());
+            doingRoutine = StartCoroutine(startDoing());
         }
         else {
 
@@ -265,7 +267,7 @@ public class ActivityController : MonoBehaviour {
         // Stop sliding, if we still do
         if (sliding != null) {
 
-            log4Me($"stopping to slide, because I want to start going");
+            log4Me($"stopping to slide, because I want to start Going");
             StopCoroutine(sliding);
             sliding = null;
         }
@@ -276,7 +278,7 @@ public class ActivityController : MonoBehaviour {
     private IEnumerator startGoing() {
 
         // Wait for the start delay
-        log4Me($"Waiting {CurrentActivity.startDelay} seconds to start going");
+        log4Me($"Waiting {CurrentActivity.startDelay} seconds to start Going");
         yield return new WaitForSeconds(CurrentActivity.startDelay);
 
         // Reactivate stuff, that maybe was deactivated
@@ -293,7 +295,7 @@ public class ActivityController : MonoBehaviour {
             if (CurrentActivity.isMovable) createBubble();
 
             navComponent.SetDestination(CurrentActivity.WorkPlace);
-            log4Me($"I'm now going to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+            log4Me($"I'm now Going to {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
         }
         else {
 
@@ -302,13 +304,11 @@ public class ActivityController : MonoBehaviour {
 
         if (tag != "Vehicle") {
 
-            // Set Animator ready for going
+            // Set Animator ready for Going
             animator.SetBool("closeEnough", false);
             animator.SetTrigger("walk");
             animator.applyRootMotion = false;
         }
-
-        going = true;
     }
 
     // Arrived
@@ -330,11 +330,11 @@ public class ActivityController : MonoBehaviour {
         // Check if we reached an object with objectcontroller
         // Check if it's the first collider (the work place)
         // Check if it's my current activity
-        // Check if I'm currently going, because otherwise this could be triggered while doing
+        // Check if I'm currently Going, because otherwise this could be triggered while doing
         if (otherScript != null &&
             other == otherScript.gameObject.GetComponents<Collider>()[0] &&
             otherScript == CurrentActivity &&
-            going) {
+            Going) {
 
             log4Me($"arrived at {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
             
@@ -342,12 +342,12 @@ public class ActivityController : MonoBehaviour {
 
             stopGoing();
 
-            Doing = StartCoroutine(startDoing());
+            doingRoutine = StartCoroutine(startDoing());
             
             // Arrived at rallying point after firealarm and panic
-            if (Panic && myRegion != null && myRegion == myRegion.getMaster().getOutside() && !going) {
+            if (Panic && myRegion != null && myRegion == myRegion.getMaster().getOutside() && !Going) {
                 
-                // Check if I'm going to call the fire department
+                // Check if I'm Going to call the fire department
                 if (Random.Range(0, 10) % 2 == 0) {
 
                     callFireDepartment(); 
@@ -360,10 +360,9 @@ public class ActivityController : MonoBehaviour {
 
     private void stopGoing() {
 
-        log4Me($"I stopped going#Detail10Log");
+        log4Me($"I stopped Going#Detail10Log");
 
         stopCoroutines();
-        going = false;
 
         if (tag != "Vehicle") {
             
@@ -445,8 +444,6 @@ public class ActivityController : MonoBehaviour {
             log4Me($"organizeGroupActivity() not neccesary, because I am a participant#Detail10Log");
         }
 
-        log4Me($"starting {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
-
         // If we need a tool, then spawn it
         setToolAndHandsFields();
 
@@ -460,9 +457,9 @@ public class ActivityController : MonoBehaviour {
          * 
          * 
         */
-
-        log4Me($"my usage time for {CurrentActivity.name} runs now#Detail10Log");
-
+        
+        log4Me($"Doing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        
         // Activity time. Also check if my state changed every 20ms
         const float ms = 0.02f;
         int elapsedTime = 0;
@@ -525,7 +522,7 @@ public class ActivityController : MonoBehaviour {
     private void stopDoing() {
 
         log4Me($"{gameObject.name}: stops doing {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}#Detail10Log");
-
+        
         stopCoroutines();
 
         if (!checkFurtherChildDestinations()) {
@@ -593,10 +590,10 @@ public class ActivityController : MonoBehaviour {
 
     private void stopCoroutines() {
 
-        if (Doing != null) {
+        if (doingRoutine != null) {
 
-            StopCoroutine(Doing);
-            Doing = null;
+            StopCoroutine(doingRoutine);
+            doingRoutine = null;
             log4Me($"Coroutine doing stopped");
         }
         if (rotateRoutine != null) {
@@ -803,7 +800,7 @@ public class ActivityController : MonoBehaviour {
         // No hand
         if (CurrentActivity.handToUse == ObjectController.HandUsage.noHand) {
 
-            log4Me($"Using my tool without hands.");
+            log4Me($"Using my tool without hands.#Detail10Log");
 
             tool.transform.position = transform.position;
         }
@@ -811,7 +808,7 @@ public class ActivityController : MonoBehaviour {
         else if (CurrentActivity.handToUse == ObjectController.HandUsage.leftHand
             || CurrentActivity.handToUse == ObjectController.HandUsage.rightHand) {
 
-            log4Me($"Using my tool with one hand: {CurrentActivity.handToUse}.");
+            log4Me($"Using my tool with one hand: {CurrentActivity.handToUse}.#Detail10Log");
             putToolInHand(CurrentActivity.handToUse);
         }
         // Both hands
@@ -857,7 +854,7 @@ public class ActivityController : MonoBehaviour {
             return;
         }
 
-        log4Me($"I have to use a {CurrentActivity.toolToUse.name} for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
+        log4Me($"I have to use a {CurrentActivity.toolToUse.name} for {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}#Detail10Log");
 
         tool = Instantiate(CurrentActivity.toolToUse);
         tool.transform.parent = gameObject.transform;
@@ -925,9 +922,9 @@ public class ActivityController : MonoBehaviour {
 
         activityChangeRequested = true;
 
-        if (going) {
+        if (Going) {
 
-            log4Me($"was going, therefore stopping and setting new target#Detail10Log");
+            log4Me($"was Going, therefore stopping and setting new target#Detail10Log");
 
             stopGoing();
             setTarget();
@@ -1028,7 +1025,7 @@ public class ActivityController : MonoBehaviour {
         // Move to pos
         while (Vector3.Distance(transform.position, targetPos) >= 0.05f) {
 
-            log4Me($"Sliding to place...");
+            log4Me($"Sliding to place...#Detail10Log");
             transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime / 3);
             yield return new WaitForSeconds(0);
         }
@@ -1371,7 +1368,7 @@ public class ActivityController : MonoBehaviour {
 
         nextActivity = myRegion.getRallyingPoint();
 
-        // This also eventually stops going and sets target
+        // This also eventually stops Going and sets target
         interrupt();
     }
 
@@ -1416,23 +1413,36 @@ public class ActivityController : MonoBehaviour {
         /*
          *
          * Wait as long as...
-         * ...the navAgent is going
+         * ...the navAgent is Going
          * ...our distance to the target is high enough
          * 
          */
-        while (navComponent == null || Doing!=null || !navComponent.isStopped && Vector3.Distance(transform.position, navComponent.destination) >= 0.5f) {
+        while (thinking || Doing || Going) {
+
+            bool hasArrived = Vector3.Distance(transform.position, navComponent.destination) < 0.5f;
             
-            yield return new WaitForSeconds(2);
-        }
+            if (thinking || Doing || Going && !hasArrived) {
 
-        // When the navAgent is not stopped, but we arrived, then stop and find a new target
-        if (!navComponent.isStopped && Vector3.Distance(transform.position, navComponent.destination) < 0.5f) {
+                yield return new WaitForSeconds(2);
+            }
+            else {
 
-            log4Me($"I arrived, but did not collide, so I'm stopping now");
-            stopGoing();
-            setTarget();
+                // When the navAgent is not stopped, but we arrived, then stop and find a new target
+                if (Going && hasArrived) {
+
+                    log4Me($"I arrived, but did not collide, so looking for something else (Currentactivity: {CurrentActivity.name})");
+                    stopGoing();
+                    setTarget();
+                }
+                else {
+
+                    log4Me($"NoCollisionChecker stopped waiting for another reason");
+                }
+                yield return new WaitForSeconds(1);
+            }
         }
-        
+        if(Going && Doing) Debug.LogError($"{name}: I was going and doing at the same time!");
+        log4Me($"NoCollisionChecker stopped #####################################");
     }
 
     public void select() {
