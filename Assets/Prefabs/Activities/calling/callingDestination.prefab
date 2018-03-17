@@ -133,7 +133,9 @@ MonoBehaviour:
   handToUse: 1
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: telefonieren
 --- !u!136 &136817524534852418
 CapsuleCollider:
   m_ObjectHideFlags: 1

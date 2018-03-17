@@ -238,6 +238,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 2
   startDelay: 0
+  discription: klingeln
 --- !u!136 &136615208776702798
 CapsuleCollider:
   m_ObjectHideFlags: 1

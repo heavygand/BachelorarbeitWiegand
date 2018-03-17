@@ -954,8 +954,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 2
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114115917542046452
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -982,8 +983,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 2
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114197369351944196
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1010,8 +1012,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 2
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114197817272834056
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1038,8 +1041,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 2
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114722176876879976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1066,8 +1070,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: spazieren
 --- !u!114 &114799910647007056
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1094,8 +1099,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 2
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114914414143807008
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1122,8 +1128,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 2
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114969345340578096
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1150,8 +1157,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 99
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114973090689188352
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1178,5 +1186,6 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 2
-  soundPlayDelay: 0
+  activationDelay: 0
   startDelay: 0
+  discription: 

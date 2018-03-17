@@ -25871,4 +25871,6 @@ MonoBehaviour:
   handToUse: 3
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: fegen

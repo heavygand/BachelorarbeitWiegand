@@ -42,6 +42,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
+        public MouseLook mouseLookScript {
+            get {
+                return m_MouseLook;
+            }
+        }
+
         // Use this for initialization
         private void Start()
         {
@@ -54,7 +60,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_NextStep = m_StepCycle/2f;
             m_Jumping = false;
             m_AudioSource = GetComponent<AudioSource>();
-			m_MouseLook.Init(transform , m_Camera.transform);
+			mouseLookScript.Init(transform , m_Camera.transform);
         }
 
 
@@ -130,7 +136,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             ProgressStepCycle(speed);
             UpdateCameraPosition(speed);
 
-            m_MouseLook.UpdateCursorLock();
+            mouseLookScript.UpdateCursorLock();
         }
 
 
@@ -236,7 +242,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void RotateView()
         {
-            m_MouseLook.LookRotation (transform, m_Camera.transform);
+            mouseLookScript.LookRotation (transform, m_Camera.transform);
         }
 
 

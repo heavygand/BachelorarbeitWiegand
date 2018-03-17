@@ -157,6 +157,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
+  discription: "M\xFCll wegschmei\xDFen"
 --- !u!136 &136399475362200702
 CapsuleCollider:
   m_ObjectHideFlags: 1

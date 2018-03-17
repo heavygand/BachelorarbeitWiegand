@@ -228,7 +228,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: Kaffee kochen
 --- !u!136 &136435969454445308
 CapsuleCollider:
   m_ObjectHideFlags: 1

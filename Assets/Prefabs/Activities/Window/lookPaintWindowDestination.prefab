@@ -138,4 +138,6 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: beobachten

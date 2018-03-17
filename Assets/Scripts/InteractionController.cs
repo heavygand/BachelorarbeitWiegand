@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Fungus;
+using UnityStandardAssets.Characters.FirstPerson;
 
 public class InteractionController : MonoBehaviour {
 
@@ -13,11 +14,16 @@ public class InteractionController : MonoBehaviour {
     GameObject lastRend;
     private ActivityController me;
     private ObjectController myTalkDestination;
+    private FirstPersonController fpc;
+    private UnityStandardAssets.Characters.FirstPerson.MouseLook mouseLook;
 
     void Start() {
         
         me = gameObject.GetComponent<ActivityController>();
         myTalkDestination = gameObject.GetComponentInChildren<ObjectController>();
+
+        fpc = GetComponent<FirstPersonController>();
+        mouseLook = fpc.mouseLookScript;
     }
 
     public void interruptSelected() {
@@ -27,6 +33,8 @@ public class InteractionController : MonoBehaviour {
 
             me.log4Me($"Trying to interrupt {selectedAvatar.name}");
             StartCoroutine(selectedAvatar.interruptWith(myTalkDestination, me));
+
+            setControl(false);
         }
         else {
 
@@ -34,8 +42,25 @@ public class InteractionController : MonoBehaviour {
         }
     }
 
+    private void setControl(bool control) {
+
+        mouseLook.SetCursorLock(control);
+        fpc.enabled = control;
+    }
+
+    public void sendAway() {
+
+        selectedAvatar.interruptFromOutside();
+        setControl(true);
+    }
+
     // Update is called once per frame
     void Update() {
+
+        if (Input.GetKeyDown(KeyCode.F)) {
+
+            toggleMouseAndController();
+        }
 
         RaycastHit hitInfo;
 
@@ -91,6 +116,11 @@ public class InteractionController : MonoBehaviour {
         }
 
         flowchart.SetStringVariable("name", ObjectName);
+    }
+
+    private void toggleMouseAndController() {
+        mouseLook.SetCursorLock(!mouseLook.lockCursor);
+        fpc.enabled = !fpc.enabled;
     }
 
     private void setFlowchart() {

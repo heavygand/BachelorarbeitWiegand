@@ -306,7 +306,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: 
 --- !u!114 &114629261974342080
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -333,7 +335,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: toilette benutzen
 --- !u!136 &136725297353062370
 CapsuleCollider:
   m_ObjectHideFlags: 1

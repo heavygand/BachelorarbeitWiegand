@@ -93,6 +93,9 @@ public class ObjectController : MonoBehaviour {
     [Tooltip("The time to wait before starting this (includes start going)")]
     public int startDelay;
 
+    [Tooltip("The discription text for FUNGUS. Sollte passen zu: \"Ich war gerade am...\" und \"Ich war gerade auf dem weg zum...\"")]
+    public string discription;
+
     private RegionController myRegion;
     private int internalLoops;
     public Vector3 MoveVector => rotateVector(moveVector);
@@ -215,9 +218,9 @@ public class ObjectController : MonoBehaviour {
 
         isActivated = true;
 
-        AudioSource audio = GetComponent<AudioSource>();
+        AudioSource sound = GetComponent<AudioSource>();
 
-        if (audio != null) audio.Play();
+        if (sound != null) sound.Play();
 
         // When it's a firealarm, then set alarm and panic
         if (LayerMask.LayerToName(gameObject.layer) == "Feuermelder") {

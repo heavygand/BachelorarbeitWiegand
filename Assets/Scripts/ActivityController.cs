@@ -936,6 +936,11 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    public void interruptFromOutside() {
+
+        interrupt();
+    }
+
     private void organizeLookRotation() {
 
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();

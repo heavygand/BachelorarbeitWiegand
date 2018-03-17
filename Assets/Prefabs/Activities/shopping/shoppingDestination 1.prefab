@@ -13544,7 +13544,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: 
 --- !u!114 &114235718389177968
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -13571,7 +13573,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: einkaufen
 --- !u!114 &114243351425283022
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -13598,7 +13602,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: 
 --- !u!114 &114476960161448202
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -13625,7 +13631,9 @@ MonoBehaviour:
   handToUse: 0
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: 
 --- !u!136 &136067830654984130
 CapsuleCollider:
   m_ObjectHideFlags: 1

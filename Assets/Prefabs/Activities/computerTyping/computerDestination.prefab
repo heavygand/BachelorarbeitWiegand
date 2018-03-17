@@ -1077,7 +1077,9 @@ MonoBehaviour:
   handToUse: 2
   isGroupActivity: 0
   loops: 0
-  soundPlayDelay: 0
+  activationDelay: 0
+  startDelay: 0
+  discription: arbeiten am Computer
 --- !u!136 &136026302130799548
 CapsuleCollider:
   m_ObjectHideFlags: 1
