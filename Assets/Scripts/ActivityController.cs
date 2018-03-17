@@ -57,6 +57,19 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    private ObjectController lastActivity;
+    public ObjectController LastActivity
+    {
+        get
+        {
+            return lastActivity;
+        }
+        set
+        {
+            lastActivity = value;
+        }
+    }
+
     [Tooltip("The destination bubble for partner activities")]
     public GameObject bubble;
     
@@ -71,7 +84,6 @@ public class ActivityController : MonoBehaviour {
     [Tooltip("Determines if the caller and the line number shall be shown")]
     public bool showPlace;
 
-    private ObjectController lastActivity;
     private ObjectController interruptedFor;
     private ObjectController secondLastActivity;
 
@@ -136,6 +148,7 @@ public class ActivityController : MonoBehaviour {
     private bool panic;
     private GameObject arrow;
     public bool isPlayer;
+    private bool checkOnTriggerStay;
 
     public bool Panic {
         get {
@@ -319,6 +332,7 @@ public class ActivityController : MonoBehaviour {
 
             log4Me($"arrived at destinationBubble, but no activity was there (probably moved away)");
 
+            checkOnTriggerStay = false;
             destroyBubble();
             setTarget();
 
@@ -335,6 +349,8 @@ public class ActivityController : MonoBehaviour {
             other == otherScript.gameObject.GetComponents<Collider>()[0] &&
             otherScript == CurrentActivity &&
             Going) {
+
+            checkOnTriggerStay = false;
 
             log4Me($"arrived at {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}");
             
@@ -494,7 +510,7 @@ public class ActivityController : MonoBehaviour {
         else if (partnerIsAway) {
 
             log4Me($"stopping {CurrentActivity.name}{(CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : "")}, because my partner was interrupted ({CurrentActivity.getAvatar().name})");
-            log4Me($"{CurrentActivity.getAvatar().name}: My former partner {name} stopped, because I was interrupted");
+            CurrentActivity.getAvatar().log4Me($"My former partner {name} stopped, because I was interrupted");
 
             if (myParticipants != null){
 
@@ -594,19 +610,19 @@ public class ActivityController : MonoBehaviour {
 
             StopCoroutine(doingRoutine);
             doingRoutine = null;
-            log4Me($"Coroutine doing stopped");
+            log4Me($"Coroutine doing stopped#Detail10Log");
         }
         if (rotateRoutine != null) {
 
             StopCoroutine(rotateRoutine);
             rotateRoutine = null;
-            log4Me($"Coroutine rotateRoutine stopped");
+            log4Me($"Coroutine rotateRoutine stopped#Detail10Log");
         }
         if (sliding != null) {
 
             StopCoroutine(sliding);
             sliding = null;
-            log4Me($"Coroutine sliding stopped");
+            log4Me($"Coroutine sliding stopped#Detail10Log");
         }
     }
 
@@ -873,7 +889,7 @@ public class ActivityController : MonoBehaviour {
     }
 
     // Interruption with resistance
-    private bool requestActivityChangeFor(ObjectController activity, ActivityController requester) {
+    public bool requestActivityChangeFor(ObjectController activity, ActivityController requester) {
 
         if(activity == null) Debug.LogError($"{name}: {requester.name} tried to interrupt me with a null activity");
         if(requester == null) Debug.LogError($"{name}: someone who was null, tried to interrupt me with {activity.name}");
@@ -887,7 +903,9 @@ public class ActivityController : MonoBehaviour {
         // My priority has to be higher
         if (activity.Priority > myPriority) {
 
-            StartCoroutine(interruptWith(activity, requester));
+            interruptWith(activity);
+
+            MyLeader = requester;
             return true;
         }
 
@@ -896,24 +914,19 @@ public class ActivityController : MonoBehaviour {
 
         return false;
     }
+    
     // Interruption without resistance
-    public IEnumerator interruptWith(ObjectController activity, ActivityController requester) {
-
-        if(requester == null) Debug.LogError($"{name}: Requester war null in interruptWith()");
+    public void interruptWith(ObjectController activity) {
+        
         if(activity == null) Debug.LogError($"{name}: activity war null in interruptWith()");
 
         log4Me($"Interruption {activity.name}{(activity.isAvatar ? " with " + activity.getAvatar().name : "")} accepted");
-        requester.log4Me($"Sucessfully interrupted {name} with {activity.name}");
-
-        MyLeader = requester;
 
         NextActivity = activity;
 
         interruptedFor = activity;
 
         interrupt();
-
-        yield return 0;
     }
 
     private void interrupt() {
@@ -1177,7 +1190,7 @@ public class ActivityController : MonoBehaviour {
 
         if (NextActivity != null) {
             log4Me(
-                    $"got {NextActivity.name} in {NextActivity.getRegion().name} from NextActivity. (current was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))})");
+                    $"got {(NextActivity == null ? "null" : NextActivity.name + (NextActivity.isAvatar ? " with " + NextActivity.getAvatar().name : ""))} from NextActivity. (current was {(CurrentActivity == null ? "null" : CurrentActivity.name + (CurrentActivity.isAvatar ? " with " + CurrentActivity.getAvatar().name : ""))})");
         }
 
         // Proceed with activities, when available
@@ -1428,16 +1441,15 @@ public class ActivityController : MonoBehaviour {
             
             if (thinking || Doing || Going && !hasArrived) {
 
-                yield return new WaitForSeconds(2);
+                yield return new WaitForSeconds(1);
             }
             else {
 
                 // When the navAgent is not stopped, but we arrived, then stop and find a new target
                 if (Going && hasArrived) {
 
-                    log4Me($"I arrived, but did not collide, so looking for something else (Currentactivity: {CurrentActivity.name})");
-                    stopGoing();
-                    setTarget();
+                    log4Me($"I arrived at the place, but did not call OnTriggerEnter, so checking OnTriggerStay once");
+                    checkOnTriggerStay = true;
                 }
                 else {
 
@@ -1462,5 +1474,12 @@ public class ActivityController : MonoBehaviour {
 
         Destroy(arrow);
         arrow = null;
+    }
+
+    private void OnTriggerStay(Collider other) {
+
+        if(!checkOnTriggerStay) return;
+
+        OnTriggerEnter(other);
     }
 }

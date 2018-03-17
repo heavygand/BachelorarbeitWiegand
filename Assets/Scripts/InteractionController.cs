@@ -24,6 +24,10 @@ public class InteractionController : MonoBehaviour {
 
         fpc = GetComponent<FirstPersonController>();
         mouseLook = fpc.mouseLookScript;
+        /*
+        WiegandMenu menu = Instantiate(wiegandMenu);
+        Block startBlock = flowchart.FindBlock("E pressed");
+        startBlock.CommandList.Add(menu);*/
     }
 
     public void interruptSelected() {
@@ -32,7 +36,7 @@ public class InteractionController : MonoBehaviour {
         if (selectedAvatar.CurrentActivity != myTalkDestination && selectedAvatar.NextActivity != myTalkDestination) {
 
             me.log4Me($"Trying to interrupt {selectedAvatar.name}");
-            StartCoroutine(selectedAvatar.interruptWith(myTalkDestination, me));
+            selectedAvatar.requestActivityChangeFor(myTalkDestination, me);
 
             setControl(false);
         }
@@ -51,6 +55,12 @@ public class InteractionController : MonoBehaviour {
     public void sendAway() {
 
         selectedAvatar.interruptFromOutside();
+        setControl(true);
+    }
+
+    public void stop() {
+
+        selectedAvatar.interruptWith(selectedAvatar.LastActivity);
         setControl(true);
     }
 
@@ -124,7 +134,7 @@ public class InteractionController : MonoBehaviour {
     }
 
     private void setFlowchart() {
-
+        
         flowchart.SetBooleanVariable("avatarSelected", true);
         flowchart.SetGameObjectVariable("currentAvatar", selectedAvatar.gameObject);
     }

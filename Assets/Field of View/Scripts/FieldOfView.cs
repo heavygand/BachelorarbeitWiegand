@@ -66,7 +66,7 @@ public class FieldOfView : MonoBehaviour {
 
                         script.log4Me("Firealarm detected, starting alarm...");
                         script.Panic = false;
-                        StartCoroutine(script.interruptWith(fireAlarm, script));
+                        script.interruptWith(fireAlarm);
                     }
                 }
             }
