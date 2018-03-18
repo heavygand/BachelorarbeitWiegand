@@ -1,2 +1,0 @@
-BUTTONTEXT:Bitte gehen Sie hier weg
-RESPONSETEXT:Kein Problem! Wiedersehen.

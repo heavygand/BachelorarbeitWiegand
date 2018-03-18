@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.AI;
-using UnityEngine.Assertions.Comparers;
 
 [CustomEditor (typeof (ActivityController))]
 public class ActivityControllerEditor : Editor {
@@ -14,7 +13,6 @@ public class ActivityControllerEditor : Editor {
     private string lastMessage;
     private string secondToLastMessage;
     private Vector3 pos;
-    private string activityName;
     private string region;
     private string lastNotDetailMessage;
 
@@ -59,24 +57,20 @@ public class ActivityControllerEditor : Editor {
 
         pos = user.transform.position;
 
-        activityName = "null";
-        if(user.CurrentActivity != null) activityName = $"{ user.CurrentActivity.name }{ (user.CurrentActivity.isAvatar ? " with " + user.CurrentActivity.getAvatar().name : "")}";
-
         region = "null";
         if (user.getRegion() != null) region = $"{user.getRegion().name}";
 
-        if (user.Going) {
+        if (user.thinking || user.Doing || user.Going) {
 
-            Handles.color = Color.red;
+            string distance = "";
+            if (user.Going) {
 
-            NavMeshAgent navAgent = user.getNavMeshAgent();
-            Vector3 dest = navAgent.destination;
-
-            Handles.DrawLine(pos, dest);
-            
-            drawLabel($"Going to {activityName}, distance: {truncate(Vector3.Distance(pos, dest), 1)}");
-        }
-        else if (user.thinking || user.Doing) {
+                Handles.color = Color.red;
+                NavMeshAgent navAgent = user.getNavMeshAgent();
+                Vector3 dest = navAgent.destination;
+                Handles.DrawLine(pos, dest);
+                distance += $", distance: {truncate(Vector3.Distance(pos, dest), 1)}";
+            }
 
             for (int i = user.log.Count - 1; i >= 0 ; i--) {
 
@@ -84,7 +78,7 @@ public class ActivityControllerEditor : Editor {
 
                 if (!isDetail10Log(currentLog)) {
 
-                    drawLabel(substringAfter(currentLog, "#"));
+                    drawLabel(substringAfter(currentLog, "#")+distance);
                     break;
                 }
             }
@@ -174,8 +168,8 @@ public class ActivityControllerEditor : Editor {
         return line.Substring(0, line.IndexOf(beforeWhat));
     }
 
-    private static string substringAfter(string line, string afterWhat) {
+    public static string substringAfter(string line, string afterWhat) {
 
-        return line.Substring(line.IndexOf(afterWhat) + 1);
+        return line.Substring(line.IndexOf(afterWhat) + afterWhat.Length);
     }
 }

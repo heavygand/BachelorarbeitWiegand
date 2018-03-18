@@ -412,7 +412,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4596123562933936}
-  - component: {fileID: 54498284800479352}
   - component: {fileID: 114104939984456986}
   m_Layer: 0
   m_Name: TalkDestination
@@ -597,6 +596,7 @@ GameObject:
   - component: {fileID: 4005151436281976}
   - component: {fileID: 20104937105626890}
   - component: {fileID: 124370636452281720}
+  - component: {fileID: 54736591553945338}
   m_Layer: 0
   m_Name: FirstPersonCharacter
   m_TagString: MainCamera
@@ -658,7 +658,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1876387350695404
 GameObject:
   m_ObjectHideFlags: 1
@@ -2397,12 +2397,12 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!54 &54498284800479352
+--- !u!54 &54736591553945338
 Rigidbody:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1642008305818828}
+  m_GameObject: {fileID: 1832846671844810}
   serializedVersion: 2
   m_Mass: 1
   m_Drag: 0
@@ -3023,6 +3023,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114181373712067558
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3051,6 +3052,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
+  discription: 
 --- !u!114 &114286491544886230
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3151,7 +3153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7e81d6b019e4640ac32463260b836c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentActivity: {fileID: 0}
+  currentActivity: {fileID: 114181373712067558}
   nextActivity: {fileID: 0}
   bubble: {fileID: 0}
   selectionArrow: {fileID: 0}
@@ -3185,6 +3187,11 @@ MonoBehaviour:
   distanceToSee: 2
   ObjectName: nothing
   flowchart: {fileID: 0}
+  dialogMenu: {fileID: 1452615411572990, guid: 520e74f7d1244bd40baa25c88ce37ea1, type: 2}
+  button: {fileID: 1240059401598244, guid: 19dde42e101379c48b1f53f03776072b, type: 2}
+  responseSayDialog: {fileID: 1128483162914070, guid: ee29bf76caab1b64ca574b63230c03a7,
+    type: 2}
+  dialogPath: C:\Users\erikd\OneDrive\Bachelorarbeit\BachelorarbeitWiegand\Assets\Texts
 --- !u!114 &114768677262855046
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,2 +1,0 @@
-BUTTONTEXT:Vielen Dank. Auf Wiedersehen.
-RESPONSETEXT:Auf Wiedersehen.

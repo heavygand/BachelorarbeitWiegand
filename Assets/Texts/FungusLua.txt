@@ -1,0 +1,25 @@
+function wiedersehen()
+    player.returnToActivity()
+	say "Auf Wiedersehen."
+end
+
+function weggehen()
+	player.sendAway()
+	say "Kein Problem! Wiedersehen."
+end
+
+function wasErlebt()
+	player.wasErlebt()
+	say "{$wasErlebt}"
+end
+
+function start()
+	player.interruptSelected()
+	say "Hallo, ich bin {$name}"
+
+	menu("Vielen Dank. Auf Wiedersehen.", wiedersehen)
+	menu("Bitte gehen Sie hier weg.", weggehen)
+	menu("Was haben Sie erlebt?", wasErlebt)
+end
+
+start()

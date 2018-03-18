@@ -154,6 +154,8 @@ public class ObjectController : MonoBehaviour {
 
 		avatar = gameObject.GetComponentInParent<ActivityController>();
 
+        if(isAvatar) name = $"{name} with {avatar.name}";
+
 		StartCoroutine(checkIfOutside());
 
         if (noTurning && turnAngle != 0) {

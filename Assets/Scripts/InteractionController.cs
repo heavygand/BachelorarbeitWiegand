@@ -1,22 +1,28 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.IO;
 using Fungus;
+using UnityEngine.UI;
 using UnityStandardAssets.Characters.FirstPerson;
 
 public class InteractionController : MonoBehaviour {
 
     public float distanceToSee;
     public string ObjectName = "nothing";
-    Material originalMaterial, tempMaterial;
-    Renderer rend;
-    ActivityController selectedAvatar;
     public Flowchart flowchart;
-    GameObject lastRend;
+    public string dialogPath;
+
+    private Material originalMaterial, tempMaterial;
+    private Renderer rend;
+    private ActivityController selectedAvatar;
     private ActivityController me;
     private ObjectController myTalkDestination;
     private FirstPersonController fpc;
     private UnityStandardAssets.Characters.FirstPerson.MouseLook mouseLook;
 
+    private GameObject lastRend;
+    private static string[] dialogFiles;
+
+    // Init components
     void Start() {
         
         me = gameObject.GetComponent<ActivityController>();
@@ -24,44 +30,20 @@ public class InteractionController : MonoBehaviour {
 
         fpc = GetComponent<FirstPersonController>();
         mouseLook = fpc.mouseLookScript;
-        /*
-        WiegandMenu menu = Instantiate(wiegandMenu);
-        Block startBlock = flowchart.FindBlock("E pressed");
-        startBlock.CommandList.Add(menu);*/
     }
-
-    public void interruptSelected() {
-
-        me.log4Me("interruptSelected called");
-        if (selectedAvatar.CurrentActivity != myTalkDestination && selectedAvatar.NextActivity != myTalkDestination) {
-
-            me.log4Me($"Trying to interrupt {selectedAvatar.name}");
-            selectedAvatar.requestActivityChangeFor(myTalkDestination, me);
-
-            setControl(false);
-        }
-        else {
-
-            me.log4Me("So the selected avatar has my talkdestination");
-        }
-    }
+    #region AVATAR SELECTION
+    /*
+     * 
+     * ####################################
+     * PART 1: AVATAR SELECTION
+     * ####################################
+     * 
+     */
 
     private void setControl(bool control) {
 
         mouseLook.SetCursorLock(control);
         fpc.enabled = control;
-    }
-
-    public void sendAway() {
-
-        selectedAvatar.interruptFromOutside();
-        setControl(true);
-    }
-
-    public void stop() {
-
-        selectedAvatar.interruptWith(selectedAvatar.LastActivity);
-        setControl(true);
     }
 
     // Update is called once per frame
@@ -129,12 +111,14 @@ public class InteractionController : MonoBehaviour {
     }
 
     private void toggleMouseAndController() {
+
         mouseLook.SetCursorLock(!mouseLook.lockCursor);
         fpc.enabled = !fpc.enabled;
     }
 
+    // Set Fungus variables
     private void setFlowchart() {
-        
+
         flowchart.SetBooleanVariable("avatarSelected", true);
         flowchart.SetGameObjectVariable("currentAvatar", selectedAvatar.gameObject);
     }
@@ -151,4 +135,107 @@ public class InteractionController : MonoBehaviour {
         flowchart.SetBooleanVariable("avatarSelected", false);
         flowchart.SetGameObjectVariable("currentAvatar", null);
     }
+    #endregion
+    #region EVENT METHODS CALLED FROM FUNGUS
+    /*
+     * 
+     * ############################################
+     * PART 2: EVENT METHODS CALLED FROM FUNGUS
+     * ############################################
+     * 
+     */
+
+    public void interruptSelected() {
+
+        me.log4Me("interruptSelected called");
+        if (selectedAvatar.CurrentActivity != myTalkDestination && selectedAvatar.NextActivity != myTalkDestination) {
+
+            me.log4Me($"Trying to interrupt {selectedAvatar.name}");
+            selectedAvatar.MyLeader = me;
+            selectedAvatar.interruptWith(myTalkDestination);
+
+            setControl(false);
+        } else {
+
+            me.log4Me("So the selected avatar has my talkdestination");
+        }
+    }
+
+    public void sendAway() {
+
+        selectedAvatar.interruptFromOutside();
+        setControl(true);
+    }
+
+    public void returnToActivity() {
+
+        selectedAvatar.MyLeader = me;
+        selectedAvatar.interruptWith(selectedAvatar.LastActivity);
+        setControl(true);
+    }
+
+    public void wasErlebt() {
+
+        readDialogPath();
+    }
+    #endregion
+    #region FUNGUS MENU BUILDING
+    /*
+     * 
+     * ####################################
+     * PART 3: TEXTFILE PROCESSING
+     * ####################################
+     * 
+     */
+
+    private void readDialogPath() {
+
+        if (Directory.Exists(dialogPath)) {
+            
+            dialogFiles = Directory.GetFiles(dialogPath);
+        }
+        else {
+
+            Debug.LogError($"{dialogPath} is not a valid directory.");
+        }
+    }
+
+    public void showDialogMenu() {
+
+        foreach (string fullFileName in dialogFiles) {
+
+            ProcessFile(fullFileName);
+        }
+    }
+
+    public void ProcessFile(string path) {
+
+        if (!path.EndsWith(".txt")) return;
+
+        // Read each line of the file into a string array.
+        string[] lines = File.ReadAllLines(path);
+        
+        foreach (string line in lines) {
+
+            // Create the Button
+            string buttontext2Search = "BUTTONTEXT:";
+            if (line.StartsWith(buttontext2Search)) {
+
+                string readButtonText = substringAfter(line, buttontext2Search);
+            }
+
+            // Set the response Text
+            string readResponseText2Search = "RESPONSETEXT:";
+            if (line.StartsWith(readResponseText2Search)) {
+
+                string readResponseText = substringAfter(line, readResponseText2Search);
+            }
+        }
+    }
+
+    public static string substringAfter(string line, string afterWhat) {
+
+        return line.Substring(line.IndexOf(afterWhat) + afterWhat.Length);
+    }
+    #endregion
 }
