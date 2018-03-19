@@ -1,5 +1,2 @@
-WAS:
-Ich habe gesehen, wie das Feuer in der Küche ausgebrochen ist!
-
-WO:
-Die Küche ist, wenn man rein kommt, die erste Tür links.
+WHERE:Die Küche ist, wenn man rein kommt, die erste Tür links.
+END:, da habe ich auf einmal ein Feuer in der Küche gesehen! Dann bin ich nach draußen gelaufen.

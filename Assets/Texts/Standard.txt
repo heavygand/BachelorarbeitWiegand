@@ -1,3 +1,4 @@
-STANDARD START:Ich war gerade am
-STANDARD END:, da habe ich auf einmal den Feueralarm gehört! Dann bin ich nach draußen gelaufen.
+DOING:Ich war gerade am
 GOING:Ich war gerade unterwegs zum
+END:, da habe ich auf einmal den Feueralarm gehört! Dann bin ich nach draußen gelaufen.
+ALARMACTIVATED: Beim raus laufen, habe ich den Feueralarm aktiviert

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using System.IO;
 using Fungus;
 using UnityEngine.UI;
@@ -9,7 +10,8 @@ public class InteractionController : MonoBehaviour {
     public float distanceToSee;
     public string ObjectName = "nothing";
     public Flowchart flowchart;
-    public string dialogPath;
+    public string dialogDirectory;
+    public GameObject sprechenText;
 
     private Material originalMaterial, tempMaterial;
     private Renderer rend;
@@ -18,9 +20,20 @@ public class InteractionController : MonoBehaviour {
     private ObjectController myTalkDestination;
     private FirstPersonController fpc;
     private UnityStandardAssets.Characters.FirstPerson.MouseLook mouseLook;
-
     private GameObject lastRend;
     private static string[] dialogFiles;
+    private string fullPath;
+    private string searchStringDoingStartText = "DOING:";
+    private string searchStringGoingStartText = "GOING:";
+    private string searchStringEndText = "END:";
+    private string searchStringWhereText = "WHERE:";
+    private string searchStringAlarmActivatedText = "ALARMACTIVATED:";
+    private string doingStartText = "";
+    private string goingStartText = "";
+    private string endText = "";
+    private string alarmActivatedText = "";
+    private string whereText = "";
+    private GameObject textGO;
 
     // Init components
     void Start() {
@@ -30,7 +43,13 @@ public class InteractionController : MonoBehaviour {
 
         fpc = GetComponent<FirstPersonController>();
         mouseLook = fpc.mouseLookScript;
+
+        if (!findDirectoryIn(Directory.GetCurrentDirectory())) {
+
+            Debug.LogError($"Could not find directory \"{dialogDirectory}\" under {Directory.GetCurrentDirectory()}.");
+        }
     }
+
     #region AVATAR SELECTION
     /*
      * 
@@ -92,12 +111,15 @@ public class InteractionController : MonoBehaviour {
             //When this is another avatar
             if(selectedAvatar != currRend.transform.parent.gameObject.GetComponent<ActivityController>()) {
 
-                if(selectedAvatar != null) selectedAvatar.deselect();
+                if (selectedAvatar != null) {
+
+                    removeSelectText();
+                }
                 
                 // Because the huge collider of the talkdestination
                 selectedAvatar = currRend.transform.parent.gameObject.GetComponent<ActivityController>();
                 ObjectName = selectedAvatar.name;
-                selectedAvatar.select();
+                showSelectText();
                 setFlowchart();
             }
         }
@@ -107,7 +129,33 @@ public class InteractionController : MonoBehaviour {
             deselectAvatarAndFlowchart();
         }
 
-        flowchart.SetStringVariable("name", ObjectName);
+        if (textGO != null) {
+
+            textLookAtCamera(); 
+        }
+    }
+
+    private void textLookAtCamera() {
+
+        // Look at the Camera
+        Transform textTransform = textGO.transform;
+        textTransform.LookAt(Camera.main.transform);
+
+        Quaternion wrongTargetRot = textTransform.rotation;
+        textTransform.rotation = Quaternion.Euler(
+            wrongTargetRot.eulerAngles.x * -1,
+            wrongTargetRot.eulerAngles.y + 180,
+            wrongTargetRot.eulerAngles.z);
+    }
+
+    private void showSelectText() {
+
+        // Create statustext for region
+        textGO = Instantiate(sprechenText);
+        textGO.transform.parent = selectedAvatar.transform;
+        textGO.transform.localPosition = new Vector3(0, 1.5f, 0);
+        //TextMesh regionText = textGO.GetComponent<TextMesh>();
+        //regionText.text = name;
     }
 
     private void toggleMouseAndController() {
@@ -121,6 +169,7 @@ public class InteractionController : MonoBehaviour {
 
         flowchart.SetBooleanVariable("avatarSelected", true);
         flowchart.SetGameObjectVariable("currentAvatar", selectedAvatar.gameObject);
+        flowchart.SetStringVariable("name", ObjectName);
     }
 
     private void deselectAvatarAndFlowchart() {
@@ -128,12 +177,18 @@ public class InteractionController : MonoBehaviour {
         ObjectName = "nobody";
 
         if (selectedAvatar != null) {
-            selectedAvatar.deselect();
+            removeSelectText();
             selectedAvatar = null;
         }
 
         flowchart.SetBooleanVariable("avatarSelected", false);
         flowchart.SetGameObjectVariable("currentAvatar", null);
+        flowchart.SetStringVariable("name", ObjectName);
+    }
+
+    private void removeSelectText() {
+        Destroy(textGO);
+        textGO = null;
     }
     #endregion
     #region EVENT METHODS CALLED FROM FUNGUS
@@ -148,6 +203,9 @@ public class InteractionController : MonoBehaviour {
     public void interruptSelected() {
 
         me.log4Me("interruptSelected called");
+
+        removeSelectText();
+
         if (selectedAvatar.CurrentActivity != myTalkDestination && selectedAvatar.NextActivity != myTalkDestination) {
 
             me.log4Me($"Trying to interrupt {selectedAvatar.name}");
@@ -155,7 +213,8 @@ public class InteractionController : MonoBehaviour {
             selectedAvatar.interruptWith(myTalkDestination);
 
             setControl(false);
-        } else {
+        }
+        else {
 
             me.log4Me("So the selected avatar has my talkdestination");
         }
@@ -164,6 +223,8 @@ public class InteractionController : MonoBehaviour {
     public void sendAway() {
 
         selectedAvatar.interruptFromOutside();
+        showSelectText();
+        selectedAvatar.removeExclamationMark();
         setControl(true);
     }
 
@@ -171,15 +232,26 @@ public class InteractionController : MonoBehaviour {
 
         selectedAvatar.MyLeader = me;
         selectedAvatar.interruptWith(selectedAvatar.LastActivity);
+        showSelectText();
+        selectedAvatar.removeExclamationMark();
         setControl(true);
     }
 
-    public void wasErlebt() {
+    public string wasErlebt() {
 
-        readDialogPath();
+        getTextValues(getFile("Standard.txt"));
+        if (selectedAvatar.FireSeen) {
+
+            getTextValues(getFile($"{selectedAvatar.fireRegion.name}.txt"));
+        }
+
+        ObjectController lastActivity = selectedAvatar.SecondLastActivity;
+
+        string discription = lastActivity != null ? " "+lastActivity.discription+(lastActivity.isAvatar?" mit "+ lastActivity.getAvatar().name:"") : " [no activity found]";
+        return (selectedAvatar.wasWalking?goingStartText:doingStartText) + discription + endText + (selectedAvatar.activatedAlarm ? alarmActivatedText : "");
     }
     #endregion
-    #region FUNGUS MENU BUILDING
+    #region TEXTFILE PROCESSING
     /*
      * 
      * ####################################
@@ -187,48 +259,63 @@ public class InteractionController : MonoBehaviour {
      * ####################################
      * 
      */
+    private bool findDirectoryIn(string path) {//dialogDirectory
 
-    private void readDialogPath() {
+        string[] directories = Directory.GetDirectories(path);
 
-        if (Directory.Exists(dialogPath)) {
-            
-            dialogFiles = Directory.GetFiles(dialogPath);
+        foreach (string directory in directories) {
+
+            if(substringAfterLast(directory, "\\") == dialogDirectory) {
+
+                fullPath = directory;
+                dialogFiles = Directory.GetFiles(fullPath);
+                return true;
+            }
+            if (findDirectoryIn(directory)) {
+
+                return true;
+            }
         }
-        else {
-
-            Debug.LogError($"{dialogPath} is not a valid directory.");
-        }
+        return false;
     }
 
-    public void showDialogMenu() {
+    public string[] getFile(string file) {
 
         foreach (string fullFileName in dialogFiles) {
 
-            ProcessFile(fullFileName);
+            if (fullFileName.EndsWith(file)) {
+
+                Debug.Log($"{file} found in {fullFileName}");
+                return File.ReadAllLines(fullFileName);
+            }
         }
+        Debug.LogError($"{file} was not found in {fullPath}.");
+        return null;
     }
 
-    public void ProcessFile(string path) {
-
-        if (!path.EndsWith(".txt")) return;
-
-        // Read each line of the file into a string array.
-        string[] lines = File.ReadAllLines(path);
+    public void getTextValues(string[] lines) {
         
         foreach (string line in lines) {
-
-            // Create the Button
-            string buttontext2Search = "BUTTONTEXT:";
-            if (line.StartsWith(buttontext2Search)) {
-
-                string readButtonText = substringAfter(line, buttontext2Search);
+            
+            if (line.StartsWith(searchStringDoingStartText)) {
+                
+                doingStartText = substringAfter(line, searchStringDoingStartText);
             }
+            else if (line.StartsWith(searchStringGoingStartText)) {
 
-            // Set the response Text
-            string readResponseText2Search = "RESPONSETEXT:";
-            if (line.StartsWith(readResponseText2Search)) {
+                goingStartText = substringAfter(line, searchStringGoingStartText);
+            }
+            else if (line.StartsWith(searchStringEndText)) {
 
-                string readResponseText = substringAfter(line, readResponseText2Search);
+                endText =  substringAfter(line, searchStringEndText);
+            }
+            else if (line.StartsWith(searchStringAlarmActivatedText)) {
+
+                alarmActivatedText = substringAfter(line, searchStringAlarmActivatedText);
+            }
+            else if (line.StartsWith(searchStringWhereText)) {
+
+                whereText = substringAfter(line, searchStringWhereText);
             }
         }
     }
@@ -236,6 +323,11 @@ public class InteractionController : MonoBehaviour {
     public static string substringAfter(string line, string afterWhat) {
 
         return line.Substring(line.IndexOf(afterWhat) + afterWhat.Length);
+    }
+
+    public static string substringAfterLast(string line, string afterWhat) {
+
+        return line.Substring(line.LastIndexOf(afterWhat) + afterWhat.Length);
     }
     #endregion
 }

@@ -217,7 +217,7 @@ public class GameLogic : MonoBehaviour {
         fireDepartmentCalled = true;
         Debug.Log($"Fire department called, thanks to {caller.name}.");
         
-        activateFireFighters(caller.CurrentActivity.getRegion());
+        activateFireFighters(caller.fireRegion);
     }
 
     private void activateFireFighters(RegionController region) {
@@ -231,14 +231,16 @@ public class GameLogic : MonoBehaviour {
 
     public IEnumerator activateFirstPerson() {
 
+        // Disable Firefighter Truck
         FeuerwehrwagenController fireFighterScript = fireFighters.GetComponent<FeuerwehrwagenController>();
         fireFighterScript.muteSiren();
 
         yield return new WaitForSeconds(1);
-
         fireFighters.GetComponent<AudioListener>().enabled = false;
+
+        // Activate the fire fighter
         firstPersonController.SetActive(true);
+        fireFighters.transform.Find("Camera").GetComponent<Camera>().enabled = false;
         firstPersonController.transform.position = fireFighterScript.spawnPoint.transform.position;
-        
     }
 }

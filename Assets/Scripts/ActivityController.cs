@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.AI;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 /// <summary>
@@ -18,6 +17,7 @@ using Random = UnityEngine.Random;
 /// </summary>
 public class ActivityController : MonoBehaviour {
 
+    #region INSPECTOR VISIBLE MEMBERS
     public ObjectController currentActivity;
 
     public ObjectController CurrentActivity
@@ -73,60 +73,29 @@ public class ActivityController : MonoBehaviour {
     [Tooltip("The destination bubble for partner activities")]
     public GameObject bubble;
     
-    public GameObject selectionArrow;
+    public GameObject exclamationMark;
 
     [Tooltip("Toggles the display of the debug log")]
     public bool showDebugWindow;
 
-    [Tooltip("Determines the detail of the log in the scene view")]
+    [Tooltip("Determines if the detail of the log in the scene view")]
     public bool detailLog;
 
     [Tooltip("Determines if the caller and the line number shall be shown")]
     public bool showPlace;
-
-    private ObjectController interruptedFor;
-    private ObjectController secondLastActivity;
-
-    private GameObject tool;
-    private GameObject leftHand;
-    private GameObject rightHand;
-    private GameObject myBubble;
-
-    string lastMessage;
-    string secondToLastMessage;
     public List<string> log;
 
-    private Transform whatBurn;
+    #endregion
 
-    private bool activityChangeRequested;
-    private bool findOutside;
+    #region PUBLIC MEMBERS
+
+    private string lastMessage { get; set; }
+    private string secondToLastMessage { get; set; }
 
     public bool thinking => !Going && !Doing;
     public bool Going => navComponent!=null && navComponent.isOnNavMesh && !navComponent.isStopped;
     public bool Doing => doingRoutine != null;
-
-    private List<ActivityController> myParticipants;
-    private Animator animator;
-    private NavMeshAgent navComponent;
-    private int retries;
-
     public RegionController myRegion { get; set; }
-    private RegionController oldRegion;
-
-    private Coroutine sliding;
-    private Coroutine rotateRoutine;
-
-    public Coroutine doingRoutine { get; private set; }
-
-    private ActivityController myLeader;
-    private ObjectController myActivity;
-    private Transform smartphone;
-    private Object lastAlarm;
-    private bool arrivedAtRP;
-    private bool fireSeen;
-    public bool FireSeen => fireSeen;
-
-    private bool iAmParticipant => MyLeader != null;
     public ActivityController MyLeader
     {
         get
@@ -139,34 +108,39 @@ public class ActivityController : MonoBehaviour {
 
             log4Me($"{(myLeader != null ? "My leader is now " + myLeader.name : "I have no leader anymore")}");
 
-            if (myLeader != null) myLeader.log4Me($"{(myLeader != null ? " I'm now the leader of " + name : "I'm not the leader of " + name + " anymore")}");
+            if (myLeader != null)
+                myLeader.log4Me($"{(myLeader != null ? " I'm now the leader of " + name : "I'm not the leader of " + name + " anymore")}");
         }
     }
+    public bool FireSeen => fireSeen;
+
+    public Coroutine doingRoutine { get; private set; }
 
     public bool Displaced { get; set; }
+    public bool isPlayer { get; private set; }
+    public bool wasWalking { get; private set; }
+    public bool activatedAlarm { get; set; }
 
     private bool panic;
-    private GameObject arrow;
-    public bool isPlayer;
-    private bool checkOnTriggerStay;
-
-    public bool Panic {
-        get {
+    public bool Panic
+    {
+        get
+        {
             return panic;
         }
-        set {
+        set
+        {
             panic = value;
 
             if (panic && tag != "Vehicle") {
 
                 // Speed for running
                 navComponent.speed = 4;
-                
+
                 animator.SetBool("panicMode", true);
 
                 log4Me($"I'm in panic!");
-            }
-            else {
+            } else {
                 // Speed for Going
                 navComponent.speed = 2;
                 animator.SetBool("panicMode", false);
@@ -174,7 +148,43 @@ public class ActivityController : MonoBehaviour {
             }
         }
     }
+    public ObjectController SecondLastActivity => secondLastActivity;
+    private ObjectController secondLastActivity;
+    public RegionController fireRegion { get; private set; }
 
+    #endregion
+    #region PRIVATE MEMBERS
+
+    private List<ActivityController> myParticipants;
+    private Animator animator;
+    private NavMeshAgent navComponent;
+    private int retries;
+
+    private Transform whatBurn;
+    private Transform smartphone;
+
+    private bool iAmParticipant => MyLeader != null;
+    private bool activityChangeRequested;
+    private bool findOutside;
+    private bool arrivedAtRP;
+    private bool fireSeen;
+    private bool checkOnTriggerStay;
+
+    private GameObject tool;
+    private GameObject leftHand;
+    private GameObject rightHand;
+    private GameObject myBubble;
+    private GameObject exMark;
+
+    private RegionController oldRegion;
+
+    private Coroutine sliding;
+    private Coroutine rotateRoutine;
+
+    private ActivityController myLeader;
+    private ObjectController myActivity;
+    private ObjectController interruptedFor;
+    #endregion
     /// <summary>
     /// Initialisation
     /// </summary>
@@ -209,6 +219,8 @@ public class ActivityController : MonoBehaviour {
         StartCoroutine(checkIfOutside());
         StartCoroutine(noCollisionChecker());
     }
+
+    #region NORMAL WORKFLOW
 
     // Set a target
     private void setTarget() {
@@ -530,7 +542,7 @@ public class ActivityController : MonoBehaviour {
 
     private void stopDoing() {
 
-        log4Me($"{gameObject.name}: stops doing {CurrentActivity.name}#Detail10Log");
+        log4Me($"stops doing {CurrentActivity.name}#Detail10Log");
         
         stopCoroutines();
 
@@ -591,11 +603,8 @@ public class ActivityController : MonoBehaviour {
         setTarget();
     }
 
-    /*
-     * 
-     * ######### END OF NORMAL WORKFLOW #########
-     *
-     */
+    #endregion
+    #region HELPER METHODS
 
     private void stopCoroutines() {
 
@@ -785,7 +794,7 @@ public class ActivityController : MonoBehaviour {
         // Loops was 0, proceed normally
         CurrentActivity.resetLoops();
 
-        log4Me($"{name}: No childDestinations and no loops. Continuing normally after {CurrentActivity.name}.#Detail10Log");
+        log4Me($"No childDestinations and no loops. Continuing normally after {CurrentActivity.name}.#Detail10Log");
 
         return false;
     }
@@ -1172,8 +1181,6 @@ public class ActivityController : MonoBehaviour {
         animator.SetBool("call", false);
         smartphone.gameObject.SetActive(false);
         myRegion.getMaster().called(this);
-        navComponent.enabled = true;
-        navComponent.isStopped = false;
     }
 
     private void tryNextInQueue() {
@@ -1318,7 +1325,7 @@ public class ActivityController : MonoBehaviour {
                 !activity2Check.cannotBeFound
             }, {
                 "Activity shall not be the second last one",
-                activity2Check != secondLastActivity
+                activity2Check != SecondLastActivity
             }
         };
 
@@ -1366,6 +1373,7 @@ public class ActivityController : MonoBehaviour {
     public void sawFire() {
         
         fireSeen = true;
+        createExclamationMark();
 
         log4Me($"I saw a fire in {myRegion.name}");
 
@@ -1374,9 +1382,11 @@ public class ActivityController : MonoBehaviour {
 
     public void setPanicAndInterrupt() {
 
-        if (Panic || name == "Cartoon_SportCar_B01") return;
+        if (Panic || tag == "Vehicle") return;
         Panic = true;
 
+        fireRegion = myRegion;
+        wasWalking = Going;
         nextActivity = myRegion.getRallyingPoint();
 
         // This also eventually stops Going and sets target
@@ -1399,7 +1409,7 @@ public class ActivityController : MonoBehaviour {
 
         if(log == null) log = new List<string>();
 
-        string toLog = $"{DateTime.Now:HH:mm:ss.fff}*{caller}:{lineNumber}#{logString}";
+        string toLog = $"{DateTime.Now:HH:mm:ss.fff}*{caller}:{lineNumber}#{logString}{(Panic?" (PANIC)":"")}";
 
         if (logString != secondToLastMessage && logString != lastMessage) log.Add(toLog);
 
@@ -1409,7 +1419,7 @@ public class ActivityController : MonoBehaviour {
 
     private IEnumerator setPanicFalseAfterDelay() {
 
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(2);
 
         Panic = false;
     }
@@ -1455,18 +1465,18 @@ public class ActivityController : MonoBehaviour {
         log4Me($"NoCollisionChecker stopped #####################################");
     }
 
-    public void select() {
+    private void createExclamationMark() {
 
-        arrow = Instantiate(selectionArrow);
-        arrow.transform.parent = transform;
-        arrow.transform.localPosition = Vector3.zero;
-        arrow.transform.localEulerAngles = Vector3.zero;
+        exMark = Instantiate(exclamationMark);
+        exMark.transform.parent = transform;
+        exMark.transform.localPosition = Vector3.zero;
+        exMark.transform.localEulerAngles = Vector3.zero;
     }
 
-    public void deselect() {
+    public void removeExclamationMark() {
 
-        Destroy(arrow);
-        arrow = null;
+        Destroy(exMark);
+        exMark = null;
     }
 
     private void OnTriggerStay(Collider other) {
@@ -1475,4 +1485,6 @@ public class ActivityController : MonoBehaviour {
 
         OnTriggerEnter(other);
     }
+
+    #endregion
 }

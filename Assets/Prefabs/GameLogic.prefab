@@ -48,7 +48,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1044876127996134
 GameObject:
   m_ObjectHideFlags: 1
@@ -658,7 +658,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1876387350695404
 GameObject:
   m_ObjectHideFlags: 1
@@ -3156,12 +3156,11 @@ MonoBehaviour:
   currentActivity: {fileID: 114181373712067558}
   nextActivity: {fileID: 0}
   bubble: {fileID: 0}
-  selectionArrow: {fileID: 0}
+  exclamationMark: {fileID: 0}
   showDebugWindow: 0
   detailLog: 0
   showPlace: 0
   log: []
-  isPlayer: 0
 --- !u!114 &114642771320154770
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3187,11 +3186,9 @@ MonoBehaviour:
   distanceToSee: 2
   ObjectName: nothing
   flowchart: {fileID: 0}
-  dialogMenu: {fileID: 1452615411572990, guid: 520e74f7d1244bd40baa25c88ce37ea1, type: 2}
-  button: {fileID: 1240059401598244, guid: 19dde42e101379c48b1f53f03776072b, type: 2}
-  responseSayDialog: {fileID: 1128483162914070, guid: ee29bf76caab1b64ca574b63230c03a7,
+  dialogDirectory: Texts
+  sprechenText: {fileID: 1585386374590282, guid: 9da1f7fe4b3059d45bafa3ef98b6edc1,
     type: 2}
-  dialogPath: C:\Users\erikd\OneDrive\Bachelorarbeit\BachelorarbeitWiegand\Assets\Texts
 --- !u!114 &114768677262855046
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3206,7 +3203,7 @@ MonoBehaviour:
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
   bubble: {fileID: 0}
-  selectionArrow: {fileID: 0}
+  exclamationMark: {fileID: 0}
   showDebugWindow: 0
   detailLog: 0
   showPlace: 0
@@ -3236,7 +3233,6 @@ MonoBehaviour:
   - 13:55:46.840*registerAvatar:175#I am now registered in The Outside Area#Detail10Log
   - "13:55:46.840*setRegion:1292#Drehleiter f\xFCr Plan\xFCbung Wiegand: My region
     is now The Outside Area (was null)"
-  isPlayer: 0
 --- !u!114 &114820886537838664
 MonoBehaviour:
   m_ObjectHideFlags: 1

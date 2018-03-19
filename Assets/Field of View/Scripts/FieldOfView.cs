@@ -50,11 +50,11 @@ public class FieldOfView : MonoBehaviour {
                     visibleTargets.Add (target);
 
                     int currentLayer = (int)Math.Log(targetMask.value, 2);
-                    ActivityController script = (ActivityController)GetComponent(typeof(ActivityController));
+                    ActivityController avatar = (ActivityController)GetComponent(typeof(ActivityController));
 
-                    if (LayerMask.LayerToName(currentLayer) == "Fires" && !script.FireSeen) {
+                    if (LayerMask.LayerToName(currentLayer) == "Fires" && !avatar.FireSeen) {
 
-                        script.sawFire();
+                        avatar.sawFire();
                     }
 
                     // When this is a firealarm, then go there when...
@@ -62,11 +62,18 @@ public class FieldOfView : MonoBehaviour {
                     // ...I have panic
                     // ...no other avatar is currently activating this
                     ObjectController fireAlarm = target.gameObject.GetComponent<ObjectController>();
-                    if (LayerMask.LayerToName(currentLayer) == "Feuermelder" && script.myRegion != null && !script.myRegion.HasAlarm && script.Panic && fireAlarm.CurrentUser == null) {
+                    if (LayerMask.LayerToName(currentLayer) == "Feuermelder"
+                        && avatar.myRegion != null
+                        && !avatar.myRegion.HasAlarm
+                        && avatar.Panic
+                        && fireAlarm.CurrentUser == null) {
 
-                        script.log4Me("Firealarm detected, starting alarm...");
-                        script.Panic = false;
-                        script.interruptWith(fireAlarm);
+                        avatar.log4Me("Firealarm detected, starting alarm...");
+                        avatar.Panic = false;
+                        avatar.activatedAlarm = true;
+                        
+                        fireAlarm.discription = avatar.LastActivity!=null?avatar.LastActivity.discription:avatar.CurrentActivity.discription;
+                        avatar.interruptWith(fireAlarm);
                     }
                 }
             }
