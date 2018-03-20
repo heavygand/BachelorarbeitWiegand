@@ -122,9 +122,7 @@ public class GameLogic : MonoBehaviour {
 
     void AddRandomFire() {
 
-        RegionController randomRegion = getRandomRegionWithOut(fireRegions);
-
-        activateFire(randomRegion);
+        activateFire(getRandomRegionWithOut(fireRegions));
     }
 
     void ClearAllFires() {
@@ -163,7 +161,7 @@ public class GameLogic : MonoBehaviour {
         Cursor.visible = !mouseLook.isActiveAndEnabled;
     }
 
-    private void activateFire(RegionController randomRegion) {
+    public void activateFire(RegionController randomRegion) {
 
         randomRegion.myFire.SetActive(true);
         fireRegions.Add(randomRegion);

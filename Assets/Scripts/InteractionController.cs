@@ -245,7 +245,7 @@ public class InteractionController : MonoBehaviour {
             getTextValues(getFile($"{selectedAvatar.fireRegion.name}.txt"));
         }
 
-        ObjectController lastActivity = selectedAvatar.SecondLastActivity;
+        ObjectController lastActivity = selectedAvatar.activityBeforePanic;
 
         string discription = lastActivity != null ? " "+lastActivity.discription+(lastActivity.isAvatar?" mit "+ lastActivity.getAvatar().name:"") : " [no activity found]";
         return (selectedAvatar.wasWalking?goingStartText:doingStartText) + discription + endText + (selectedAvatar.activatedAlarm ? alarmActivatedText : "");
@@ -285,7 +285,7 @@ public class InteractionController : MonoBehaviour {
 
             if (fullFileName.EndsWith(file)) {
 
-                Debug.Log($"{file} found in {fullFileName}");
+                //Debug.Log($"{file} found in {fullFileName}");
                 return File.ReadAllLines(fullFileName);
             }
         }

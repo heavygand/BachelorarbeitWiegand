@@ -62,18 +62,40 @@ public class FieldOfView : MonoBehaviour {
                     // ...I have panic
                     // ...no other avatar is currently activating this
                     ObjectController fireAlarm = target.gameObject.GetComponent<ObjectController>();
-                    if (LayerMask.LayerToName(currentLayer) == "Feuermelder"
-                        && avatar.myRegion != null
-                        && !avatar.myRegion.HasAlarm
-                        && avatar.Panic
-                        && fireAlarm.CurrentUser == null) {
+                    if (LayerMask.LayerToName(currentLayer) == "Feuermelder") {
 
-                        avatar.log4Me("Firealarm detected, starting alarm...");
-                        avatar.Panic = false;
-                        avatar.activatedAlarm = true;
-                        
-                        fireAlarm.discription = avatar.LastActivity!=null?avatar.LastActivity.discription:avatar.CurrentActivity.discription;
-                        avatar.interruptWith(fireAlarm);
+                        //avatar.log4Me("I have seen a firealarm");
+
+                        if (avatar.myRegion != null
+                            && !avatar.myRegion.HasAlarm
+                            && avatar.Panic
+                            && fireAlarm.CurrentUser == null) {
+
+                            avatar.log4Me("Starting alarm...");
+                            avatar.Panic = false;
+                            avatar.activatedAlarm = true;
+
+                            fireAlarm.discription = avatar.LastActivity != null ? avatar.LastActivity.discription : avatar.CurrentActivity.discription;
+                            avatar.interruptWith(fireAlarm);
+                        }/* else {
+
+                            if (avatar.myRegion == null) {
+
+                                avatar.log4Me("Not starting the alarm because my region was null");
+                            }
+                            if (avatar.myRegion.HasAlarm) {
+
+                                avatar.log4Me("Not starting the alarm because my region already has alarm");
+                            }
+                            if (!avatar.Panic) {
+
+                                avatar.log4Me("Not starting the alarm because I have no panic");
+                            }
+                            if (fireAlarm.CurrentUser != null) {
+
+                                avatar.log4Me($"Not starting the alarm because it already has a user: {fireAlarm.CurrentUser.name}");
+                            }
+                        }*/
                     }
                 }
             }

@@ -106,20 +106,7 @@ public class ObjectController : MonoBehaviour {
     private bool withOtherPerson;
 
     private bool isActivated;
-    public bool IsActivated
-    {
-        get
-        {
-            return isActivated;
-        }
-        set
-        {
-            if (value) {
-
-                StartCoroutine(activate()); 
-            }
-        }
-    }
+    public bool IsActivated => isActivated;
 
     public bool isMovable => isAvatar;
 
@@ -160,11 +147,25 @@ public class ObjectController : MonoBehaviour {
 
         if (noTurning && turnAngle != 0) {
 
-            Debug.LogWarning($"Achtung: bei {name} ist 'No Turning' aktiviert und eine Rotation eingetragen. Der Avatar wird nicht rotieren."); 
+            Debug.LogWarning($"Achtung: bei {name} ist 'No Turning' aktiviert und eine Rotation eingetragen. Der Avatar wird nicht rotieren.");
         }
-	}
 
-	private IEnumerator checkIfOutside() {
+        if (LayerMask.LayerToName(gameObject.layer) != "Feuermelder" && tag != "FireFighter Point" && tag != "rallying Point") {
+
+            StartCoroutine(warnDiscription()); 
+        }
+    }
+
+    private IEnumerator warnDiscription() {
+
+        yield return new WaitForSeconds(1);
+        if (discription == "") {
+
+            Debug.LogWarning($"Warnung: {name} in {myRegion.name} hat keine Tätigkeitsbeschreibung");
+        }
+    }
+
+    private IEnumerator checkIfOutside() {
 
 		yield return new WaitForSeconds(0.25f);
 		if (myRegion == null) {
@@ -188,7 +189,7 @@ public class ObjectController : MonoBehaviour {
 
     public Vector3 getFootOfFirstCollider() {
 
-        if(transform.parent.gameObject.tag == "Player" || tag == "Player") {
+        if((transform.parent != null && transform.parent.gameObject.tag == "Player") || tag == "Player") {
             
             return transform.position;
         }
@@ -213,12 +214,13 @@ public class ObjectController : MonoBehaviour {
 		loops = internalLoops;
 	}
 
-    public IEnumerator activate() {
+    // This can bo other users than the current user, to make the rallying point possible, wich is a multi user object
+    public IEnumerator activate(ActivityController userHere) {
 
         // If there's a sound, then play it
         yield return new WaitForSeconds(activationDelay);
 
-        isActivated = true;
+        userHere.log4Me($"{name} activated");
 
         AudioSource sound = GetComponent<AudioSource>();
 
@@ -228,13 +230,19 @@ public class ObjectController : MonoBehaviour {
         if (LayerMask.LayerToName(gameObject.layer) == "Feuermelder") {
 
             myRegion.HasAlarm = true;
-            user.Panic = true;
+            userHere.Panic = true;
         }
         // When it's a firealarm, then set alarm and panic
         if (tag == "FireFighter Point") {
 
-            Debug.Log("Reached firefighterpoint");
+            //Debug.Log("Reached firefighterpoint");
             StartCoroutine(myRegion.getMaster().activateFirstPerson());
+        }
+        // When it's a rallying point
+        if (tag == "rallying Point") {
+
+            userHere.log4Me($"{name} is a rallying point");
+            userHere.doRallyingPointStuff();
         }
     }
 }

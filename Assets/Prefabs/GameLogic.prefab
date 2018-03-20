@@ -3052,7 +3052,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
-  discription: 
+  discription: am Simulation spielen
 --- !u!114 &114286491544886230
 MonoBehaviour:
   m_ObjectHideFlags: 1

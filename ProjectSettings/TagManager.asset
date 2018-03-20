@@ -50,6 +50,7 @@ TagManager:
   - Vehicle
   - FireFighter Point
   - Canvas
+  - rallying Point
   layers:
   - Default
   - TransparentFX

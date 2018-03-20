@@ -308,7 +308,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
-  discription: 
+  discription: "H\xE4nde waschen"
 --- !u!114 &114629261974342080
 MonoBehaviour:
   m_ObjectHideFlags: 1

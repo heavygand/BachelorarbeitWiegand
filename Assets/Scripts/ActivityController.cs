@@ -140,7 +140,8 @@ public class ActivityController : MonoBehaviour {
                 animator.SetBool("panicMode", true);
 
                 log4Me($"I'm in panic!");
-            } else {
+            }
+            else {
                 // Speed for Going
                 navComponent.speed = 2;
                 animator.SetBool("panicMode", false);
@@ -151,6 +152,7 @@ public class ActivityController : MonoBehaviour {
     public ObjectController SecondLastActivity => secondLastActivity;
     private ObjectController secondLastActivity;
     public RegionController fireRegion { get; private set; }
+    public ObjectController activityBeforePanic { get; private set; }
 
     #endregion
     #region PRIVATE MEMBERS
@@ -257,7 +259,7 @@ public class ActivityController : MonoBehaviour {
         if (iAmParticipant && CurrentActivity.isAvatar) {
 
             log4Me($"I don't have to start Going");
-
+            stopGoing();
             doingRoutine = StartCoroutine(startDoing());
         }
         else {
@@ -285,7 +287,7 @@ public class ActivityController : MonoBehaviour {
         // Stop sliding, if we still do
         if (sliding != null) {
 
-            log4Me($"stopping to slide, because I want to start Going");
+            log4Me($"stopping to slide, because I want to start Going#Detail10Log");
             StopCoroutine(sliding);
             sliding = null;
         }
@@ -364,18 +366,7 @@ public class ActivityController : MonoBehaviour {
             stopGoing();
 
             doingRoutine = StartCoroutine(startDoing());
-            
-            // Arrived at rallying point after firealarm and panic
-            if (Panic && myRegion != null && myRegion == myRegion.getMaster().getOutside() && !Going) {
-                
-                // Check if I'm Going to call the fire department
-                if (Random.Range(0, 10) % 2 == 0) {
 
-                    callFireDepartment(); 
-                }
-                StartCoroutine(setPanicFalseAfterDelay());
-                arrivedAtRP = true;
-            }
         }
     }
 
@@ -416,7 +407,7 @@ public class ActivityController : MonoBehaviour {
         log4Me($"preparing {CurrentActivity.name}");
 
         // Activate the object
-        CurrentActivity.IsActivated = true;
+        StartCoroutine(CurrentActivity.activate(this));
 
         // Rotate
         organizeLookRotation();
@@ -638,7 +629,7 @@ public class ActivityController : MonoBehaviour {
             if (!Panic && parti.interruptedFor != null && !parti.interruptedFor.IsActivated) {
 
                     log4Me($"Cannot proceed, because {parti.interruptedFor.name} is not activated yet");
-                    log4Me($"{parti.name}: My Leader {name} cannot proceed, because {parti.interruptedFor.name} is not activated yet");
+                    parti.log4Me($"My Leader {name} cannot proceed, because {parti.interruptedFor.name} is not activated yet");
 
                 return false;
             }
@@ -896,7 +887,7 @@ public class ActivityController : MonoBehaviour {
         if(activity == null) Debug.LogError($"{name}: {requester.name} tried to interrupt me with a null activity");
         if(requester == null) Debug.LogError($"{name}: someone who was null, tried to interrupt me with {activity.name}");
 
-        log4Me($"Checking if I can be interrupted through {activity.name} from {requester.name}");
+        log4Me($"Checking if I can be interrupted through {activity.name}");
         requester.log4Me($"Trying to interrupt {(CurrentActivity != null ? CurrentActivity.name : "no activity")} of {name} with {activity.name}");
 
 
@@ -905,9 +896,9 @@ public class ActivityController : MonoBehaviour {
         // My priority has to be higher
         if (activity.Priority > myPriority) {
 
+            MyLeader = requester;
             interruptWith(activity);
 
-            MyLeader = requester;
             return true;
         }
 
@@ -1013,7 +1004,7 @@ public class ActivityController : MonoBehaviour {
 
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.15f);
 
-            log4Me($"{gameObject.name}: Rotating...#Detail10Log");
+            log4Me($"Rotating...#Detail10Log");
 
             yield return new WaitForSeconds(0.01f);
         }
@@ -1201,7 +1192,7 @@ public class ActivityController : MonoBehaviour {
 
         if (interruptedFor != null && lastActivity != interruptedFor && CurrentActivity != interruptedFor) {
 
-            log4Me($"lastactivity and currentactivity were not {interruptedFor.name}, so iAmPartnerFor = null");
+            log4Me($"lastactivity and currentactivity were not {interruptedFor.name}, so iAmPartnerFor = null#Detail10Log");
 
             interruptedFor = null;
         }
@@ -1387,6 +1378,7 @@ public class ActivityController : MonoBehaviour {
 
         fireRegion = myRegion;
         wasWalking = Going;
+        activityBeforePanic = CurrentActivity;
         nextActivity = myRegion.getRallyingPoint();
 
         // This also eventually stops Going and sets target
@@ -1396,7 +1388,7 @@ public class ActivityController : MonoBehaviour {
     // Do a surprised stopping movement
     private void doSurprisedStoppingMovement() {
 
-        log4Me($"Doing Surprised animation");
+        log4Me($"Doing Surprised animation#Detail10Log");
 
         navComponent.enabled = true;
         navComponent.isStopped = true;
@@ -1409,7 +1401,7 @@ public class ActivityController : MonoBehaviour {
 
         if(log == null) log = new List<string>();
 
-        string toLog = $"{DateTime.Now:HH:mm:ss.fff}*{caller}:{lineNumber}#{logString}{(Panic?" (PANIC)":"")}";
+        string toLog = $"{DateTime.Now:HH:mm:ss.fff}*{caller}:{lineNumber}#{(Panic ? "(PANIC) " : "")}{logString}";
 
         if (logString != secondToLastMessage && logString != lastMessage) log.Add(toLog);
 
@@ -1484,6 +1476,20 @@ public class ActivityController : MonoBehaviour {
         if(!checkOnTriggerStay) return;
 
         OnTriggerEnter(other);
+    }
+
+    public void doRallyingPointStuff() {
+
+        log4Me($"I'm now doing rallying point stuff");
+        
+        // Check if I'm Going to call the fire department
+        if (Random.Range(0, 10) % 2 == 0) {
+
+            callFireDepartment();
+        }
+
+        StartCoroutine(setPanicFalseAfterDelay());
+        arrivedAtRP = true;
     }
 
     #endregion
