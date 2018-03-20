@@ -14,9 +14,16 @@ function wasErlebt()
 	showmenu()
 end
 
+function whereFire()
+	tempvar = player.whereFire()
+	say "{$tempvar}"
+	showmenu()
+end
+
 function start()
 	player.interruptSelected()
-	say "Hallo, ich bin {$name}"
+	tempvar = player.getGreetingText()
+	say "{$tempvar}"
 	showmenu()
 end
 
@@ -24,6 +31,7 @@ function showmenu()
 	menu("Vielen Dank. Auf Wiedersehen.", wiedersehen)
 	menu("Bitte gehen Sie hier weg.", weggehen)
 	menu("Was haben Sie erlebt?", wasErlebt)
+	menu("Wo ist das Feuer?", whereFire)
 end
 
 start()

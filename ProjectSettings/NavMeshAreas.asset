@@ -27,8 +27,8 @@ NavMeshProjectSettings:
     cost: 1
   - name: 
     cost: 1
-  - name: 
-    cost: 1
+  - name: Streets
+    cost: 3
   - name: 
     cost: 1
   - name: 

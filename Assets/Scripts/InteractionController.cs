@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using System.IO;
 using Fungus;
-using UnityEngine.UI;
 using UnityStandardAssets.Characters.FirstPerson;
 
 public class InteractionController : MonoBehaviour {
@@ -15,25 +13,54 @@ public class InteractionController : MonoBehaviour {
 
     private Material originalMaterial, tempMaterial;
     private Renderer rend;
-    private ActivityController selectedAvatar;
+
+    private ActivityController selAv;
+    public ActivityController selectedAvatar
+    {
+        get
+        {
+            return selAv;
+        }
+        set
+        {
+            selAv = value;
+
+            if (selAv != null && !talking) {
+
+                showSelectText();
+            }
+            else {
+
+                removeSelectText();
+            }
+        }
+    }
     private ActivityController me;
     private ObjectController myTalkDestination;
     private FirstPersonController fpc;
     private UnityStandardAssets.Characters.FirstPerson.MouseLook mouseLook;
     private GameObject lastRend;
     private static string[] dialogFiles;
+    
     private string fullPath;
-    private string searchStringDoingStartText = "DOING:";
-    private string searchStringGoingStartText = "GOING:";
-    private string searchStringEndText = "END:";
-    private string searchStringWhereText = "WHERE:";
-    private string searchStringAlarmActivatedText = "ALARMACTIVATED:";
+    private string DoingStart = "DOING:";
+    private string GoingStart = "GOING:";
+    private string End = "END:";
+    private string Where = "WHERE:";
+    private string StandardGreeting = "STANDARDGREETING:";
+    private string FireSeenGreeting = "FIRESEENGREETING:";
+    private string AlarmActivated = "ALARMACTIVATED:";
     private string doingStartText = "";
     private string goingStartText = "";
     private string endText = "";
     private string alarmActivatedText = "";
     private string whereText = "";
+    private string StandardGreetingText = "";
+    private string FireSeenGreetingText = "";
+
     private GameObject textGO;
+    private bool talking;
+    private bool isLocated;
 
     // Init components
     void Start() {
@@ -58,12 +85,6 @@ public class InteractionController : MonoBehaviour {
      * ####################################
      * 
      */
-
-    private void setControl(bool control) {
-
-        mouseLook.SetCursorLock(control);
-        fpc.enabled = control;
-    }
 
     // Update is called once per frame
     void Update() {
@@ -110,16 +131,10 @@ public class InteractionController : MonoBehaviour {
 
             //When this is another avatar
             if(selectedAvatar != currRend.transform.parent.gameObject.GetComponent<ActivityController>()) {
-
-                if (selectedAvatar != null) {
-
-                    removeSelectText();
-                }
                 
                 // Because the huge collider of the talkdestination
                 selectedAvatar = currRend.transform.parent.gameObject.GetComponent<ActivityController>();
                 ObjectName = selectedAvatar.name;
-                showSelectText();
                 setFlowchart();
             }
         }
@@ -148,20 +163,51 @@ public class InteractionController : MonoBehaviour {
             wrongTargetRot.eulerAngles.z);
     }
 
+    private void deselectAvatarAndFlowchart() {
+
+        ObjectName = "nobody";
+
+        selectedAvatar = null;
+
+        flowchart.SetBooleanVariable("avatarSelected", false);
+        flowchart.SetGameObjectVariable("currentAvatar", null);
+        flowchart.SetStringVariable("name", ObjectName);
+    }
+
     private void showSelectText() {
 
-        // Create statustext for region
+        // When there is still a text somewhere
+        if(textGO != null) {
+
+            removeSelectText();
+        }
+        
         textGO = Instantiate(sprechenText);
         textGO.transform.parent = selectedAvatar.transform;
         textGO.transform.localPosition = new Vector3(0, 1.5f, 0);
-        //TextMesh regionText = textGO.GetComponent<TextMesh>();
-        //regionText.text = name;
+    }
+
+    private void removeSelectText() {
+
+        if(textGO == null) return;
+        
+        Destroy(textGO);
+        textGO = null;
     }
 
     private void toggleMouseAndController() {
 
-        mouseLook.SetCursorLock(!mouseLook.lockCursor);
-        fpc.enabled = !fpc.enabled;
+        me.log4Me($"toggleMouseAndController() called, so calling setControl({!fpc.enabled})");
+        setControl(!fpc.enabled);
+    }
+
+    private void setControl(bool value) {
+
+        mouseLook.SetCursorLock(value);
+        me.log4Me($"mouseLook.SetCursorLock({value}) called");
+
+        fpc.enabled = value;
+        me.log4Me($"fpc.enabled = {value} settet");
     }
 
     // Set Fungus variables
@@ -170,25 +216,6 @@ public class InteractionController : MonoBehaviour {
         flowchart.SetBooleanVariable("avatarSelected", true);
         flowchart.SetGameObjectVariable("currentAvatar", selectedAvatar.gameObject);
         flowchart.SetStringVariable("name", ObjectName);
-    }
-
-    private void deselectAvatarAndFlowchart() {
-
-        ObjectName = "nobody";
-
-        if (selectedAvatar != null) {
-            removeSelectText();
-            selectedAvatar = null;
-        }
-
-        flowchart.SetBooleanVariable("avatarSelected", false);
-        flowchart.SetGameObjectVariable("currentAvatar", null);
-        flowchart.SetStringVariable("name", ObjectName);
-    }
-
-    private void removeSelectText() {
-        Destroy(textGO);
-        textGO = null;
     }
     #endregion
     #region EVENT METHODS CALLED FROM FUNGUS
@@ -204,6 +231,16 @@ public class InteractionController : MonoBehaviour {
 
         me.log4Me("interruptSelected called");
 
+        // First get the standard text
+        getTextValues(getFile("Standard.txt"));
+
+        // Then get the specific text for a fire in the current region
+        if (selectedAvatar.FireSeen) {
+
+            getTextValues(getFile($"{selectedAvatar.fireRegion.name}.txt"));
+        }
+
+        talking = true;
         removeSelectText();
 
         if (selectedAvatar.CurrentActivity != myTalkDestination && selectedAvatar.NextActivity != myTalkDestination) {
@@ -211,44 +248,91 @@ public class InteractionController : MonoBehaviour {
             me.log4Me($"Trying to interrupt {selectedAvatar.name}");
             selectedAvatar.MyLeader = me;
             selectedAvatar.interruptWith(myTalkDestination);
-
-            setControl(false);
         }
         else {
 
-            me.log4Me("So the selected avatar has my talkdestination");
+            me.log4Me($"So {selectedAvatar.name} has my talkdestination");
         }
+
+        me.log4Me("setting control to false");
+        setControl(false);
+    }
+
+    public string getGreetingText() {
+
+        if (selectedAvatar.FireSeen) {
+
+            return FireSeenGreetingText;
+        }
+
+        return StandardGreetingText;
     }
 
     public void sendAway() {
 
+        selectedAvatar.MyLeader = null;
+        selectedAvatar.log4Me($"I was send away by the player");
         selectedAvatar.interruptFromOutside();
         showSelectText();
         selectedAvatar.removeExclamationMark();
+
+        talking = false;
         setControl(true);
+    }
+
+    public void returnToActivity(ActivityController person) {
+
+        person.MyLeader = null;
+        person.log4Me($"I am returning to {person.LastActivity.name}");
+        person.interruptWith(person.LastActivity);
+        person.removeExclamationMark();
     }
 
     public void returnToActivity() {
 
-        selectedAvatar.MyLeader = me;
-        selectedAvatar.interruptWith(selectedAvatar.LastActivity);
+        returnToActivity(selectedAvatar);
+
         showSelectText();
-        selectedAvatar.removeExclamationMark();
+        talking = false;
         setControl(true);
     }
 
     public string wasErlebt() {
 
-        getTextValues(getFile("Standard.txt"));
-        if (selectedAvatar.FireSeen) {
+        ObjectController lastActivity;
+        string discription;
 
-            getTextValues(getFile($"{selectedAvatar.fireRegion.name}.txt"));
+        if (selectedAvatar.activityBeforePanic == null) {
+
+            lastActivity = selectedAvatar.LastActivity;
+            discription = lastActivity != null ? " "+lastActivity.discription+(lastActivity.isAvatar?" mit "+ lastActivity.getAvatar().name:"") : " [no activity found]";
+            return "Ich habe nichts erlebt. "+ (selectedAvatar.Going ? goingStartText : doingStartText) + discription;
         }
 
-        ObjectController lastActivity = selectedAvatar.activityBeforePanic;
-
-        string discription = lastActivity != null ? " "+lastActivity.discription+(lastActivity.isAvatar?" mit "+ lastActivity.getAvatar().name:"") : " [no activity found]";
+        lastActivity = selectedAvatar.activityBeforePanic;
+        discription = lastActivity != null ? " " + lastActivity.discription + (lastActivity.isAvatar ? " mit " + lastActivity.getAvatar().name : "") : " [no activity found]";
         return (selectedAvatar.wasWalking?goingStartText:doingStartText) + discription + endText + (selectedAvatar.activatedAlarm ? alarmActivatedText : "");
+    }
+
+    public string whereFire() {
+
+        fireIsLocated();
+        return whereText;
+    }
+
+    public void fireIsLocated() {
+
+        if(isLocated) return;
+        isLocated = true;
+
+        foreach (ActivityController fireWitness in selectedAvatar.fireRegion.firePeople) {
+
+            if (selectedAvatar != fireWitness) {
+
+                fireWitness.log4Me($"I am no firewitness anymore");
+                returnToActivity(fireWitness);
+            }
+        }
     }
     #endregion
     #region TEXTFILE PROCESSING
@@ -297,25 +381,33 @@ public class InteractionController : MonoBehaviour {
         
         foreach (string line in lines) {
             
-            if (line.StartsWith(searchStringDoingStartText)) {
+            if (line.StartsWith(DoingStart)) {
                 
-                doingStartText = substringAfter(line, searchStringDoingStartText);
+                doingStartText = substringAfter(line, DoingStart);
             }
-            else if (line.StartsWith(searchStringGoingStartText)) {
+            else if (line.StartsWith(GoingStart)) {
 
-                goingStartText = substringAfter(line, searchStringGoingStartText);
+                goingStartText = substringAfter(line, GoingStart);
             }
-            else if (line.StartsWith(searchStringEndText)) {
+            else if (line.StartsWith(End)) {
 
-                endText =  substringAfter(line, searchStringEndText);
+                endText =  substringAfter(line, End);
             }
-            else if (line.StartsWith(searchStringAlarmActivatedText)) {
+            else if (line.StartsWith(AlarmActivated)) {
 
-                alarmActivatedText = substringAfter(line, searchStringAlarmActivatedText);
+                alarmActivatedText = substringAfter(line, AlarmActivated);
             }
-            else if (line.StartsWith(searchStringWhereText)) {
+            else if (line.StartsWith(Where)) {
 
-                whereText = substringAfter(line, searchStringWhereText);
+                whereText = substringAfter(line, Where);
+            }
+            else if (line.StartsWith(StandardGreeting)) {
+
+                StandardGreetingText = substringAfter(line, StandardGreeting);
+            }
+            else if (line.StartsWith(FireSeenGreeting)) {
+
+                FireSeenGreetingText = substringAfter(line, FireSeenGreeting);
             }
         }
     }

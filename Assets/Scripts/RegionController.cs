@@ -12,6 +12,8 @@ public class RegionController : MonoBehaviour {
     private GameLogic master;
     private TextMesh regionText;
 
+    public List<ActivityController> firePeople { get; } = new List<ActivityController>();
+
     public TextMesh RegionText {
         get {
             return regionText;
@@ -20,6 +22,8 @@ public class RegionController : MonoBehaviour {
             regionText = value;
         }
     }
+
+    private bool hasAlarm;
 
     public bool HasAlarm {
         get {
@@ -34,6 +38,11 @@ public class RegionController : MonoBehaviour {
                 RegionText.color = Color.red;
                 RegionText.fontStyle = FontStyle.Bold;
                 turnOnAudio();
+
+                foreach (ActivityController attender in attenders) {
+                    
+                    if(!attender.Panic && !attender.arrivedAtRP) attender.flee();
+                }
             }
             else {
 
@@ -61,8 +70,6 @@ public class RegionController : MonoBehaviour {
     public GameObject statusText;
 
     public List<ObjectController> rallyingPoints;
-
-    private bool hasAlarm;
 
     // Use this for initialization
     void Start () {
@@ -172,13 +179,15 @@ public class RegionController : MonoBehaviour {
 
         if (avatar.getRegion() == this) return;
 
-        avatar.log4Me($"I am now registered in {name}#Detail10Log");
+        if(hasAlarm && !avatar.Panic && !avatar.arrivedAtRP) avatar.flee();
 
 		attenders.Add(avatar);
+        avatar.log4Me($"I am now registered in {name}#Detail10Log");
+
 		avatar.setRegion(this);
 
         // Start this avatar if we already have an activity and only if he has no activity yet
-		if (activities.Count > 0 && avatar.CurrentActivity == null) {
+        if (activities.Count > 0 && avatar.CurrentActivity == null) {
 
             avatar.log4Me($"I'm starting in {name}#Detail10Log");
 			avatar.prepareGoing();
@@ -333,5 +342,10 @@ public class RegionController : MonoBehaviour {
     public ObjectController getFireFighterPoint() {
 
         return GetComponentInChildren<ObjectController>();
+    }
+
+    public void add2FirePeople(ActivityController fireWitness) {
+
+        firePeople.Add(fireWitness);
     }
 }

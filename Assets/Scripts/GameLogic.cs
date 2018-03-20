@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class GameLogic : MonoBehaviour {
 
@@ -37,6 +38,10 @@ public class GameLogic : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.G)) {
 
             activateFireFighters(fireRegions.Count<=0?getRandomRegion(): fireRegions[0]);
+        }
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+
+            Debug.Break();
         }
     }
 
@@ -86,6 +91,16 @@ public class GameLogic : MonoBehaviour {
     }
 
     public RegionController getRandomRegion(List<RegionController> searchRegions) {
+
+        // Do not deliver a fireregion
+        List<RegionController> tempRegions = new List<RegionController>(searchRegions);
+        foreach (RegionController region in tempRegions) {
+
+            if (fireRegions.Contains(region)) {
+
+                searchRegions.Remove(region);
+            }
+        }
 
         if (searchRegions.Count == 0) {
 
@@ -227,11 +242,13 @@ public class GameLogic : MonoBehaviour {
         ac.prepareGoing();
     }
 
-    public IEnumerator activateFirstPerson() {
+    public IEnumerator activateFirstPerson(RegionController region) {
 
         // Disable Firefighter Truck
         FeuerwehrwagenController fireFighterScript = fireFighters.GetComponent<FeuerwehrwagenController>();
         fireFighterScript.muteSiren();
+        fireFighters.GetComponent<NavMeshAgent>().enabled = false;
+        fireFighters.GetComponent<NavMeshObstacle>().enabled = true;
 
         yield return new WaitForSeconds(1);
         fireFighters.GetComponent<AudioListener>().enabled = false;
@@ -240,5 +257,17 @@ public class GameLogic : MonoBehaviour {
         firstPersonController.SetActive(true);
         fireFighters.transform.Find("Camera").GetComponent<Camera>().enabled = false;
         firstPersonController.transform.position = fireFighterScript.spawnPoint.transform.position;
+
+        ObjectController talkDestination = firstPersonController.transform.Find("TalkDestination").GetComponent<ObjectController>();
+        // Mysterious case, that the players talkdestination still didn't started his start() method
+        if (!talkDestination.started) talkDestination.Start();
+        
+        // LET THE PEOPLE COME
+        foreach (ActivityController fireWitness in region.firePeople) {
+
+            
+            fireWitness.Panic = true;
+            fireWitness.interruptWith(talkDestination);
+        }
     }
 }

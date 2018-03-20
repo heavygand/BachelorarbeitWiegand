@@ -111,6 +111,7 @@ public class ObjectController : MonoBehaviour {
     public bool isMovable => isAvatar;
 
     private ActivityController user;
+    public bool started;
 
     public ActivityController CurrentUser
     {
@@ -134,7 +135,10 @@ public class ObjectController : MonoBehaviour {
         }
     }
 
-    void Start() {
+    public void Start() {
+
+        if(started) return;
+        started = true;
 
 		if (time < 1) time = 100;
 		internalLoops = loops;
@@ -189,7 +193,7 @@ public class ObjectController : MonoBehaviour {
 
     public Vector3 getFootOfFirstCollider() {
 
-        if((transform.parent != null && transform.parent.gameObject.tag == "Player") || tag == "Player") {
+        if(transform.parent != null && transform.parent.gameObject.tag == "Player" || tag == "Player") {
             
             return transform.position;
         }
@@ -217,13 +221,10 @@ public class ObjectController : MonoBehaviour {
     // This can bo other users than the current user, to make the rallying point possible, wich is a multi user object
     public IEnumerator activate(ActivityController userHere) {
 
-        // If there's a sound, then play it
         yield return new WaitForSeconds(activationDelay);
 
-        userHere.log4Me($"{name} activated");
-
+        // If there's a sound, then play it
         AudioSource sound = GetComponent<AudioSource>();
-
         if (sound != null) sound.Play();
 
         // When it's a firealarm, then set alarm and panic
@@ -236,13 +237,21 @@ public class ObjectController : MonoBehaviour {
         if (tag == "FireFighter Point") {
 
             //Debug.Log("Reached firefighterpoint");
-            StartCoroutine(myRegion.getMaster().activateFirstPerson());
+            userHere.stopNow = true;
+            StartCoroutine(myRegion.getMaster().activateFirstPerson(transform.parent.GetComponent<RegionController>()));
         }
         // When it's a rallying point
         if (tag == "rallying Point") {
-
-            userHere.log4Me($"{name} is a rallying point");
+            
             userHere.doRallyingPointStuff();
         }
+        // When it's the players talkdestination
+        if (tag == "playersTalkDestination") {
+
+            userHere.Panic = false;
+        }
+
+        isActivated = true;
+        userHere.log4Me($"{name} activated");
     }
 }

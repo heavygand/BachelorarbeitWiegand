@@ -1,2 +1,2 @@
-WHERE:Die Küche ist, wenn man rein kommt, links.
+WHERE:In der Küche! Das ist, wenn man rein kommt links.
 END:, da habe ich auf einmal ein Feuer in der Küche gesehen! Dann bin ich nach draußen gelaufen.

@@ -72,6 +72,7 @@ public class FieldOfView : MonoBehaviour {
                             && fireAlarm.CurrentUser == null) {
 
                             avatar.log4Me("Starting alarm...");
+                            Debug.Log($"{avatar.name} hat den Alarm in {avatar.myRegion.name} gestartet.");
                             avatar.Panic = false;
                             avatar.activatedAlarm = true;
 

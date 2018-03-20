@@ -1,4 +1,7 @@
+STANDARDGREETING:Hallo.
+FIRESEENGREETING:Hallo! Ich weiß, wo das Feuer ist!
 DOING:Ich war gerade am
 GOING:Ich war gerade unterwegs zum
 END:, da habe ich auf einmal den Feueralarm gehört! Dann bin ich nach draußen gelaufen.
 ALARMACTIVATED: Beim raus laufen, habe ich den Feueralarm aktiviert
+WHERE:Ich weiß es leider nicht.

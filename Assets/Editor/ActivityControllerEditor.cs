@@ -30,7 +30,7 @@ public class ActivityControllerEditor : Editor {
          */
         if (GUILayout.Button(buttonText, GUILayout.Width(buttonText.Length * 7), GUILayout.Height(30))) {
             
-            user.setPanicAndInterrupt();
+            user.flee();
         }
 
         /*
@@ -60,7 +60,7 @@ public class ActivityControllerEditor : Editor {
         region = "null";
         if (user.getRegion() != null) region = $"{user.getRegion().name}";
 
-        if (user.thinking || user.Doing || user.Going) {
+        if (user.log != null && (user.thinking || user.Doing || user.Going)) {
 
             string distance = "";
             if (user.Going) {

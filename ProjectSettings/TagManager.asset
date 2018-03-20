@@ -4,53 +4,11 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - destFloor4
-  - Rallying Point
-  - window4
-  - dontGoOut
-  - destFloor3
-  - destFloor2
-  - destFloor1
-  - destFloor0
-  - window3
-  - window2
-  - window1
-  - window0
-  - centerDest4
-  - sofa4
-  - bild4
-  - schlafen4
-  - toilette4
-  - sport4
-  - sofa3
-  - bild3
-  - schlafen3
-  - toilette3
-  - sport3
-  - sofa2
-  - sofa1
-  - sofa0
-  - bild2
-  - bild1
-  - bild0
-  - schlafen2
-  - schlafen1
-  - toilette2
-  - toilette1
-  - toilette0
-  - sport2
-  - sport1
-  - schlafen0
-  - sport0
-  - melder4
-  - melder3
-  - melder2
-  - melder1
-  - melder0
   - Vehicle
   - FireFighter Point
   - Canvas
   - rallying Point
+  - playersTalkDestination
   layers:
   - Default
   - TransparentFX
@@ -63,7 +21,7 @@ TagManager:
   - Fires
   - Walls
   - Feuermelder
-  - 
+  - Streets
   - 
   - 
   - 

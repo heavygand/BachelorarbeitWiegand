@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 195521870439493926}
   - component: {fileID: 114073353795761638}
   m_Layer: 0
-  m_Name: Cartoon_SportCar_B01
+  m_Name: Cartoon_SportCar_yellow
   m_TagString: Vehicle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -516,7 +516,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 136596}
   m_LocalRotation: {x: -6.2034064e-14, y: 0.71566886, z: -6.356432e-14, w: 0.6984398}
-  m_LocalPosition: {x: -92.60202, y: 0.339, z: -40.27653}
+  m_LocalPosition: {x: -0.92274475, y: -9.909682, z: 6.629101}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 402960}
@@ -732,7 +732,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 90184e0f3e509ce4986ae5d71252eb8e, type: 2}
   - {fileID: 2100000, guid: b30627d9d472a5046996653074efbdb6, type: 2}
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -767,7 +767,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: 66ddb5ee9eb726e4f9008eef27e57657, type: 2}
   - {fileID: 2100000, guid: 20c4da5923a274444b953a62a4fe6b4b, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
@@ -804,7 +804,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
   - {fileID: 2100000, guid: 66ddb5ee9eb726e4f9008eef27e57657, type: 2}
   m_StaticBatchInfo:
@@ -842,7 +842,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 90184e0f3e509ce4986ae5d71252eb8e, type: 2}
   - {fileID: 2100000, guid: b30627d9d472a5046996653074efbdb6, type: 2}
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -879,7 +879,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 90184e0f3e509ce4986ae5d71252eb8e, type: 2}
   - {fileID: 2100000, guid: b30627d9d472a5046996653074efbdb6, type: 2}
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -985,7 +985,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 90184e0f3e509ce4986ae5d71252eb8e, type: 2}
   - {fileID: 2100000, guid: b30627d9d472a5046996653074efbdb6, type: 2}
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -1020,7 +1020,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -1094,7 +1094,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1128,7 +1128,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: 66ddb5ee9eb726e4f9008eef27e57657, type: 2}
   - {fileID: 2100000, guid: 20c4da5923a274444b953a62a4fe6b4b, type: 2}
   - {fileID: 2100000, guid: b3df519040922574596689ce22053d6e, type: 2}
@@ -1199,7 +1199,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 43a15deaf1ae3f74ab368aac0937b30c, type: 2}
+  - {fileID: 2100000, guid: 35e4ef6198e297c42851654eaba0b234, type: 2}
   - {fileID: 2100000, guid: 66ddb5ee9eb726e4f9008eef27e57657, type: 2}
   - {fileID: 2100000, guid: c1f40b6b279933c478e4ddfa0c7976cc, type: 2}
   - {fileID: 2100000, guid: 57c671f16fd389f4cb78e35747d8d3f7, type: 2}
@@ -1633,12 +1633,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 348af059117df7e4fa6c2bc58e8630dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lights:
-  - {fileID: 10897676}
-  - {fileID: 10820726}
-  - {fileID: 10835506}
-  - {fileID: 10882950}
-  keyboard: 108
+  lights: []
+  keyboard: 0
 --- !u!114 &11411310
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1650,11 +1646,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37f9761a8bd354e4ea58544b8b976c43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lights:
-  - {fileID: 10821656}
-  - {fileID: 10893654}
-  keyboard: 274
-  keyboard2: 32
+  lights: []
+  keyboard: 0
+  keyboard2: 0
 --- !u!114 &11422454
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1666,7 +1660,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 834e6931256c5a6449a6cb839e6a8dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  keyboard: 260
+  keyboard: 0
 --- !u!114 &11434918
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1678,7 +1672,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 834e6931256c5a6449a6cb839e6a8dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  keyboard: 259
+  keyboard: 0
 --- !u!114 &11447446
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1690,7 +1684,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 834e6931256c5a6449a6cb839e6a8dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  keyboard: 258
+  keyboard: 0
 --- !u!114 &11451386
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1702,7 +1696,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 834e6931256c5a6449a6cb839e6a8dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  keyboard: 257
+  keyboard: 0
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
@@ -1835,12 +1829,11 @@ MonoBehaviour:
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
   bubble: {fileID: 0}
-  selectionArrow: {fileID: 0}
+  exclamationMark: {fileID: 0}
   showDebugWindow: 0
   detailLog: 0
   showPlace: 0
   log: []
-  isPlayer: 0
 --- !u!195 &195521870439493926
 NavMeshAgent:
   m_ObjectHideFlags: 1

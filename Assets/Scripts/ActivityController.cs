@@ -153,6 +153,8 @@ public class ActivityController : MonoBehaviour {
     private ObjectController secondLastActivity;
     public RegionController fireRegion { get; private set; }
     public ObjectController activityBeforePanic { get; private set; }
+    public bool arrivedAtRP { get; set; }
+    public bool stopNow { get; set; }
 
     #endregion
     #region PRIVATE MEMBERS
@@ -168,7 +170,6 @@ public class ActivityController : MonoBehaviour {
     private bool iAmParticipant => MyLeader != null;
     private bool activityChangeRequested;
     private bool findOutside;
-    private bool arrivedAtRP;
     private bool fireSeen;
     private bool checkOnTriggerStay;
 
@@ -186,6 +187,7 @@ public class ActivityController : MonoBehaviour {
     private ActivityController myLeader;
     private ObjectController myActivity;
     private ObjectController interruptedFor;
+    private Coroutine startGoingRoutine;
     #endregion
     /// <summary>
     /// Initialisation
@@ -198,6 +200,7 @@ public class ActivityController : MonoBehaviour {
         isPlayer = tag == "Player";
         if (isPlayer) {
 
+            myActivity = transform.Find("TalkDestination").GetComponent<ObjectController>();
             return;
         }
 
@@ -227,11 +230,23 @@ public class ActivityController : MonoBehaviour {
     // Set a target
     private void setTarget() {
 
+        if(startGoingRoutine != null) {
+
+            StopCoroutine(startGoingRoutine);
+            startGoingRoutine = null;
+        }
+
+        if (stopNow) {
+
+            CurrentActivity = null;
+            NextActivity = null;
+
+            return;
+        }
+
         log4Me($"setTarget() called#Detail10Log");
 
         activityChangeRequested = false;
-
-        if(Panic) nextActivity = myRegion.getRallyingPoint();
 
         // Take the next activity if there is one, and save the last activity
         tryNextInQueue();
@@ -292,7 +307,7 @@ public class ActivityController : MonoBehaviour {
             sliding = null;
         }
 
-        StartCoroutine(startGoing());
+        startGoingRoutine = StartCoroutine(startGoing());
     }
 
     private IEnumerator startGoing() {
@@ -300,6 +315,11 @@ public class ActivityController : MonoBehaviour {
         // Wait for the start delay
         log4Me($"Waiting {CurrentActivity.startDelay} seconds to start Going#Detail10Log");
         yield return new WaitForSeconds(CurrentActivity.startDelay);
+        
+        if(activityChangeRequested) {
+
+            setTarget();
+        }
 
         // Reactivate stuff, that maybe was deactivated
         navComponent.enabled = true;
@@ -338,6 +358,11 @@ public class ActivityController : MonoBehaviour {
         if (other.gameObject == myBubble) {
 
             log4Me($"arrived at destinationBubble, but no activity was there (probably moved away)");
+
+            if (arrivedAtRP) {
+
+                NextActivity = LastActivity;
+            }
 
             checkOnTriggerStay = false;
             destroyBubble();
@@ -389,7 +414,7 @@ public class ActivityController : MonoBehaviour {
         }
         else {
 
-            Debug.LogError($"{name}: soll stoppen, aber ist garnicht auf dem NavMesh. (CurrentActivity: {CurrentActivity.name})");
+            //Debug.LogError($"{name}: soll stoppen, aber ist garnicht auf dem NavMesh. (CurrentActivity: {CurrentActivity.name})");
         }
 
         if (tag != "Vehicle") {
@@ -418,7 +443,10 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Wait for rotation
-        yield return new WaitForSeconds(1);
+        if (tag != "Vehicle") {
+
+            yield return new WaitForSeconds(1); 
+        }
 
         // Check if interrupted
         if (activityChangeRequested) {
@@ -477,7 +505,7 @@ public class ActivityController : MonoBehaviour {
         int elapsedTime = 0;
         bool timeIsOver = false;
         bool partnerIsAway = false;
-        while (!timeIsOver && !activityChangeRequested && !partnerIsAway) {
+        while (!timeIsOver && !activityChangeRequested && !partnerIsAway && tag != "Vehicle") {
 
             adjustTool();
 
@@ -523,6 +551,10 @@ public class ActivityController : MonoBehaviour {
         else if (activityChangeRequested) {
 
             log4Me($"stopping {CurrentActivity.name}, because interrupted");
+        }
+        else if (tag == "Vehicle") {
+
+            log4Me($"stopping {CurrentActivity.name}, because vehicle");
         }
         else {
 
@@ -581,8 +613,15 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
 
+        // When my activity is still not activated, then wait
+        while (!CurrentActivity.IsActivated) {
+
+            log4Me($"Cannot proceed, because {CurrentActivity.name} is not activated yet");
+            yield return new WaitForSeconds(0.2f);
+        }
+
         // When I am the leader of a group activity, then wait until everyone started with my invoked groupactivity
-        while (!allParticipantsStartedAndDeorganize() && !Panic) {
+        while (!Panic && !allParticipantsStartedAndDeorganize()) {
 
             yield return new WaitForSeconds(0.2f);
         }
@@ -628,8 +667,8 @@ public class ActivityController : MonoBehaviour {
 
             if (!Panic && parti.interruptedFor != null && !parti.interruptedFor.IsActivated) {
 
-                    log4Me($"Cannot proceed, because {parti.interruptedFor.name} is not activated yet");
-                    parti.log4Me($"My Leader {name} cannot proceed, because {parti.interruptedFor.name} is not activated yet");
+                    log4Me($"Cannot proceed, because {parti.name} did not activate {parti.interruptedFor.name} yet");
+                    parti.log4Me($"My Leader {name} cannot proceed, because I didn't activate {parti.interruptedFor.name} yet");
 
                 return false;
             }
@@ -657,7 +696,12 @@ public class ActivityController : MonoBehaviour {
 
             if(parti.MyLeader == this) parti.MyLeader = null;
 
-            if (Panic && !parti.Panic) parti.setPanicAndInterrupt();
+            if (Panic && !parti.Panic) {
+                
+                log4Me($"I have panic, but my paticipant {parti.name} not, so giving him panic also");
+                parti.log4Me($"My leader {name} gave me panic, so I'm calling flee()");
+                parti.flee();
+            }
         }
         myParticipants = null;
     }
@@ -1045,8 +1089,8 @@ public class ActivityController : MonoBehaviour {
     }
 
     private void createBubble() {
-
-        if (tag != "Vehicle" && bubble == null) {
+        
+        if (bubble == null) {
 
             Debug.LogError($"{name}: I HAVE NO BUBBLE ASSIGNED IN THE INSPECTOR!!!");
             return;
@@ -1073,29 +1117,6 @@ public class ActivityController : MonoBehaviour {
         log4Me($"Destroying my tool --- ({tool.name})");
         Destroy(tool);
         tool = null;
-    }
-
-    private IEnumerator checkIfOutside() {
-
-        yield return new WaitForSeconds(0.25f);
-        if (myRegion == null) {
-
-            GameObject.Find("GameLogic").GetComponent<GameLogic>().outside.registerAvatar(this);
-        }
-    }
-
-    /// <summary>
-    /// In Update, we check if there's a firealarm
-    /// </summary>
-    void Update() {
-
-        // Hinweis: Könnte in einer langsameren Coroutine sein
-
-        // Go into panic mode and stop doing activities, when...
-        // ... there is an alarm in my region
-        // ... when I'm not already at the rallying point
-        // ... when I not already paniced
-        if (myRegion != null && myRegion.HasAlarm && !arrivedAtRP && !Panic && tag != "Vehicle") setPanicAndInterrupt();
     }
 
     private static int getPartnerPriority(ObjectController found) {
@@ -1349,11 +1370,29 @@ public class ActivityController : MonoBehaviour {
         log4Me($"My region is now {(myRegion != null ? myRegion.name : "null")} (was {(oldRegion != null ? oldRegion.name : "null")})#Detail10Log");
 
         // Unregister in the region if he isn't the caller, myRegion variable will be nulled as a side effekt
-        if (oldRegion != null && oldRegion.getAttenders().Contains(this))
-            oldRegion.unregisterAvatar(this);
+        if (oldRegion != null && oldRegion.getAttenders().Contains(this)) oldRegion.unregisterAvatar(this);
 
         // When myRegion == null, then register for the outside area
+        log4Me($"Starting coroutine checkIfOutside()#Detail10Log");
         StartCoroutine(checkIfOutside());
+    }
+
+    private IEnumerator checkIfOutside() {
+
+        // This waiting is because of the beginning, this could immediatly register outside, before the normal regionregistration can happen
+        yield return new WaitForSeconds(0.25f);
+
+        log4Me($"Coroutine checkIfOutside() started#Detail10Log");
+
+        if (myRegion == null) {
+
+            log4Me($"My region was null, so registering outside#Detail10Log");
+            GameObject.Find("GameLogic").GetComponent<GameLogic>().outside.registerAvatar(this);
+        }
+        else {
+
+            log4Me($"My region was not null, doing nothing in checkIfOutside()#Detail10Log");
+        }
     }
 
     public RegionController getRegion() {
@@ -1368,21 +1407,35 @@ public class ActivityController : MonoBehaviour {
 
         log4Me($"I saw a fire in {myRegion.name}");
 
-        setPanicAndInterrupt();
+        myRegion.add2FirePeople(this);
+
+        flee();
     }
 
-    public void setPanicAndInterrupt() {
+    public void flee() {
 
-        if (Panic || tag == "Vehicle") return;
-        Panic = true;
+        if (arrivedAtRP || Panic || tag == "Vehicle") return;
+
+        log4Me($"I am fleeing now");
 
         fireRegion = myRegion;
         wasWalking = Going;
         activityBeforePanic = CurrentActivity;
-        nextActivity = myRegion.getRallyingPoint();
+
+        if(myRegion == null) Debug.LogError($"{name} I have no region here");
+
+        NextActivity = myRegion.getRallyingPoint();
+
+        setPanicAndInterrupt();
+    }
+
+    public void setPanicAndInterrupt() {
+        
+        Panic = true;
+        log4Me($"Panic settet and interrupting");
 
         // This also eventually stops Going and sets target
-        interrupt();
+        interruptWith(myRegion.getRallyingPoint());
     }
 
     // Do a surprised stopping movement

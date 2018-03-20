@@ -943,9 +943,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 0
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -972,9 +972,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 2
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -1001,9 +1001,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 0
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -1030,9 +1030,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 0
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -1059,9 +1059,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 2
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -1088,9 +1088,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 0
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -1117,9 +1117,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 0
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -1146,9 +1146,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 0
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
@@ -1175,9 +1175,9 @@ MonoBehaviour:
   Priority: 0
   wichAnimation: 0
   turnAngle: 0
-  lookAtNext: 1
+  lookAtNext: 0
   lookAtTarget: 0
-  noTurning: 0
+  noTurning: 1
   time: 1
   moveVector: {x: 0, y: 0, z: 0}
   isPhysical: 0
