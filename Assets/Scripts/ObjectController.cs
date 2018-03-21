@@ -5,6 +5,7 @@
 /// </summary>
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ObjectController : MonoBehaviour {
@@ -93,6 +94,9 @@ public class ObjectController : MonoBehaviour {
     [Tooltip("The time to wait before starting this (includes start going)")]
     public int startDelay;
 
+    [Tooltip("Indicates if this activity is used by multiple avatars at the same time")]
+    public bool multiUserActivity;
+
     [Tooltip("The discription text for FUNGUS. Sollte passen zu: \"Ich war gerade am...\" und \"Ich war gerade auf dem weg zum...\"")]
     public string discription;
 
@@ -111,27 +115,38 @@ public class ObjectController : MonoBehaviour {
     public bool isMovable => isAvatar;
 
     private ActivityController user;
-    public bool started;
+    private Transform parentOfCurrAct;
+    private List<ObjectController> participantActivities;
+
+    public bool started { get; set; }
 
     public ActivityController CurrentUser
     {
         get
         {
-            // If the user doesn't have this as current activity anymore, then set and return null
+            // When the current user doesn't have this as current activity anymore, then set and return null
             if (user != null && user.CurrentActivity != this && user.NextActivity != this) {
 
-                user.log4Me("has no user anymore#Detail10Log");
-                isActivated = false;
-                user = null;
+                CurrentUser = null;
             }
 
             return user;
         }
         set
         {
-            isActivated = false;
+            // Multi-user acticities do not need any current users
+            if(multiUserActivity) return;
+
+            ActivityController oldUser = user;
             user = value;
-            if (user != null) user.log4Me($"I'm now the user of {name}#Detail10Log");
+            bool changed = oldUser != user;
+
+            if (changed) {
+
+                isActivated = false;
+                if (oldUser != null) oldUser.log4Me($"I'm not the user of {name} anymore#Detail10Log");
+                if (user != null) user.log4Me($"I'm now the user of {name}#Detail10Log");
+            }
         }
     }
 
@@ -157,6 +172,16 @@ public class ObjectController : MonoBehaviour {
         if (LayerMask.LayerToName(gameObject.layer) != "Feuermelder" && tag != "FireFighter Point" && tag != "rallying Point") {
 
             StartCoroutine(warnDiscription()); 
+        }
+
+        if (isGroupActivity && !isAvatar) {
+
+            getParticipantActivities();
+
+            if (participantActivities == null || participantActivities.Count == 0) {
+
+                Debug.LogWarning($"Achtung: Gruppenaktivität {name} hat keine Teilnehmeraktivitäten, stellen Sie sicher, dass {name} unter einem Sammelgameobject hängt, unter dem auch andere Activities sind, die dadurch als Teilnehmeraktivitäten fungieren");
+            } 
         }
     }
 
@@ -253,5 +278,24 @@ public class ObjectController : MonoBehaviour {
 
         isActivated = true;
         userHere.log4Me($"{name} activated");
+    }
+
+    public List<ObjectController> getParticipantActivities(ActivityController caller) {
+
+        return participantActivities;
+    }
+
+    public List<ObjectController> getParticipantActivities() {
+
+        // Get the parent of CurrentActivity (a groupactivity has to be organized under a parent with multiple activities)
+        parentOfCurrAct = GetComponentInParent<Transform>().parent;
+
+        // Get the other activities under this parent
+        participantActivities = new List<ObjectController>(parentOfCurrAct.GetComponentsInChildren<ObjectController>());
+        participantActivities.Remove(this);
+
+        //Debug.Log($"Groupactivity {name} has {participantActivities.Count} groupactivitychild without {name}");
+
+        return participantActivities;
     }
 }

@@ -40,8 +40,12 @@ public class RegionController : MonoBehaviour {
                 turnOnAudio();
 
                 foreach (ActivityController attender in attenders) {
-                    
-                    if(!attender.Panic && !attender.arrivedAtRP) attender.flee();
+
+                    if (!attender.Panic && !attender.arrivedAtRP) {
+
+                        attender.log4Me($"Calling flee(), because I heared an alarm in {name}.");
+                        attender.flee();
+                    }
                 }
             }
             else {
@@ -90,11 +94,10 @@ public class RegionController : MonoBehaviour {
         master = GameObject.Find("GameLogic").GetComponent<GameLogic>();
         master.register(this);
 
-        if (isPrivate && doorBell == null) Debug.LogError($"ERROR: {name} is a private region, but has no doorbell!");
-        
         StartCoroutine(hide(0.5f));
 		StartCoroutine(awakeWaiters(0.5f));
 
+        // Find rallying points
         foreach (ObjectController rallyingPoint in transform.parent.gameObject.GetComponentsInChildren<ObjectController>()) {
 
             if (rallyingPoint.name.StartsWith("Rallying Point")) {
@@ -106,6 +109,9 @@ public class RegionController : MonoBehaviour {
 
         // Fire Fighter Point
         registerActivity(GetComponentInChildren<ObjectController>());
+
+        if (isPrivate && doorBell == null) Debug.LogError($"Fehler: {name} ist eine private region, hat aber keine Klingel. Füge ein neues gameobject in die Szene ein, und füge das Klingel und Summer Prefab darunter ein");
+        if (rallyingPoints == null || rallyingPoints.Count == 0) Debug.LogWarning($"Warnung: {name} hat keine Rallying Points. Füge Rallying Points in die Szene ein. Entweder unter dem Sammel-GameObject der Region (wird dann automatisch erkannt), oder weise sie direkt im Inspektor der Region zu.");
 	}
 
     void Update() {
@@ -177,14 +183,19 @@ public class RegionController : MonoBehaviour {
 
 	public void registerAvatar(ActivityController avatar) {
 
-        if (avatar.getRegion() == this) return;
-
-        if(hasAlarm && !avatar.Panic && !avatar.arrivedAtRP) avatar.flee();
+        if (avatar.getRegion() == this || avatar.vehicle) return;
 
 		attenders.Add(avatar);
         avatar.log4Me($"I am now registered in {name}#Detail10Log");
 
 		avatar.setRegion(this);
+
+        // Check if there is an alarm
+        if (hasAlarm && !avatar.Panic && !avatar.arrivedAtRP) {
+
+            avatar.log4Me($"Calling flee(), because I heared an alarm in {name} while registering there.");
+            avatar.flee();
+        }
 
         // Start this avatar if we already have an activity and only if he has no activity yet
         if (activities.Count > 0 && avatar.CurrentActivity == null) {
@@ -198,10 +209,6 @@ public class RegionController : MonoBehaviour {
             avatar.log4Me($"I'm waiting in {name}, because there still were no activities");
 			waiters.Add(avatar);
 		}
-        // Do nothing
-        else {
-
-        }
     }
 
     public void registerActivity(ObjectController activity) {

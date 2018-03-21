@@ -31,7 +31,7 @@ public class GameLogic : MonoBehaviour {
 
             ClearAllFires();
         }
-        if (Input.GetKeyDown(KeyCode.T)) {
+        if (Input.GetKeyDown(KeyCode.V)) {
 
             clearAlarms();
         }
@@ -53,7 +53,7 @@ public class GameLogic : MonoBehaviour {
         if (GUI.Button(new Rect(10, 70, 200, 50), "Clear fires (C)")) {
             ClearAllFires();
         }
-        if (GUI.Button(new Rect(10, 130, 200, 50), "Clear alarms (T)")) {
+        if (GUI.Button(new Rect(10, 130, 200, 50), "Clear alarms (V)")) {
             clearAlarms();
         }
         if (GUI.Button(new Rect(10, 190, 200, 50), "Toggle Mouse Look (F)")) {
@@ -133,6 +133,9 @@ public class GameLogic : MonoBehaviour {
     void Start() {
 
         fireRegions = new List<RegionController>();
+        if (outside == null) Debug.LogError($"Fehler: Die Simulation hat keine outside Region, füge eine Region in die Szene ein und weise sie der GameLogic im Inspektor zu");
+        if (outside.GetComponent<Collider>() != null && outside.GetComponent<Collider>().isTrigger) Debug.LogWarning($"Warnung: Die \"Outside\" Region sollte keinen Triggercollider haben, da sie quasi überall ist");
+        if (name != "GameLogic") Debug.LogError($"Fehler: Die GameLogic muss \"GameLogic\" heißen, weil andere Komponenten in der Szene nach diesem Namen suchen");
     }
 
     void AddRandomFire() {
@@ -258,14 +261,17 @@ public class GameLogic : MonoBehaviour {
         fireFighters.transform.Find("Camera").GetComponent<Camera>().enabled = false;
         firstPersonController.transform.position = fireFighterScript.spawnPoint.transform.position;
 
-        ObjectController talkDestination = firstPersonController.transform.Find("TalkDestination").GetComponent<ObjectController>();
-        // Mysterious case, that the players talkdestination still didn't started his start() method
+        // Wait for everything to start
+        ActivityController activityController = firstPersonController.GetComponent<ActivityController>();
+        if (!activityController.started) activityController.Start();
+
+        ObjectController talkDestination = activityController.myActivity;
         if (!talkDestination.started) talkDestination.Start();
         
         // LET THE PEOPLE COME
         foreach (ActivityController fireWitness in region.firePeople) {
 
-            
+            fireWitness.log4Me($"The Gamelogic gave me panic");
             fireWitness.Panic = true;
             fireWitness.interruptWith(talkDestination);
         }

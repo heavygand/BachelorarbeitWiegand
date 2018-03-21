@@ -29,7 +29,8 @@ public class ActivityControllerEditor : Editor {
          * 
          */
         if (GUILayout.Button(buttonText, GUILayout.Width(buttonText.Length * 7), GUILayout.Height(30))) {
-            
+
+            user.log4Me($"Calling flee(), because the button was pressed");
             user.flee();
         }
 

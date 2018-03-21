@@ -69,10 +69,13 @@ public class ActivityController : MonoBehaviour {
             lastActivity = value;
         }
     }
+    [Tooltip("The speed of the rotation, when the avatar arrived at his work place should be lower than 0,2")]
+    public float rotationSpeed;
 
     [Tooltip("The destination bubble for partner activities")]
     public GameObject bubble;
-    
+
+    [Tooltip("The exclamation mark to show above the head when a fire is seen")]
     public GameObject exclamationMark;
 
     [Tooltip("Toggles the display of the debug log")]
@@ -83,6 +86,7 @@ public class ActivityController : MonoBehaviour {
 
     [Tooltip("Determines if the caller and the line number shall be shown")]
     public bool showPlace;
+
     public List<string> log;
 
     #endregion
@@ -132,7 +136,7 @@ public class ActivityController : MonoBehaviour {
         {
             panic = value;
 
-            if (panic && tag != "Vehicle") {
+            if (panic && !vehicle) {
 
                 // Speed for running
                 navComponent.speed = 4;
@@ -155,6 +159,9 @@ public class ActivityController : MonoBehaviour {
     public ObjectController activityBeforePanic { get; private set; }
     public bool arrivedAtRP { get; set; }
     public bool stopNow { get; set; }
+    public ObjectController myActivity { get; private set; }
+    public bool started { get; set; }
+    public bool vehicle { get; private set; }
 
     #endregion
     #region PRIVATE MEMBERS
@@ -182,17 +189,21 @@ public class ActivityController : MonoBehaviour {
     private RegionController oldRegion;
 
     private Coroutine sliding;
-    private Coroutine rotateRoutine;
 
     private ActivityController myLeader;
-    private ObjectController myActivity;
     private ObjectController interruptedFor;
     private Coroutine startGoingRoutine;
+    private GameObject looker;
     #endregion
     /// <summary>
     /// Initialisation
     /// </summary>
-    void Start() {
+    public void Start() {
+
+        if(started) return;
+        started = true;
+
+        vehicle = tag == "Vehicle";
 
         // Init Components
         myActivity = GetComponentInChildren<ObjectController>();
@@ -200,7 +211,7 @@ public class ActivityController : MonoBehaviour {
         isPlayer = tag == "Player";
         if (isPlayer) {
 
-            myActivity = transform.Find("TalkDestination").GetComponent<ObjectController>();
+            myActivity = GameObject.FindGameObjectWithTag("playersTalkDestination").GetComponent<ObjectController>();
             return;
         }
 
@@ -223,6 +234,11 @@ public class ActivityController : MonoBehaviour {
 
         StartCoroutine(checkIfOutside());
         StartCoroutine(noCollisionChecker());
+
+        if (myActivity == null && !vehicle) {
+
+            Debug.LogWarning($"Achtung: {name} hat keine Talkdestination, d.h. dieser Avatar kann nicht angesprochen werden.");
+        }
     }
 
     #region NORMAL WORKFLOW
@@ -342,7 +358,7 @@ public class ActivityController : MonoBehaviour {
             Debug.LogError($"{name} wanted to go to {CurrentActivity.name}, but wasn't on the navmesh");
         }
 
-        if (tag != "Vehicle") {
+        if (!vehicle) {
 
             // Set Animator ready for Going
             animator.SetBool("closeEnough", false);
@@ -401,7 +417,7 @@ public class ActivityController : MonoBehaviour {
 
         stopCoroutines();
 
-        if (tag != "Vehicle") {
+        if (!vehicle) {
             
             animator.applyRootMotion = true;
             animator.SetBool("closeEnough", true);
@@ -417,7 +433,7 @@ public class ActivityController : MonoBehaviour {
             //Debug.LogError($"{name}: soll stoppen, aber ist garnicht auf dem NavMesh. (CurrentActivity: {CurrentActivity.name})");
         }
 
-        if (tag != "Vehicle") {
+        if (!vehicle) {
             animator.speed = 1f; 
         }
     }
@@ -434,18 +450,9 @@ public class ActivityController : MonoBehaviour {
         // Activate the object
         StartCoroutine(CurrentActivity.activate(this));
 
-        // Rotate
-        organizeLookRotation();
-
         // Disable the navcomponent, because he blocks the height of the avatar during an activity
         if (CurrentActivity.makeGhost) {
             navComponent.enabled = false; 
-        }
-
-        // Wait for rotation
-        if (tag != "Vehicle") {
-
-            yield return new WaitForSeconds(1); 
         }
 
         // Check if interrupted
@@ -461,7 +468,7 @@ public class ActivityController : MonoBehaviour {
 
             log4Me($"animation {CurrentActivity.wichAnimation} activated.#Detail10Log");
 
-            if (tag != "Vehicle") {
+            if (!vehicle) {
 
                 animator.SetBool(CurrentActivity.wichAnimation.ToString(), true); 
             }
@@ -501,19 +508,17 @@ public class ActivityController : MonoBehaviour {
         log4Me($"Doing {CurrentActivity.name}");
         
         // Activity time. Also check if my state changed every 20ms
-        const float ms = 0.02f;
+        const float ms = 0.01f;
         int elapsedTime = 0;
         bool timeIsOver = false;
         bool partnerIsAway = false;
-        while (!timeIsOver && !activityChangeRequested && !partnerIsAway && tag != "Vehicle") {
+        while (!timeIsOver && !activityChangeRequested && !partnerIsAway && !vehicle) {
 
             adjustTool();
 
-            if (isWithOther) {
+            organizeLookRotation();
 
-                partnerIsAway = !theOther.isPlayer && theOther.CurrentActivity != myActivity && theOther.NextActivity != myActivity;
-                organizeLookRotation();
-            }
+            if (isWithOther) partnerIsAway = !theOther.isPlayer && theOther.CurrentActivity != myActivity && theOther.NextActivity != myActivity;
 
             yield return new WaitForSeconds(ms);
             elapsedTime++;
@@ -552,7 +557,7 @@ public class ActivityController : MonoBehaviour {
 
             log4Me($"stopping {CurrentActivity.name}, because interrupted");
         }
-        else if (tag == "Vehicle") {
+        else if (vehicle) {
 
             log4Me($"stopping {CurrentActivity.name}, because vehicle");
         }
@@ -576,7 +581,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Stop doing this activity (standing does not have to be deactivated)
-        if (tag != "Vehicle" && CurrentActivity != null && CurrentActivity.wichAnimation.ToString() != "stand") {
+        if (!vehicle && CurrentActivity != null && CurrentActivity.wichAnimation.ToString() != "stand") {
 
             log4Me($"Setting animator bool of {CurrentActivity.wichAnimation} to false#Detail10Log");
 
@@ -599,14 +604,14 @@ public class ActivityController : MonoBehaviour {
         log4Me($"Started Coroutine continueWhenDoneStopping()#Detail10Log");
 
         // Still doing transition
-        while (tag != "Vehicle" && animator.GetAnimatorTransitionInfo(0).duration != 0) {
+        while (!vehicle && animator.GetAnimatorTransitionInfo(0).duration != 0) {
 
             log4Me($"Cannot proceed, because I'm still {animator.GetAnimatorTransitionInfo(0).duration}s in a transition from {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name}");
 
             yield return new WaitForSeconds(0.2f);
         }
         // Still doing activity animation
-        while (tag != "Vehicle" && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
+        while (!vehicle && !animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("Idle_Neutral_1")) {
 
             log4Me($"Cannot proceed, because {animator.GetCurrentAnimatorClipInfo(0)[0].clip.name} has exit time");
 
@@ -643,12 +648,6 @@ public class ActivityController : MonoBehaviour {
             StopCoroutine(doingRoutine);
             doingRoutine = null;
             log4Me($"Coroutine doing stopped#Detail10Log");
-        }
-        if (rotateRoutine != null) {
-
-            StopCoroutine(rotateRoutine);
-            rotateRoutine = null;
-            log4Me($"Coroutine rotateRoutine stopped#Detail10Log");
         }
         if (sliding != null) {
 
@@ -706,26 +705,6 @@ public class ActivityController : MonoBehaviour {
         myParticipants = null;
     }
 
-    private List<ObjectController> getOtherActivitiesWithoutThis() {
-
-        // Get the parent of CurrentActivity (a groupactivity has to be organized under a parent with multiple activities)
-        Transform parentOfCurrAct = CurrentActivity.GetComponentInParent<Transform>().parent;
-
-        // Get the other activities under this parent
-        List<ObjectController> otherActivities = new List<ObjectController>(parentOfCurrAct.GetComponentsInChildren<ObjectController>());
-        otherActivities.Remove(CurrentActivity);
-
-        // When there are no other activities at the target parent, then wrap the target parent and myself under a new parent, so my own childdestinations will be found
-        if (otherActivities.Count == 0) {
-
-            Debug.LogError($"{name}: Parent {parentOfCurrAct.name} has 0 other activities");
-        }
-
-        log4Me($"Parent {parentOfCurrAct.name} had {otherActivities.Count} groupactivitychild without {CurrentActivity.name}");
-
-        return otherActivities;
-    }
-
     // When this is a group activity, then it has to be organized (pick and interrupt the others, etc)
     private void organizeGroupActivity() {
 
@@ -759,7 +738,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Else pick the other avatars for this groupactivity
-        List<ObjectController> otherActivities = getOtherActivitiesWithoutThis();
+        List<ObjectController> otherActivities = CurrentActivity.getParticipantActivities(this);
 
         List<ActivityController> theOthers = CurrentActivity.getRegion().getTheAvailableOthersFor(this, otherActivities[0]);
 
@@ -836,7 +815,7 @@ public class ActivityController : MonoBehaviour {
 
     private void putToolInHand(ObjectController.HandUsage handToUse) {
 
-        if (tag == "Vehicle")
+        if (vehicle)
             return;
 
         // Place right
@@ -993,67 +972,55 @@ public class ActivityController : MonoBehaviour {
 
     private void organizeLookRotation() {
 
+        if(CurrentActivity.noTurning) return;
+
         ObjectController[] componentsInChildren = CurrentActivity.GetComponentsInChildren<ObjectController>();
-        
-        if (CurrentActivity.noTurning) {
+        Quaternion targetRot;
 
-            // NO ROTATION
-            log4Me($"Don't have to turn, because CurrentActivity.noTurning was active#Detail10Log");
-        }
-        // When there's another Avatar involved, look at him.
-        else if (CurrentActivity.lookAtTarget) {
+        // When lookAtTarget is active
+        if (CurrentActivity.lookAtTarget) {
 
-            // Look at the target
-            Vector3 targetPos = CurrentActivity.gameObject.transform.position;
-            transform.LookAt(new Vector3(targetPos.x, transform.position.y, targetPos.z));
-
-            log4Me($"Looking at target, because CurrentActivity.lookAtTarget was active#Detail10Log");
+            targetRot = getLookAtRotation(CurrentActivity.gameObject.transform.position);
         }
         // When we have more waypoints, then look at them
         else if (CurrentActivity.lookAtNext && componentsInChildren.Length >= 2 && componentsInChildren[1] != null) {
 
-            Vector3 transformPosition = componentsInChildren[1].transform.position;
-            transform.LookAt(new Vector3(transformPosition.x, transform.position.y, transformPosition.z));
+            targetRot = getLookAtRotation(componentsInChildren[1].transform.position);
         }
         // Else, rotate as the activity says
         else {
-            rotateRelative();
+
+            // Get the rotation of the Target
+            Quaternion wrongTargetRot = CurrentActivity.transform.rotation;
+
+            // Add the angle that is in the inspector of the objectcontroller
+            targetRot = Quaternion.Euler(
+                wrongTargetRot.eulerAngles.x,
+                wrongTargetRot.eulerAngles.y + CurrentActivity.turnAngle,
+                wrongTargetRot.eulerAngles.z);
+
+            log4Me($"Rotating towards the target");
+
         }
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed);
     }
 
-    /// <summary>
-    /// Starts the rotation for a given angle
-    /// </summary>
-    private void rotateRelative() {
+    private Quaternion getLookAtRotation(Vector3 targetPos) {
 
-        // Get the rotation of the Target
-        Quaternion wrongTargetRot = CurrentActivity.transform.rotation;
-        Quaternion targetRot = Quaternion.Euler(
-            wrongTargetRot.eulerAngles.x,
-            wrongTargetRot.eulerAngles.y + CurrentActivity.turnAngle,
-            wrongTargetRot.eulerAngles.z);
+        // Let the looker look at the target
+        if (looker == null) {
 
-        // Rotate myself like this
-        rotateRoutine = StartCoroutine(rotate(targetRot));
-    }
-
-    /// <summary>
-    /// Rotates the avatar to a given rotation
-    /// </summary>
-    /// <param name="targetRot"></param>
-    /// <returns></returns>
-    private IEnumerator rotate(Quaternion targetRot) {
-
-        for (int counter = 0; counter < 150; counter++) {
-
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.15f);
-
-            log4Me($"Rotating...#Detail10Log");
-
-            yield return new WaitForSeconds(0.01f);
+            looker = new GameObject {
+                name = "looker"
+            };
+            looker.transform.parent = gameObject.transform;
+            looker.transform.localPosition = Vector3.zero;
         }
 
-        yield return 0;
+        looker.transform.LookAt(new Vector3(targetPos.x, transform.position.y, targetPos.z));
+
+        // Return his rotation, for the usage in slerp
+        return looker.transform.rotation;
     }
 
     /// <summary>
@@ -1414,7 +1381,7 @@ public class ActivityController : MonoBehaviour {
 
     public void flee() {
 
-        if (arrivedAtRP || Panic || tag == "Vehicle") return;
+        if (arrivedAtRP || Panic || vehicle) return;
 
         log4Me($"I am fleeing now");
 

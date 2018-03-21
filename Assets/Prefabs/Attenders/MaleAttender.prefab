@@ -2551,6 +2551,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
+  rotationSpeed: 0.05
   bubble: {fileID: 1514474999493290, guid: 612696b421061e146860be199b1c82dc, type: 2}
   exclamationMark: {fileID: 1827403500692350, guid: 6934534c6ef705e4fadcb2d48b09c5dd,
     type: 2}
@@ -2558,8 +2559,6 @@ MonoBehaviour:
   detailLog: 0
   showPlace: 0
   log: []
-  lastMessage: 
-  secondToLastMessage: 
 --- !u!136 &136192319449778536
 CapsuleCollider:
   m_ObjectHideFlags: 1

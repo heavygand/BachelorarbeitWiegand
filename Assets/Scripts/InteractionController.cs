@@ -75,6 +75,7 @@ public class InteractionController : MonoBehaviour {
 
             Debug.LogError($"Could not find directory \"{dialogDirectory}\" under {Directory.GetCurrentDirectory()}.");
         }
+        if (flowchart == null) Debug.LogError($"Fehler: First Person Controller hat keinen Flowchart zugewiesen bekommen im Inspektor. Bitte einen in die Szene hinzufügen und zuweisen");
     }
 
     #region AVATAR SELECTION

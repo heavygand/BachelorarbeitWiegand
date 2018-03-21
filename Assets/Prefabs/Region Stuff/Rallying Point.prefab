@@ -157,6 +157,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 2
+  multiUserActivity: 1
   discription: zum Sammpunkt gehen
 --- !u!136 &136981430913131052
 CapsuleCollider:
