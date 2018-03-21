@@ -2985,7 +2985,7 @@ Animation:
   m_CullingType: 0
 --- !u!114 &114031040604698710
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3101,7 +3101,7 @@ MonoBehaviour:
   m_LandSound: {fileID: 8300000, guid: 3b09d59f4499d45428baa7a21e954296, type: 3}
 --- !u!114 &114035199616008088
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3115,7 +3115,7 @@ MonoBehaviour:
   keyCode: 101
 --- !u!114 &114054357152764316
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3155,6 +3155,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
+  multiUserActivity: 0
   discription: reden mit dem Spieler
 --- !u!114 &114181373712067558
 MonoBehaviour:
@@ -3184,6 +3185,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
+  multiUserActivity: 0
   discription: am Simulation spielen
 --- !u!114 &114286491544886230
 MonoBehaviour:
@@ -3214,7 +3216,7 @@ MonoBehaviour:
   runAsCoroutine: 1
 --- !u!114 &114324716613177164
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3240,7 +3242,7 @@ MonoBehaviour:
   - {fileID: 114445512315811202}
 --- !u!114 &114329427669530902
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3251,8 +3253,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodeRect:
     serializedVersion: 2
-    x: 72
-    y: 78
+    x: 73
+    y: 77
     width: 120
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
@@ -3315,7 +3317,7 @@ MonoBehaviour:
   debugServerPort: 41912
 --- !u!114 &114397497224082584
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3326,8 +3328,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemId: 2
   indentLevel: 0
-  storyText: Obenlinks finden Sie verschiedene Optionen. Fliegen funktioniert mit
-    den Tasten WASD.
+  storyText: Obenlinks finden Sie verschiedene Optionen, um die Simulation zu beginnen.
   description: 
   character: {fileID: 0}
   portrait: {fileID: 0}
@@ -3342,7 +3343,7 @@ MonoBehaviour:
   setSayDialog: {fileID: 0}
 --- !u!114 &114439529252168108
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3356,7 +3357,7 @@ MonoBehaviour:
   value: 
 --- !u!114 &114445512315811202
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3390,7 +3391,7 @@ MonoBehaviour:
   firstPersonController: {fileID: 1023760283590178}
 --- !u!114 &114503538727885126
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3466,7 +3467,7 @@ MonoBehaviour:
   log: []
 --- !u!114 &114598910862906284
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3493,7 +3494,7 @@ MonoBehaviour:
     stringVal: 
 --- !u!114 &114632019092292482
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}
@@ -3696,7 +3697,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 599.9231, y: 374.27765}
+  scrollPos: {x: 482.9231, y: 243.27765}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
   blockViewHeight: 400
@@ -3708,8 +3709,9 @@ MonoBehaviour:
     width: 1114
     height: 859
   selectedBlocks:
-  - {fileID: 114324716613177164}
-  selectedCommands: []
+  - {fileID: 114329427669530902}
+  selectedCommands:
+  - {fileID: 114397497224082584}
   variables:
   - {fileID: 114054357152764316}
   - {fileID: 114992342873452346}
@@ -3727,7 +3729,7 @@ MonoBehaviour:
   luaBindingName: flowchart
 --- !u!114 &114992342873452346
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 2
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1517925152487998}

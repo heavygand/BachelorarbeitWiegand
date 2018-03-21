@@ -13,7 +13,9 @@ using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 /// <summary>
-/// This Script manages all activities and deactivates itself in case of alarm
+/// This Script manages all behaviours of an avatar or vehicle
+/// Interacts with Objectcontrollers
+/// Is registered in a Regioncontroller
 /// </summary>
 public class ActivityController : MonoBehaviour {
 
