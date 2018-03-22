@@ -1,10 +1,4 @@
-﻿#pragma warning disable 1587
-/// <summary>
-/// Author: Christian Wiegand
-/// Matrikelnummer: 30204300
-/// </summary>
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -16,10 +10,15 @@ using Random = UnityEngine.Random;
 /// This Script manages all behaviours of an avatar or vehicle
 /// Interacts with Objectcontrollers
 /// Is registered in a Regioncontroller
+/// <p>Author: Christian Wiegand</p>
+/// <p>Matrikelnummer: 30204300</p>
 /// </summary>
 public class ActivityController : MonoBehaviour {
 
     #region INSPECTOR VISIBLE MEMBERS
+    /// <summary>
+    /// The current activity, this is not only set while doing, but is already set while going
+    /// </summary>
     public ObjectController currentActivity;
 
     public ObjectController CurrentActivity
@@ -39,7 +38,9 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
-    // Must stay public
+    /// <summary>
+    /// The activity to do after the current activity
+    /// </summary>
     public ObjectController nextActivity;
 
     public ObjectController NextActivity
@@ -58,7 +59,9 @@ public class ActivityController : MonoBehaviour {
             }
         }
     }
-
+    /// <summary>
+    /// The last activity
+    /// </summary>
     private ObjectController lastActivity;
     public ObjectController LastActivity
     {
@@ -71,24 +74,53 @@ public class ActivityController : MonoBehaviour {
             lastActivity = value;
         }
     }
-    [Tooltip("The speed of the rotation, when the avatar arrived at his work place should be lower than 0,2")]
+    /// <summary>
+    /// The speed of the rotation, when the avatar arrived at his work place. should be lower than 0,2
+    /// </summary>
+    [Tooltip("The speed of the rotation, when the avatar arrived at his work place. should be lower than 0,2")]
     public float rotationSpeed;
 
+    /// <summary>
+    /// This is the rate in seconds, at wich the activity time will refresh it's status. This affects the rotation speed, the positioning of a tool in the hands, the detection that a talkpartner has left and so on. This will have consequences for the performance, but also for the looks
+    /// </summary>
+    [Tooltip("This is the rate in seconds, at wich the activity time will refresh it's status. This could be the positioning of a tool in the hands, or the detection, that a talkpartner has left. This will have consequences for the performance, but also for the looks")]
+    [Range(0.05f, 0.01f)]
+    public float activityTimeRefreshRate;
+
+    /// <summary>
+    /// The destination bubble for partner activities
+    /// </summary>
     [Tooltip("The destination bubble for partner activities")]
     public GameObject bubble;
 
+    /// <summary>
+    /// The exclamation mark to show above the head when a fire is seen
+    /// </summary>
     [Tooltip("The exclamation mark to show above the head when a fire is seen")]
     public GameObject exclamationMark;
 
+    /// <summary>
+    /// Toggles the display of the debug log
+    /// </summary>
     [Tooltip("Toggles the display of the debug log")]
     public bool showDebugWindow;
 
+    /// <summary>
+    /// Determines if the detail of the log in the scene view
+    /// </summary>
     [Tooltip("Determines if the detail of the log in the scene view")]
     public bool detailLog;
 
+    /// <summary>
+    /// Determines if the caller and the line number shall be shown
+    /// </summary>
     [Tooltip("Determines if the caller and the line number shall be shown")]
     public bool showPlace;
 
+
+    /// <summary>
+    /// A list of logging messages for this avatar
+    /// </summary>
     public List<string> log;
 
     #endregion
@@ -128,6 +160,9 @@ public class ActivityController : MonoBehaviour {
     public bool activatedAlarm { get; set; }
 
     private bool panic;
+    /// <summary>
+    /// Not only indicates if the avatar has panic, but also changes the walkspeed and the animation
+    /// </summary>
     public bool Panic
     {
         get
@@ -197,8 +232,12 @@ public class ActivityController : MonoBehaviour {
     private Coroutine startGoingRoutine;
     private GameObject looker;
     #endregion
+
     /// <summary>
-    /// Initialisation
+    /// Initialisation of components
+    /// Checking if we are in the outside area
+    /// Checking if this is the player, or a vehicle
+    /// Looking for attached activities
     /// </summary>
     public void Start() {
 
@@ -240,6 +279,14 @@ public class ActivityController : MonoBehaviour {
         if (myActivity == null && !vehicle) {
 
             Debug.LogWarning($"Achtung: {name} hat keine Talkdestination, d.h. dieser Avatar kann nicht angesprochen werden.");
+        }
+        if (bubble == null) {
+
+            Debug.LogError($"Fehler: {name} hat keine Destination Bubble im Inspector bekommen, weise das Prefab unter Prefabs/Attenders im Inspektor zu");
+        }
+        if (exclamationMark == null) {
+
+            Debug.LogWarning($"Achtung: {name} hat kein Ausrufezeichen im Inspector bekommen, weise das Prefab unter Prefabs/Attenders im Inspektor zu");
         }
     }
 
@@ -509,8 +556,8 @@ public class ActivityController : MonoBehaviour {
         
         log4Me($"Doing {CurrentActivity.name}");
         
-        // Activity time. Also check if my state changed every 20ms
-        const float ms = 0.01f;
+        // Activity time. Also check if my state changed every 10ms
+        activityTimeRefreshRate = 0.01f;
         int elapsedTime = 0;
         bool timeIsOver = false;
         bool partnerIsAway = false;
@@ -522,10 +569,10 @@ public class ActivityController : MonoBehaviour {
 
             if (isWithOther) partnerIsAway = !theOther.isPlayer && theOther.CurrentActivity != myActivity && theOther.NextActivity != myActivity;
 
-            yield return new WaitForSeconds(ms);
+            yield return new WaitForSeconds(activityTimeRefreshRate);
             elapsedTime++;
 
-            timeIsOver = elapsedTime >= CurrentActivity.time * (1 / ms);
+            timeIsOver = elapsedTime >= CurrentActivity.time * (1 / activityTimeRefreshRate);
         }
 
         /*
@@ -1058,12 +1105,6 @@ public class ActivityController : MonoBehaviour {
     }
 
     private void createBubble() {
-        
-        if (bubble == null) {
-
-            Debug.LogError($"{name}: I HAVE NO BUBBLE ASSIGNED IN THE INSPECTOR!!!");
-            return;
-        }
 
         myBubble = Instantiate(bubble);
         myBubble.name = name + "'s destination Bubble to " + CurrentActivity.getAvatar().name;

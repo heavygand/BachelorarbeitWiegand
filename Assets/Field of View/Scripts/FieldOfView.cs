@@ -1,14 +1,12 @@
-﻿#pragma warning disable 1587
-/// <summary>
-/// Modyfied by Christian Wiegand
-/// </summary>
-
-using System;
+﻿using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 // ReSharper disable IteratorNeverReturns
 
+/// <summary>
+/// Modyfied by Christian Wiegand
+/// </summary>
 public class FieldOfView : MonoBehaviour {
 
     public float viewRadius;

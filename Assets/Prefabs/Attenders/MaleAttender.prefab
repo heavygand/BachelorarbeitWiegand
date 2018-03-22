@@ -2497,6 +2497,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
+  multiUserActivity: 0
   discription: reden
 --- !u!114 &114628762873436590
 MonoBehaviour:
@@ -2552,6 +2553,7 @@ MonoBehaviour:
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
   rotationSpeed: 0.05
+  activityTimeRefreshRate: 0.01
   bubble: {fileID: 1514474999493290, guid: 612696b421061e146860be199b1c82dc, type: 2}
   exclamationMark: {fileID: 1827403500692350, guid: 6934534c6ef705e4fadcb2d48b09c5dd,
     type: 2}

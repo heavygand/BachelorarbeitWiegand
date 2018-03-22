@@ -48,12 +48,24 @@ public class GameLogic : MonoBehaviour {
     public GameObject firstPersonController;
 
     /// <summary>
+    /// The state of the players manifestation in the simulation
+    /// </summary>
+    private enum gamestate {
+        spectator,
+        firefightertruck,
+        firstpersoncontroller
+    }
+
+    private gamestate GameState;
+
+    /// <summary>
     /// Initializing and checking
     /// </summary>
     void Start() {
 
         // Initializing
         fireRegions = new List<RegionController>();
+        GameState = gamestate.spectator;
 
         // Checking
         if (outside == null) Debug.LogError($"Fehler: Die Simulation hat keine outside Region, füge eine Region in die Szene ein und weise sie der GameLogic im Inspektor zu");
@@ -123,23 +135,41 @@ public class GameLogic : MonoBehaviour {
             Application.Quit();
         }
 
-        // Show Nagivation (implemented in "CameraWASD.cs" on the Spectator Camera GameObject)
-        int height = 30;
-        int space = 10;
-        int navY = 370;
-        int navX = 10;
-        int width = 30;
-        int down = height + space;
-        int right = width + space;
-        GUI.Box(new Rect(navX, navY, width * 3 + space * 2, height), "Navigation");
-        int i, j = 1;
-        i = 0; GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "Q");
-        i = 1; GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "W");
-        i = 2; GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "E");
-        j = 2;
-        i = 0; GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "A");
-        i = 1; GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "S");
-        i = 2; GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "D");
+
+        if (GameState != gamestate.firefightertruck) {
+
+            // Show Nagivation (implemented in "CameraWASD.cs" on the Spectator Camera GameObject)
+            int height = 30;
+            int space = 10;
+            int navY = 370;
+            int navX = 10;
+            int width = 30;
+            int down = height + space;
+            int right = width + space;
+            GUI.Box(new Rect(navX, navY, width * 3 + space * 2, height), "Navigation");
+            int i, j = 1;
+
+            if (GameState == gamestate.spectator) {
+                i = 0;
+                GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "Q");
+            }
+
+            i = 1;
+            GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "W");
+
+            i = 2;
+            GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "E");
+
+            j = 2;
+            i = 0;
+            GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "A");
+
+            i = 1;
+            GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "S");
+
+            i = 2;
+            GUI.Box(new Rect(navX + right * i, navY + down * j, width, height), "D"); 
+        }
     }
 
     /// <summary>
@@ -355,6 +385,7 @@ public class GameLogic : MonoBehaviour {
     /// <param name="region">The region where the fire is, and to get the destination point from for the truck</param>
     private void activateFireFighters(RegionController region) {
 
+        GameState = gamestate.firefightertruck;
         spectator.SetActive(false);
         fireFighters.SetActive(true);
         ActivityController ac = fireFighters.GetComponent<ActivityController>();
@@ -370,6 +401,8 @@ public class GameLogic : MonoBehaviour {
     /// </summary>
     /// <param name="region">The region to get the list of persons who saw fire from</param>
     public IEnumerator activateFirstPerson(RegionController region) {
+
+        GameState = gamestate.firstpersoncontroller;
 
         // Disable Firefighter Truck, but let him be visible
         FeuerwehrwagenController fireFighterScript = fireFighters.GetComponent<FeuerwehrwagenController>();
