@@ -130,10 +130,30 @@ public class ActivityController : MonoBehaviour {
     private string lastMessage { get; set; }
     private string secondToLastMessage { get; set; }
 
+    /// <summary>
+    /// Says if the avatar is currently not going and not doing anything
+    /// It probably means that he's checking where to go next, or waiting for an animation to end
+    /// </summary>
     public bool thinking => !Going && !Doing;
+
+    /// <summary>
+    /// Says if the avatar is currently walking/running somewhere
+    /// </summary>
     public bool Going => navComponent!=null && navComponent.isOnNavMesh && !navComponent.isStopped;
+
+    /// <summary>
+    /// Says if the avatar is currently fulfilling an activity
+    /// </summary>
     public bool Doing => doingRoutine != null;
+
+    /// <summary>
+    /// My current Region
+    /// </summary>
     public RegionController myRegion { get; set; }
+
+    /// <summary>
+    /// The AvatarController, that is the leader of my current groupactivity
+    /// </summary>
     public ActivityController MyLeader
     {
         get
@@ -150,13 +170,35 @@ public class ActivityController : MonoBehaviour {
                 myLeader.log4Me($"{(myLeader != null ? " I'm now the leader of " + name : "I'm not the leader of " + name + " anymore")}");
         }
     }
+
+    /// <summary>
+    /// When we saw a fire
+    /// </summary>
     public bool FireSeen => fireSeen;
 
+    /// <summary>
+    /// The coroutine that represents the doing of something
+    /// </summary>
     public Coroutine doingRoutine { get; private set; }
 
+    /// <summary>
+    /// Says if the avatar was moved away by slideToPlace()
+    /// </summary>
     public bool Displaced { get; set; }
+
+    /// <summary>
+    /// Says if this AvatarController is attached to the first person controller
+    /// </summary>
     public bool isPlayer { get; private set; }
+
+    /// <summary>
+    /// Says if the avatar was currently going somewhere, when his panic started
+    /// </summary>
     public bool wasWalking { get; private set; }
+
+    /// <summary>
+    /// Says if this avatar activated the firealarm
+    /// </summary>
     public bool activatedAlarm { get; set; }
 
     private bool panic;
@@ -192,12 +234,40 @@ public class ActivityController : MonoBehaviour {
     }
     public ObjectController SecondLastActivity => secondLastActivity;
     private ObjectController secondLastActivity;
+
+    /// <summary>
+    /// The region where the avatar currently was, when he started fleeing
+    /// </summary>
     public RegionController fireRegion { get; private set; }
+
+    /// <summary>
+    /// The activity that the avatar currently did, when he started fleeing
+    /// </summary>
     public ObjectController activityBeforePanic { get; private set; }
+
+    /// <summary>
+    /// Says if we arrived at the rallying point
+    /// </summary>
     public bool arrivedAtRP { get; set; }
+
+    /// <summary>
+    /// Stops doing everything, when activated
+    /// </summary>
     public bool stopNow { get; set; }
+
+    /// <summary>
+    /// This is the activity that represents himself. Will probably be his own talkdestination
+    /// </summary>
     public ObjectController myActivity { get; private set; }
+
+    /// <summary>
+    /// Determines, if the Start() method has been started
+    /// </summary>
     public bool started { get; set; }
+
+    /// <summary>
+    /// Determines if this is a vehicle
+    /// </summary>
     public bool vehicle { get; private set; }
 
     #endregion
@@ -222,6 +292,7 @@ public class ActivityController : MonoBehaviour {
     private GameObject rightHand;
     private GameObject myBubble;
     private GameObject exMark;
+    private GameObject looker;
 
     private RegionController oldRegion;
 
@@ -230,7 +301,6 @@ public class ActivityController : MonoBehaviour {
     private ActivityController myLeader;
     private ObjectController interruptedFor;
     private Coroutine startGoingRoutine;
-    private GameObject looker;
     #endregion
 
     /// <summary>
@@ -292,7 +362,12 @@ public class ActivityController : MonoBehaviour {
 
     #region NORMAL WORKFLOW
 
-    // Set a target
+    /// <summary>
+    /// Retrieves a new activity
+    /// This can be from the next activity assigned in the inspector, or from this region, or from another region
+    /// Goes into a waiting state, when no activity could be found
+    /// Afterwards decides what to do next, start going or start doing
+    /// </summary>
     private void setTarget() {
 
         if(startGoingRoutine != null) {
@@ -350,7 +425,13 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
-    // START GOING
+    /// <summary>
+    /// Checking things, like...
+    /// ... if this is the player
+    /// ... we still have no target
+    /// ... we still slide
+    /// Then starts startGoing
+    /// </summary>
     public void prepareGoing() {
 
         if(isPlayer) return;
@@ -375,6 +456,10 @@ public class ActivityController : MonoBehaviour {
         startGoingRoutine = StartCoroutine(startGoing());
     }
 
+    /// <summary>
+    /// Starts the NavAgent and the walk animation
+    /// Also checks the current activity for a start delay
+    /// </summary>
     private IEnumerator startGoing() {
 
         // Wait for the start delay
@@ -416,7 +501,11 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
-    // Arrived
+    /// <summary>
+    /// Checks where the avatar arrived, destination bubble, or destination activity
+    /// Will start stopGoing and startDoing, when it's the destination activity
+    /// </summary>
+    /// <param name="other">The collider that we touched</param>
     private void OnTriggerEnter(Collider other) {
 
         // When this is a destination-bubble, then set a new target and destroy this bubble
@@ -460,6 +549,10 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Stops going
+    /// Stops the walking animation and the NavAgent
+    /// </summary>
     private void stopGoing() {
 
         log4Me($"I stopped Going#Detail10Log");
@@ -487,7 +580,22 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
-    // Continues with the next activity, after the "useage"-time of the activity endet
+    /// <summary>
+    /// Starts doing the current activity
+    /// Gets the information needed for the correct usage from the ObjectController of the activity and then...
+    /// ...activates the object
+    /// ...becomes a ghost if necessary
+    /// ...activates the animation
+    /// ...slides to a place if necessary
+    /// ...organizes a groupactivity if necessary
+    /// ...spawns a tool if necessary
+    /// 
+    /// Then starts the activity time loop, wich has a refresh rate to
+    /// ...check the remaining activity time and
+    /// ...check the current state and
+    /// ...fulfilles the rotation to fulfill for this activity
+    /// After that, stopDoing is called
+    /// </summary>
     private IEnumerator startDoing() {
 
         /*
@@ -617,6 +725,10 @@ public class ActivityController : MonoBehaviour {
         stopDoing();
     }
 
+    /// <summary>
+    /// Prepares the termination of the current activity
+    /// Calls continueWhenDoneStopping afterwards
+    /// </summary>
     private void stopDoing() {
 
         log4Me($"stops doing {CurrentActivity.name}#Detail10Log");
@@ -648,6 +760,16 @@ public class ActivityController : MonoBehaviour {
         StartCoroutine(continueWhenDoneStopping());
     }
 
+    /// <summary>
+    /// Because you can't just immediatly stop everything, we look here if some things have to finish first.
+    /// This can be...
+    /// ...when we still are in a transition in the animator
+    /// ...when we have to wait for the exit time in the animator
+    /// ...when the object we activated, still isn't finished with activating yet
+    /// ...when we have to wait in the context of a groupactivity, that everyone has started participating
+    /// 
+    /// After this, setTarget will be called and everything starts over again
+    /// </summary>
     private IEnumerator continueWhenDoneStopping() {
 
         log4Me($"Started Coroutine continueWhenDoneStopping()#Detail10Log");
@@ -690,6 +812,9 @@ public class ActivityController : MonoBehaviour {
     #endregion
     #region HELPER METHODS
 
+    /// <summary>
+    /// Will stop all coroutines that are listet in here
+    /// </summary>
     private void stopCoroutines() {
 
         if (doingRoutine != null) {
@@ -706,6 +831,11 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Goes through all participants we have and checks if they all started
+    /// Calls deOrganize() afterwards
+    /// </summary>
+    /// <returns>false, when someone still hasn't started. Else, true</returns>
     private bool allParticipantsStartedAndDeorganize() {
         
         if(iAmParticipant || myParticipants == null) return true;
@@ -733,6 +863,10 @@ public class ActivityController : MonoBehaviour {
         return true;
     }
 
+    /// <summary>
+    /// De-organizes a groupactivity, wich means to remove myself as his leader and to forget him as participant
+    /// Also passes panic on to them
+    /// </summary>
     private void deOrganize() {
         
         if(myParticipants == null) return;
@@ -754,7 +888,10 @@ public class ActivityController : MonoBehaviour {
         myParticipants = null;
     }
 
-    // When this is a group activity, then it has to be organized (pick and interrupt the others, etc)
+    /// <summary>
+    /// Organizes a group activity, participants have to be picked and interrupted
+    /// Will pick the participants from this region only
+    /// </summary>
     private void organizeGroupActivity() {
 
         log4Me($"Organizing {CurrentActivity.name}");
@@ -824,7 +961,13 @@ public class ActivityController : MonoBehaviour {
         
     }
 
-    // Does the activity still have children?
+    /// <summary>
+    /// Checks if this activity still has childactivities
+    /// When an activity is done and there are still childactivities, then the avatar has to pick them as next activity.
+    /// When all childDestinations are done, it will check if there are loops registered in the lowest childDestination, if yes, then it starts with the highest parent activity again
+    /// This creats a waypoint system with childactivities. It is used by vehicles and walkDestinations
+    /// </summary>
+    /// <returns>True, when there are childDestinations or loops. False, when not</returns>
     private bool checkFurtherChildDestinations() {
 
         // Ignore children and loops, when activityChangeRequested == true
@@ -862,6 +1005,11 @@ public class ActivityController : MonoBehaviour {
         return false;
     }
 
+    /// <summary>
+    /// Puts the tool in one hand.
+    /// A tool has to be available
+    /// </summary>
+    /// <param name="handToUse">The hand, where to put our tool in</param>
     private void putToolInHand(ObjectController.HandUsage handToUse) {
 
         if (vehicle)
@@ -873,6 +1021,11 @@ public class ActivityController : MonoBehaviour {
                                         rightHand.transform.position);
     }
 
+    /// <summary>
+    /// Adjusts the rotation and position of the tool
+    /// Is called from the activity time loop, so a tool will stay placed, so it looks like the avatar holds it
+    /// How to adjust the tool, depends on the number of hands to use for this tool
+    /// </summary>
     private void adjustTool() {
 
         if (tool == null)
@@ -911,6 +1064,12 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Returns the hand of the given side of the avatar
+    /// Attention: The finding depends on the specific name pattern as you can see below, so when you use another type of avatar with other hand names, then you will have to adjust this
+    /// </summary>
+    /// <param name="side">The side of the body, where the hand shall be searched</param>
+    /// <returns>the hand of the given side of the avatar</returns>
     private GameObject getHand(string side) {
         GameObject found = null;
 
@@ -926,6 +1085,9 @@ public class ActivityController : MonoBehaviour {
         return found;
     }
 
+    /// <summary>
+    /// Initializes the tool and hands for further usage
+    /// </summary>
     private void setToolAndHandsFields() {
 
         if (CurrentActivity.toolToUse == null) {
@@ -953,7 +1115,16 @@ public class ActivityController : MonoBehaviour {
         rightHand = getHand("Right");
     }
 
-    // Interruption with resistance
+    /// <summary>
+    /// Requests an activity change with a given activity
+    /// This is the correct interface for other avatars to try to interrupt this avatar with
+    /// Do not use interruptWith() or interrupt() from other avatars
+    /// Will check if the activity of the requester is important enough to interrupt the current activity of this avatar
+    /// Gets the priorities from the ObjectControllers and matches them
+    /// </summary>
+    /// <param name="activity">The activity, the requester wants to do this avatar</param>
+    /// <param name="requester">The other avatar, that wants to interrupt this avatar</param>
+    /// <returns>If the interruption was succesfull or not</returns>
     private bool requestActivityChangeFor(ObjectController activity, ActivityController requester) {
 
         if(activity == null) Debug.LogError($"{name}: {requester.name} tried to interrupt me with a null activity");
@@ -979,8 +1150,13 @@ public class ActivityController : MonoBehaviour {
 
         return false;
     }
-    
-    // Interruption without resistance
+
+    /// <summary>
+    /// This is an interruption with a certain activity with no resistance
+    /// Use requestActivityChangeFor() from other avatars, to prevent that avatars get interrupted all the time
+    /// Sets the given activity as the next one and calls interrupt()
+    /// </summary>
+    /// <param name="activity">The activity to do next</param>
     public void interruptWith(ObjectController activity) {
         
         if(activity == null) Debug.LogError($"{name}: activity war null in interruptWith()");
@@ -994,6 +1170,12 @@ public class ActivityController : MonoBehaviour {
         interrupt();
     }
 
+    /// <summary>
+    /// Interrupts the current activity and proceeds with the next one (wich setTarget() will find out)
+    /// There are two cases to look at for interruption:
+    /// While doing something, set the flag activityChangeRequested, so the activitytime-loop will notice it and stop
+    /// While going somewhere, just stop going and find something new in setTarget()
+    /// </summary>
     private void interrupt() {
 
         log4Me($"I'm interrupting myself");
@@ -1014,11 +1196,24 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Interruptions from another script
+    /// Is only here, because I wanted to control from where interruptions can come
+    /// </summary>
     public void interruptFromOutside() {
 
         interrupt();
     }
 
+    /// <summary>
+    /// Retrieves from the ObjectController, where to look at when arrived at the place
+    /// Can do no looking
+    /// Can look at the target
+    /// Can look at the next childactivity
+    /// Can do a relative rotation to the targetobject
+    /// 
+    /// Uses slerp. The slerp is repeadetly called by the activity time loop.
+    /// </summary>
     private void organizeLookRotation() {
 
         if(CurrentActivity.noTurning) return;
@@ -1054,6 +1249,13 @@ public class ActivityController : MonoBehaviour {
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed);
     }
 
+    /// <summary>
+    /// A helper method for the lookat-rotation
+    /// Creates an empty gameobject, lets it look at the given target, als return the correct rotation for a usage in slerp
+    /// This trick became necessary, because Transform.LookAt() does the rotation immediatly, but I wanted to have a smooth rotation
+    /// </summary>
+    /// <param name="targetPos">The target to look at</param>
+    /// <returns>The "lookAt"-Quaternionrotation</returns>
     private Quaternion getLookAtRotation(Vector3 targetPos) {
 
         // Let the looker look at the target
@@ -1073,7 +1275,7 @@ public class ActivityController : MonoBehaviour {
     }
 
     /// <summary>
-    /// This moves the Avatar in a given vector, after a delay of 5 seconds.
+    /// After a delay, this moves the Avatar to a given vector relative to the workplace of the current activity
     /// <param name="toMoveVector">Says if we must move towards the movevector or back</param>
     /// </summary>
     private IEnumerator slideToPlace(bool toMoveVector) {
@@ -1104,6 +1306,13 @@ public class ActivityController : MonoBehaviour {
         yield return 0;
     }
 
+    /// <summary>
+    /// Creates a destinationBubble
+    /// Such a bubble is created, when the avatar has to walk to a unstatic destination, wich could be gone when arrived
+    /// Normally, the avatar would just collide with the trigger collider of the destination, but when nothing is there, then nothing will happen.
+    /// So for movable destinations, this bubble is created and will indicate when arrived at the destination without colliding with the target
+    /// The destinationBubble should of course be smaller the the target's trigger collider to prevent that the avatar thinks that nothing is there, although the destination is there
+    /// </summary>
     private void createBubble() {
 
         myBubble = Instantiate(bubble);
@@ -1113,6 +1322,9 @@ public class ActivityController : MonoBehaviour {
         log4Me($"instantiated a bubble at {myBubble.transform.position}");
     }
 
+    /// <summary>
+    /// Removes the destination bubble
+    /// </summary>
     private void destroyBubble() {
 
         log4Me($"Destroying my bubble --- ({myBubble.name})");
@@ -1120,6 +1332,9 @@ public class ActivityController : MonoBehaviour {
         myBubble = null;
     }
 
+    /// <summary>
+    /// Removes the tool that the avatar has in his hands
+    /// </summary>
     private void destroyTool() {
 
         if(tool == null) return;
@@ -1129,6 +1344,12 @@ public class ActivityController : MonoBehaviour {
         tool = null;
     }
 
+    /// <summary>
+    /// Check if the current activity of the avatar of a found talkdestination is low enough to start this activity
+    /// This currently is only for talkdestination, but sould generally for all destination that another avatar represents, like maybe kissing someone or shoving someone. everything where the activity is the avatar itself
+    /// </summary>
+    /// <param name="found">The own activity of another avatar</param>
+    /// <returns>a priority number for comparison</returns>
     private static int getPartnerPriority(ObjectController found) {
 
         int partnerPriority = -1;
@@ -1149,34 +1370,39 @@ public class ActivityController : MonoBehaviour {
 
     /// <summary>
     /// Starts calling the fire department
+    /// This is a relict from "Avatare in Serious Games" and could be done differently
+    /// Is left in here because it works
     /// </summary>
     private void callFireDepartment() {
 
         smartphone = getLeftSmartphone();
 
         // He must have a smartphone
-        if (smartphone != null) {
+        if (smartphone == null) return;
 
-            log4Me($"I'm calling the Firedepartment");
+        log4Me($"I'm calling the Firedepartment");
 
-            // Stop
-            navComponent.enabled = true;
-            navComponent.isStopped = true;
+        // Stop
+        navComponent.enabled = true;
+        navComponent.isStopped = true;
 
-            // Do calling animation
-            animator.SetBool("call", true);
-            smartphone.gameObject.SetActive(true);
-            smartphone.gameObject.GetComponent<MeshRenderer>().enabled = true;
+        // Do calling animation
+        animator.SetBool("call", true);
+        smartphone.gameObject.SetActive(true);
+        smartphone.gameObject.GetComponent<MeshRenderer>().enabled = true;
 
-            // Resume after some secs
-            StartCoroutine(resumeFromCalling(10));
-        }
+        // Resume after some secs
+        StartCoroutine(resumeFromCalling(10));
     }
 
     /// <summary>
-    /// Get's the left hand smartphone, it's attached to the left hand for realistic movement while calling
+    /// Get's the left hand smartphone wich is hidden deeply in the hierarchy of the avatar
+    /// It will be attached to the left hand for realistic movement while calling
+    /// This is a relict from "Avatare in Serious Games" and is only kept here,
+    /// because it is used for the calling of the fire department and still works well.
+    /// This should actually be an activity with ObjectController
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The Transform of the hand</returns>
     private Transform getLeftSmartphone() {
 
         return transform
@@ -1194,9 +1420,9 @@ public class ActivityController : MonoBehaviour {
     /// <summary>
     /// Resumes on the navMesh after a given amount of seconds, informs the gamelogic the firefighters are called
     /// and hides the smartphone again
+    /// This is a relict from "Avatare in Serious Games"
     /// </summary>
-    /// <param name="seconds"></param>
-    /// <returns></returns>
+    /// <param name="seconds">The seconds to wait</param>
     private IEnumerator resumeFromCalling(int seconds) {
 
         yield return new WaitForSeconds(seconds);
@@ -1205,6 +1431,9 @@ public class ActivityController : MonoBehaviour {
         myRegion.getMaster().called(this);
     }
 
+    /// <summary>
+    /// Gets the next activity and saves the last one
+    /// </summary>
     private void tryNextInQueue() {
 
         log4Me(
@@ -1229,13 +1458,22 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Calls findTarget() in the current region
+    /// </summary>
     private void findTarget() {
 
         findTargetIn(myRegion);
     }
 
-    // Finds a destination. Gets the whole list of destinations for this region, and one "outside"-destination, wich means "change the region".
-    // When the Avatar gets "outside", he will pick a destination in that new region
+    /// <summary>
+    /// Finds a destination.
+    /// Gets the whole list of activities for a given region, and one "outside"-destination, wich means "change the region"
+    /// When we have to change the region, we will call this method again for that region
+    /// After that, we take a random activity from it and call activityIsOK(), wich checks if the activity is ok to start
+    /// When the activity is ok, then set the CurrentActivity field
+    /// </summary>
+    /// <param name="forRegion">The region to search in</param>
     private void findTargetIn(RegionController forRegion) {
 
         if (forRegion == null) {
@@ -1315,17 +1553,29 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Tries to find a new activity after some time
+    /// Is called from setTarget(), when we could not find an activity
+    /// </summary>
+    /// <param name="waitTime">The time to wait</param>
     private IEnumerator tryAgainAfterTime(float waitTime) {
 
         retries++;
 
-        if (retries >= 5) Debug.LogError($"{name} could not find any target after {retries} tries");
+        if (retries >= 5) Debug.LogWarning($"{name} could not find any target after {retries} tries");
 
         yield return new WaitForSeconds(waitTime);
 
         setTarget();
     }
 
+    /// <summary>
+    /// Checks if an activity is ok to start with
+    /// There is a Hashtable below, in wich criteria can be placed in, wich all will be checked
+    /// The hashtable consists of an error string that will be logged, when the activity was not ok, and of a bool statement that has to be fulfilled
+    /// </summary>
+    /// <param name="activity2Check">The activity to check</param>
+    /// <returns>If the checking for this activity was successfull</returns>
     private bool activityIsOK(ObjectController activity2Check) {
 
         log4Me($"checking {activity2Check.name}#Detail10Log");
@@ -1369,6 +1619,12 @@ public class ActivityController : MonoBehaviour {
         return allCriteriaOK;
     }
 
+    /// <summary>
+    /// Sets the regions of this avatar
+    /// Also checks bidirectional, to prevent that only one side knows the other
+    /// Also check if we are outside, when the region was set to null
+    /// </summary>
+    /// <param name="rc">The RegionController of the new region, wich can be null.</param>
     public void setRegion(RegionController rc) {
         
         if(isPlayer) return;
@@ -1387,6 +1643,12 @@ public class ActivityController : MonoBehaviour {
         StartCoroutine(checkIfOutside());
     }
 
+    /// <summary>
+    /// Checks if the avatar is outside
+    /// That means if he is not registered in any region
+    /// Then register in the outside area
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator checkIfOutside() {
 
         // This waiting is because of the beginning, this could immediatly register outside, before the normal regionregistration can happen
@@ -1405,11 +1667,19 @@ public class ActivityController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Return the current region
+    /// </summary>
+    /// <returns>the current region</returns>
     public RegionController getRegion() {
 
         return myRegion;
     }
 
+    /// <summary>
+    /// Starts the behaviour, that has to be done, when the avatar saw a fire
+    /// This will lead to fleeing and panic
+    /// </summary>
     public void sawFire() {
         
         fireSeen = true;
@@ -1422,6 +1692,11 @@ public class ActivityController : MonoBehaviour {
         flee();
     }
 
+    /// <summary>
+    /// Starts fleeing to a rallying point
+    /// Will lead to panic
+    /// The avatar will memorize in wich state he was at this time, wich will be user in the dialogs with the player later on
+    /// </summary>
     public void flee() {
 
         if (arrivedAtRP || Panic || vehicle) return;
@@ -1439,6 +1714,10 @@ public class ActivityController : MonoBehaviour {
         setPanicAndInterrupt();
     }
 
+    /// <summary>
+    /// Get panic and interrupt the current activity
+    /// setTarget() will then find the correct next activity to do
+    /// </summary>
     public void setPanicAndInterrupt() {
         
         Panic = true;
@@ -1448,7 +1727,9 @@ public class ActivityController : MonoBehaviour {
         interruptWith(myRegion.getRallyingPoint());
     }
 
-    // Do a surprised stopping movement
+    /// <summary>
+    /// Does a surprised stopping movement
+    /// </summary>
     private void doSurprisedStoppingMovement() {
 
         log4Me($"Doing Surprised animation#Detail10Log");
@@ -1460,6 +1741,15 @@ public class ActivityController : MonoBehaviour {
         animator.applyRootMotion = false;
     }
 
+    /// <summary>
+    /// This is the personal logging method for this avatar
+    /// Useful information is also attached to the logstring
+    /// Will be shown in the debug window in the scene view
+    /// linenumber and caller are found automaticly and don't have to be provided as parameters
+    /// </summary>
+    /// <param name="logString">The string to log</param>
+    /// <param name="lineNumber">The lineNumber of the caller. Does not have to be provided</param>
+    /// <param name="caller">The calling method. Does not have to be provided</param>
     public void log4Me(string logString, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = null) {
 
         if(log == null) log = new List<string>();
@@ -1468,10 +1758,14 @@ public class ActivityController : MonoBehaviour {
 
         if (logString != secondToLastMessage && logString != lastMessage) log.Add(toLog);
 
+        // To prevent the same logline thousand times
         secondToLastMessage = lastMessage;
         lastMessage = logString;
     }
 
+    /// <summary>
+    /// Will remove the panic after 2 seconds
+    /// </summary>
     private IEnumerator setPanicFalseAfterDelay() {
 
         yield return new WaitForSeconds(2);
@@ -1479,11 +1773,21 @@ public class ActivityController : MonoBehaviour {
         Panic = false;
     }
 
+    /// <summary>
+    /// Return the nav mesh agent
+    /// </summary>
+    /// <returns>the nav mesh agent</returns>
     public NavMeshAgent getNavMeshAgent() {
 
         return navComponent;
     }
 
+    /// <summary>
+    /// This slow coroutine checks if the avatar arrived at his navmesh destination, but didn't collide with a trigger collider
+    /// Unfortunatly, there still are some cases where this can happen, for example when the avatar already stand inside of the collider he wants to go, when he starts going, so OnTriggerEnter() was already called long ago and does not react anymore
+    /// In that case, OnTriggerStay will be checked once, to see if we already stand in the target collider.
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator noCollisionChecker() {
 
         /*
@@ -1520,6 +1824,9 @@ public class ActivityController : MonoBehaviour {
         log4Me($"NoCollisionChecker stopped #####################################");
     }
 
+    /// <summary>
+    /// Spawns the exclamation mark above the head of the avatar
+    /// </summary>
     private void createExclamationMark() {
 
         exMark = Instantiate(exclamationMark);
@@ -1528,12 +1835,21 @@ public class ActivityController : MonoBehaviour {
         exMark.transform.localEulerAngles = Vector3.zero;
     }
 
+    /// <summary>
+    /// Removes the exclamation mark above the head of the avatar
+    /// </summary>
     public void removeExclamationMark() {
 
         Destroy(exMark);
         exMark = null;
     }
 
+    /// <summary>
+    /// Check if we are in a collider already
+    /// This method will do nothing most of the time, because it's very expensive
+    /// Calls OnTriggerEnter()
+    /// </summary>
+    /// <param name="other">The collider we collide with</param>
     private void OnTriggerStay(Collider other) {
 
         if(!checkOnTriggerStay) return;
@@ -1541,6 +1857,9 @@ public class ActivityController : MonoBehaviour {
         OnTriggerEnter(other);
     }
 
+    /// <summary>
+    /// Do the things that have to be done, when arrived at the rallying point
+    /// </summary>
     public void doRallyingPointStuff() {
 
         log4Me($"I'm now doing rallying point stuff");
