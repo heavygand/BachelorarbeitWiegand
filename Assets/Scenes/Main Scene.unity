@@ -296,18 +296,9 @@ Prefab:
       propertyPath: m_RootOrder
       value: 18
       objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: currentActivity
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
       propertyPath: m_Name
       value: Testavatar (9)
-      objectReference: {fileID: 0}
-    - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
@@ -350,6 +341,36 @@ Prefab:
     - target: {fileID: 4415539660524260, guid: ae14cf88293d6454d835fb693610e9f5, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4599225741222584, guid: ae14cf88293d6454d835fb693610e9f5, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: -0.14
+      objectReference: {fileID: 0}
+    - target: {fileID: 4599225741222584, guid: ae14cf88293d6454d835fb693610e9f5, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: -0.013
+      objectReference: {fileID: 0}
+    - target: {fileID: 136574639449638984, guid: ae14cf88293d6454d835fb693610e9f5,
+        type: 2}
+      propertyPath: m_Center.y
+      value: -0.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 136574639449638984, guid: ae14cf88293d6454d835fb693610e9f5,
+        type: 2}
+      propertyPath: m_Center.z
+      value: -0.44
+      objectReference: {fileID: 0}
+    - target: {fileID: 4599225741222584, guid: ae14cf88293d6454d835fb693610e9f5, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: -0.007
+      objectReference: {fileID: 0}
+    - target: {fileID: 1618858504821394, guid: ae14cf88293d6454d835fb693610e9f5, type: 2}
+      propertyPath: m_StaticEditorFlags
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1518884046442782, guid: ae14cf88293d6454d835fb693610e9f5, type: 2}
+      propertyPath: m_StaticEditorFlags
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ae14cf88293d6454d835fb693610e9f5, type: 2}
@@ -3546,6 +3567,11 @@ Prefab:
       propertyPath: showDebugWindow
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114927532352289256, guid: be9632bf9e8c8694c956e01f61daba6e,
+        type: 2}
+      propertyPath: currentActivity
+      value: 
+      objectReference: {fileID: 741102750}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: be9632bf9e8c8694c956e01f61daba6e, type: 2}
   m_IsPrefabParent: 0
@@ -3802,15 +3828,6 @@ Prefab:
       propertyPath: m_Name
       value: Testavatar (7)
       objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: currentActivity
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
   m_IsPrefabParent: 0
@@ -3999,15 +4016,6 @@ Prefab:
     - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
       propertyPath: m_Name
       value: Testavatar (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: currentActivity
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
@@ -4207,6 +4215,12 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
   m_IsPrefabParent: 0
+--- !u!114 &741102750 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114076218692181458, guid: ae14cf88293d6454d835fb693610e9f5,
+    type: 2}
+  m_PrefabInternal: {fileID: 213455832}
+  m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
 --- !u!4 &763598742 stripped
 Transform:
   m_PrefabParentObject: {fileID: 400000, guid: f4cd6466af349d6409015b3580aee3ad, type: 3}
@@ -4531,20 +4545,6 @@ Prefab:
       propertyPath: m_Name
       value: Testavatar (8)
       objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: currentActivity
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 54741491488447444, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: m_UseGravity
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
   m_IsPrefabParent: 0
@@ -4868,35 +4868,35 @@ Prefab:
       objectReference: {fileID: 1861118092}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 23.44
+      value: 1.67
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalRotation.x
-      value: -0.029038353
+      value: -0.10874609
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalRotation.y
-      value: -0.9709611
+      value: -0.7601732
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalRotation.z
-      value: 0.16844723
+      value: 0.13187881
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalRotation.w
-      value: -0.16738246
+      value: -0.6268326
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -199.562
+      value: -259.017
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 10.3
+      value: 61.7
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 22.84
+      value: -15.1
       objectReference: {fileID: 0}
     - target: {fileID: 4350166798434974, guid: 1b1f4e3644ffcd84dbc99adad6b3973f, type: 2}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -5129,12 +5129,6 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: be9632bf9e8c8694c956e01f61daba6e, type: 2}
   m_IsPrefabParent: 0
---- !u!114 &1478906624 stripped
-MonoBehaviour:
-  m_PrefabParentObject: {fileID: 114929831954302596, guid: c3942e889db52b94888ce6de139f19ab,
-    type: 2}
-  m_PrefabInternal: {fileID: 2050131069}
-  m_Script: {fileID: 11500000, guid: 350cadb091da7b44a967e3dd455f2684, type: 3}
 --- !u!1001 &1500901361
 Prefab:
   m_ObjectHideFlags: 0
@@ -5177,20 +5171,6 @@ Prefab:
     - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
       propertyPath: m_Name
       value: Testavatar (5)
-      objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: currentActivity
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: nextActivity
-      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
@@ -5432,11 +5412,6 @@ Prefab:
       propertyPath: m_Name
       value: Testavatar (2)
       objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: currentActivity
-      value: 
-      objectReference: {fileID: 1478906624}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
   m_IsPrefabParent: 0
@@ -6075,15 +6050,6 @@ Prefab:
     - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
       propertyPath: m_Name
       value: Testavatar (3)
-      objectReference: {fileID: 0}
-    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
-        type: 2}
-      propertyPath: currentActivity
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1294240275387604, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}

@@ -350,11 +350,11 @@ public class ActivityController : MonoBehaviour {
 
             Debug.LogWarning($"Achtung: {name} hat keine Talkdestination, d.h. dieser Avatar kann nicht angesprochen werden.");
         }
-        if (bubble == null) {
+        if (!vehicle && bubble == null) {
 
             Debug.LogError($"Fehler: {name} hat keine Destination Bubble im Inspector bekommen, weise das Prefab unter Prefabs/Attenders im Inspektor zu");
         }
-        if (exclamationMark == null) {
+        if (!vehicle && exclamationMark == null) {
 
             Debug.LogWarning($"Achtung: {name} hat kein Ausrufezeichen im Inspector bekommen, weise das Prefab unter Prefabs/Attenders im Inspektor zu");
         }
@@ -1588,7 +1588,8 @@ public class ActivityController : MonoBehaviour {
                 "Activity shall not be the the own activity",
                 !(activity2Check.isAvatar && activity2Check.getAvatar() == this)
             }, {
-                "Activity was occupied by "+(activity2Check.CurrentUser!=null?activity2Check.CurrentUser.name:"WTF a GHOST!"), activity2Check.CurrentUser == null
+                "Activity was occupied by "+(activity2Check.CurrentUser!=null?activity2Check.CurrentUser.name:"a GHOST!"),
+                (activity2Check.CurrentUser == null || activity2Check.multiUserActivity)
             }, {
                 "Activity must be important enough for the partner",
                 getPartnerPriority(activity2Check) < activity2Check.Priority
@@ -1648,7 +1649,6 @@ public class ActivityController : MonoBehaviour {
     /// That means if he is not registered in any region
     /// Then register in the outside area
     /// </summary>
-    /// <returns></returns>
     private IEnumerator checkIfOutside() {
 
         // This waiting is because of the beginning, this could immediatly register outside, before the normal regionregistration can happen
