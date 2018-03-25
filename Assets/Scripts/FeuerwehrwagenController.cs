@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Organizes the lights and the siren of the Firefighter Truck
+/// 
+/// Author: Christian Wiegand
+/// Matrikelnummer: 30204300
+/// </summary>
 public class FeuerwehrwagenController : MonoBehaviour {
 
     public GameObject licht1;
@@ -28,6 +34,10 @@ public class FeuerwehrwagenController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Rotates the blue lights
+    /// </summary>
+    /// <param name="licht">Wich light?</param>
     private void rotate(GameObject licht) {
 
         Quaternion wrongTargetRot = licht.transform.rotation;
@@ -39,6 +49,9 @@ public class FeuerwehrwagenController : MonoBehaviour {
         licht.transform.rotation = Quaternion.Slerp(licht.transform.rotation, targetRot, 0.15f);
     }
 
+    /// <summary>
+    /// Mutes the Siren
+    /// </summary>
     public void muteSiren() {
 
         GetComponent<AudioSource>().Stop();

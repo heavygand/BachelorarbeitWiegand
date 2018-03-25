@@ -3782,6 +3782,11 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114378850510226326, guid: cfe20598dceb14a41ab6d94e8f1e102e,
+        type: 2}
+      propertyPath: showDebugWindow
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: cfe20598dceb14a41ab6d94e8f1e102e, type: 2}
   m_IsPrefabParent: 0
@@ -4438,6 +4443,11 @@ Prefab:
     - target: {fileID: 1971464618436650, guid: be9632bf9e8c8694c956e01f61daba6e, type: 2}
       propertyPath: m_Name
       value: Testavatar (16)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114927532352289256, guid: be9632bf9e8c8694c956e01f61daba6e,
+        type: 2}
+      propertyPath: showDebugWindow
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: be9632bf9e8c8694c956e01f61daba6e, type: 2}
