@@ -3,18 +3,47 @@ using System.IO;
 using Fungus;
 using UnityStandardAssets.Characters.FirstPerson;
 
+/// <summary>
+/// Organizes all interaction of the player with avatars
+/// 
+/// Author: Christian Wiegand
+/// Matrikelnummer: 30204300
+/// </summary>
 public class InteractionController : MonoBehaviour {
 
+    /// <summary>
+    /// This is the length of the raycast, that finds avatars
+    /// </summary>
     public float distanceToSee;
+
+    /// <summary>
+    /// The name of the selected avatar will show up in the inspector
+    /// </summary>
     public string ObjectName = "nothing";
+
+    /// <summary>
+    /// Essential: The Fungus Flowchart
+    /// </summary>
     public Flowchart flowchart;
+
+    /// <summary>
+    /// The local directory where the dialog text files are
+    /// </summary>
     public string dialogDirectory;
+
+    /// <summary>
+    /// A gameobject that indicates wich avatar is currently selected
+    /// </summary>
     public GameObject sprechenText;
 
     private Material originalMaterial, tempMaterial;
     private Renderer rend;
 
     private ActivityController selAv;
+    /// <summary>
+    /// The currently selected avatar
+    /// This also organizes the showing of the selectiontext
+    /// </summary>
     public ActivityController selectedAvatar
     {
         get
@@ -40,8 +69,18 @@ public class InteractionController : MonoBehaviour {
     private FirstPersonController fpc;
     private UnityStandardAssets.Characters.FirstPerson.MouseLook mouseLook;
     private GameObject lastRend;
+    private GameObject textGO;
     private static string[] dialogFiles;
-    
+    private bool talking;
+    private bool isLocated;
+
+    /*
+     * 
+     * ###################
+     * Dialog text finding
+     * ###################
+     * 
+     */
     private string fullPath;
     private string DoingStart = "DOING:";
     private string GoingStart = "GOING:";
@@ -50,6 +89,7 @@ public class InteractionController : MonoBehaviour {
     private string StandardGreeting = "STANDARDGREETING:";
     private string FireSeenGreeting = "FIRESEENGREETING:";
     private string AlarmActivated = "ALARMACTIVATED:";
+    private string Nothing = "NOTHING:";
     private string doingStartText = "";
     private string goingStartText = "";
     private string endText = "";
@@ -57,12 +97,11 @@ public class InteractionController : MonoBehaviour {
     private string whereText = "";
     private string StandardGreetingText = "";
     private string FireSeenGreetingText = "";
+    private string nothingText = "";
 
-    private GameObject textGO;
-    private bool talking;
-    private bool isLocated;
-
-    // Init components
+    /// <summary>
+    /// Initialisation and validation
+    /// </summary>
     void Start() {
         
         me = gameObject.GetComponent<ActivityController>();
@@ -76,6 +115,7 @@ public class InteractionController : MonoBehaviour {
             Debug.LogError($"Could not find directory \"{dialogDirectory}\" under {Directory.GetCurrentDirectory()}.");
         }
         if (flowchart == null) Debug.LogError($"Fehler: First Person Controller hat keinen Flowchart zugewiesen bekommen im Inspektor. Bitte einen in die Szene hinzufügen und zuweisen");
+        if (sprechenText == null) Debug.LogWarning($"Warnung: First Person Controller hat kein GameObject, das markierte Avatare anzeigt zugewiesen bekommen im Inspektor. Bitte ein Prefab zuweisen");
     }
 
     #region AVATAR SELECTION
@@ -87,7 +127,9 @@ public class InteractionController : MonoBehaviour {
      * 
      */
 
-    // Update is called once per frame
+    /// <summary>
+    /// Update takes care of the raycast selection, key input, and that the text of the selected avatar looks at the camera
+    /// </summary>
     void Update() {
 
         if (Input.GetKeyDown(KeyCode.F)) {
@@ -97,15 +139,14 @@ public class InteractionController : MonoBehaviour {
 
         RaycastHit hitInfo;
 
-        //Draws ray in scene view during playmode; the multiplication in the second parameter controls how long the line will be
+        // Draws ray in scene view during playmode; the multiplication in the second parameter controls how long the line will be
         Debug.DrawRay(transform.position, transform.forward * distanceToSee, Color.magenta);
 
-        //A raycast returns a true or false value
-        //we  initiate raycast through the Physics class
-        //out parameter is saying take collider information of the object we hit, and push it out and 
-        //store is in the what I hit variable. The variable is empty by default, but once the raycast hits
-        //any collider, it's going to take the information, and store it in whatIHit variable. So then,
-        //if I wanted to access something, I could access it through the whatIHit variable. 
+        // A raycast returns a true or false value
+        // we  initiate raycast through the Physics class
+        // out parameter is saying take collider information of the object we hit, and push it out and 
+        // store it in the hitInfo variable. The variable is empty by default, but once the raycast hits
+        // any collider, it's going to take the information, and store it in hitInfo variable.
 
         if (Physics.Raycast(transform.position, transform.forward, out hitInfo, distanceToSee)) {
 
@@ -151,6 +192,9 @@ public class InteractionController : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Rotates the selectiontext towards the player
+    /// </summary>
     private void textLookAtCamera() {
 
         // Look at the Camera
@@ -164,6 +208,9 @@ public class InteractionController : MonoBehaviour {
             wrongTargetRot.eulerAngles.z);
     }
 
+    /// <summary>
+    /// Resets the selected avatar internally and in the flowchart variables
+    /// </summary>
     private void deselectAvatarAndFlowchart() {
 
         ObjectName = "nobody";
@@ -175,6 +222,10 @@ public class InteractionController : MonoBehaviour {
         flowchart.SetStringVariable("name", ObjectName);
     }
 
+
+    /// <summary>
+    /// Spawns the selectiontext correctly
+    /// </summary>
     private void showSelectText() {
 
         // When there is still a text somewhere
@@ -188,6 +239,10 @@ public class InteractionController : MonoBehaviour {
         textGO.transform.localPosition = new Vector3(0, 1.5f, 0);
     }
 
+
+    /// <summary>
+    /// Removes the selectiontext
+    /// </summary>
     private void removeSelectText() {
 
         if(textGO == null) return;
@@ -196,12 +251,21 @@ public class InteractionController : MonoBehaviour {
         textGO = null;
     }
 
+    /// <summary>
+    /// Switches between a locked camera with mouse and an unlocked camera with no mouse
+    /// This is for switching between the normal "first person mode" and the "dialog mode"
+    /// </summary>
     private void toggleMouseAndController() {
 
         me.log4Me($"toggleMouseAndController() called, so calling setControl({!fpc.enabled})");
         setControl(!fpc.enabled);
     }
 
+    /// <summary>
+    /// Sets a locked camera with mouse (false), or sets an unlocked camera with no mouse (true)
+    /// This is for switching between the normal "first person mode" and the "dialog mode"
+    /// </summary>
+    /// <param name="value">If an unlocked camera with no mouse shall be enabled</param>
     private void setControl(bool value) {
 
         mouseLook.SetCursorLock(value);
@@ -211,7 +275,9 @@ public class InteractionController : MonoBehaviour {
         me.log4Me($"fpc.enabled = {value} settet");
     }
 
-    // Set Fungus variables
+    /// <summary>
+    /// Sets the Fungus Flowchart variables with the data of the currently selected avatar
+    /// </summary>
     private void setFlowchart() {
 
         flowchart.SetBooleanVariable("avatarSelected", true);
@@ -228,6 +294,10 @@ public class InteractionController : MonoBehaviour {
      * 
      */
 
+    /// <summary>
+    /// Interrupts the currently selected avatar and reads the dialogtext-files
+    /// Also removes the selectiontext while in a dialog
+    /// </summary>
     public void interruptSelected() {
 
         me.log4Me("interruptSelected called");
@@ -259,6 +329,19 @@ public class InteractionController : MonoBehaviour {
         setControl(false);
     }
 
+    /// <summary>
+    /// Return the name of the currently selected avatar
+    /// </summary>
+    /// <returns>the name of the currently selected avatar</returns>
+    public string getName() {
+
+        return selectedAvatar.name;
+    }
+
+    /// <summary>
+    /// Returns the greeting text for the current case
+    /// </summary>
+    /// <returns>the greeting text for the current case</returns>
     public string getGreetingText() {
 
         if (selectedAvatar.FireSeen) {
@@ -269,6 +352,9 @@ public class InteractionController : MonoBehaviour {
         return StandardGreetingText;
     }
 
+    /// <summary>
+    /// Lets the avatar stop the talkdestination with the player and start something else
+    /// </summary>
     public void sendAway() {
 
         selectedAvatar.MyLeader = null;
@@ -281,6 +367,10 @@ public class InteractionController : MonoBehaviour {
         setControl(true);
     }
 
+    /// <summary>
+    /// Returns to the activity, that the avatar did, before he was interrupted
+    /// </summary>
+    /// <param name="person">The avatar that shall return</param>
     public void returnToActivity(ActivityController person) {
 
         person.MyLeader = null;
@@ -289,6 +379,9 @@ public class InteractionController : MonoBehaviour {
         person.removeExclamationMark();
     }
 
+    /// <summary>
+    /// Returns to the activity, that the selected avatar did, before he was interrupted be the player
+    /// </summary>
     public void returnToActivity() {
 
         returnToActivity(selectedAvatar);
@@ -298,6 +391,10 @@ public class InteractionController : MonoBehaviour {
         setControl(true);
     }
 
+    /// <summary>
+    /// Builds and returns the story of the avatar
+    /// </summary>
+    /// <returns>the story of the avatar</returns>
     public string wasErlebt() {
 
         ObjectController lastActivity;
@@ -307,7 +404,7 @@ public class InteractionController : MonoBehaviour {
 
             lastActivity = selectedAvatar.LastActivity;
             discription = lastActivity != null ? " "+lastActivity.discription+(lastActivity.isAvatar?" mit "+ lastActivity.getAvatar().name:"") : " [no activity found]";
-            return "Ich habe nichts erlebt. "+ (selectedAvatar.Going ? goingStartText : doingStartText) + discription;
+            return nothingText + " " + (selectedAvatar.Going ? goingStartText : doingStartText) + discription;
         }
 
         lastActivity = selectedAvatar.activityBeforePanic;
@@ -315,12 +412,19 @@ public class InteractionController : MonoBehaviour {
         return (selectedAvatar.wasWalking?goingStartText:doingStartText) + discription + endText + (selectedAvatar.activatedAlarm ? alarmActivatedText : "");
     }
 
+    /// <summary>
+    /// Return the text of the selected avatar, that contains fire information
+    /// </summary>
+    /// <returns></returns>
     public string whereFire() {
 
         fireIsLocated();
         return whereText;
     }
 
+    /// <summary>
+    /// Indicates to the attendant crowd, that the fireinformation has been given to the player
+    /// </summary>
     public void fireIsLocated() {
 
         if(isLocated) return;
@@ -344,6 +448,12 @@ public class InteractionController : MonoBehaviour {
      * ####################################
      * 
      */
+
+     /// <summary>
+     /// Looks for the given local dialog directory
+     /// </summary>
+     /// <param name="path">The path to look in recursively</param>
+     /// <returns>If the local dialog directory has been found</returns>
     private bool findDirectoryIn(string path) {//dialogDirectory
 
         string[] directories = Directory.GetDirectories(path);
@@ -364,6 +474,11 @@ public class InteractionController : MonoBehaviour {
         return false;
     }
 
+    /// <summary>
+    /// Gets the content of a certain file. Looks in the already existing list of dialogfiles
+    /// </summary>
+    /// <param name="file">The filename to search for</param>
+    /// <returns>A stringarray of all line in the found file</returns>
     public string[] getFile(string file) {
 
         foreach (string fullFileName in dialogFiles) {
@@ -378,6 +493,10 @@ public class InteractionController : MonoBehaviour {
         return null;
     }
 
+    /// <summary>
+    /// Reads text dialog values out of a set of string lines
+    /// </summary>
+    /// <param name="lines">The lines of a file as stringarray</param>
     public void getTextValues(string[] lines) {
         
         foreach (string line in lines) {
@@ -410,14 +529,30 @@ public class InteractionController : MonoBehaviour {
 
                 FireSeenGreetingText = substringAfter(line, FireSeenGreeting);
             }
+            else if (line.StartsWith(Nothing)) {
+
+                nothingText = substringAfter(line, Nothing);
+            }
         }
     }
 
+    /// <summary>
+    /// Delivers the substring after a certain string
+    /// </summary>
+    /// <param name="line">The stringline to search in</param>
+    /// <param name="afterWhat">The string after wich the text is desired</param>
+    /// <returns>The substring after the given string</returns>
     public static string substringAfter(string line, string afterWhat) {
 
         return line.Substring(line.IndexOf(afterWhat) + afterWhat.Length);
     }
 
+    /// <summary>
+    /// Delivers the substring after the last appearance of a certain string
+    /// </summary>
+    /// <param name="line">The stringline to search in</param>
+    /// <param name="afterWhat">The string after wich the text is desired</param>
+    /// <returns>The substring after the last appearance of the given string</returns>
     public static string substringAfterLast(string line, string afterWhat) {
 
         return line.Substring(line.LastIndexOf(afterWhat) + afterWhat.Length);

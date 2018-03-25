@@ -1,8 +1,4 @@
-﻿#pragma warning disable 1587
-/// <summary>
-/// </summary>
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;

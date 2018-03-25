@@ -3,6 +3,12 @@ function wiedersehen()
     player.returnToActivity()
 end
 
+function name()
+	tempvar = player.getName()
+	say "Mein Name ist {$tempvar}"
+	showmenu()
+end
+
 function weggehen()
 	say "Kein Problem! Wiedersehen."
 	player.sendAway()
@@ -28,10 +34,11 @@ function start()
 end
 
 function showmenu()
-	menu("Vielen Dank. Auf Wiedersehen.", wiedersehen)
-	menu("Bitte gehen Sie hier weg.", weggehen)
+	menu("Wie heißen Sie?", name)
 	menu("Was haben Sie erlebt?", wasErlebt)
 	menu("Wo ist das Feuer?", whereFire)
+	menu("Vielen Dank. Auf Wiedersehen.", wiedersehen)
+	menu("Bitte gehen Sie hier weg.", weggehen)
 end
 
 start()

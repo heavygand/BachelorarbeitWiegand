@@ -5,3 +5,4 @@ GOING:Ich war gerade unterwegs zum
 END:, da habe ich auf einmal den Feueralarm gehört! Dann bin ich nach draußen gelaufen.
 ALARMACTIVATED: Beim raus laufen, habe ich den Feueralarm aktiviert
 WHERE:Ich weiß es leider nicht.
+NOTHING:Ich habe nichts erlebt.
