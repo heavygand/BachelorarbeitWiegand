@@ -1280,6 +1280,7 @@ public class ActivityController : MonoBehaviour {
     /// </summary>
     private IEnumerator slideToPlace(bool toMoveVector) {
 
+        log4Me($"slideToPlace({toMoveVector}) aufgerufen#Detail10Log");
         Displaced = toMoveVector;
 
         // Delay
@@ -1296,7 +1297,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // Move to pos
-        while (Vector3.Distance(transform.position, targetPos) >= 0.05f) {
+        while (Vector3.Distance(transform.position, targetPos) >= 0.03f) {
 
             log4Me($"Sliding to place...#Detail10Log");
             transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime / 3);

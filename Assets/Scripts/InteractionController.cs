@@ -386,7 +386,7 @@ public class InteractionController : MonoBehaviour {
     }
 
     /// <summary>
-    /// Returns to the activity, that the selected avatar did, before he was interrupted be the player
+    /// Returns to the activity, that the selected avatar did, before he was interrupted by the player
     /// </summary>
     public void returnToActivity() {
 
