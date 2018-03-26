@@ -98,6 +98,8 @@ public class InteractionController : MonoBehaviour {
     private string StandardGreetingText = "";
     private string FireSeenGreetingText = "";
     private string nothingText = "";
+    private bool wasWalking;
+    private ObjectController lastActivity;
 
     /// <summary>
     /// Initialisation and validation
@@ -136,6 +138,13 @@ public class InteractionController : MonoBehaviour {
 
             toggleMouseAndController();
         }
+
+        if (textGO != null) {
+
+            textLookAtCamera();
+        }
+
+        if(talking) return;
 
         RaycastHit hitInfo;
 
@@ -184,11 +193,6 @@ public class InteractionController : MonoBehaviour {
         else {
 
             deselectAvatarAndFlowchart();
-        }
-
-        if (textGO != null) {
-
-            textLookAtCamera(); 
         }
     }
 
@@ -313,16 +317,18 @@ public class InteractionController : MonoBehaviour {
 
         talking = true;
         removeSelectText();
+        wasWalking = selectedAvatar.Going;
+        lastActivity = selectedAvatar.CurrentActivity;
 
         if (selectedAvatar.CurrentActivity != myTalkDestination && selectedAvatar.NextActivity != myTalkDestination) {
 
-            me.log4Me($"Trying to interrupt {selectedAvatar.name}");
+            me.log4Me($"Trying to interrupt {selectedAvatar.name}, who is currently {(wasWalking?"going":"doing")}");
             selectedAvatar.MyLeader = me;
             selectedAvatar.interruptWith(myTalkDestination);
         }
         else {
 
-            me.log4Me($"So {selectedAvatar.name} has my talkdestination");
+            me.log4Me($"{selectedAvatar.name} already has my talkdestination");
         }
 
         me.log4Me("setting control to false");
@@ -397,18 +403,15 @@ public class InteractionController : MonoBehaviour {
     /// <returns>the story of the avatar</returns>
     public string wasErlebt() {
 
-        ObjectController lastActivity;
-        string discription;
-
+        // When he hasn't expierienced anything
         if (selectedAvatar.activityBeforePanic == null) {
 
-            lastActivity = selectedAvatar.LastActivity;
-            discription = lastActivity != null ? " "+lastActivity.discription+(lastActivity.isAvatar?" mit "+ lastActivity.getAvatar().name:"") : " [no activity found]";
-            return nothingText + " " + (selectedAvatar.Going ? goingStartText : doingStartText) + discription;
+            return nothingText + " " + (wasWalking ? goingStartText : doingStartText) + " "+lastActivity.discription;
         }
 
+        // When he expierienced something
         lastActivity = selectedAvatar.activityBeforePanic;
-        discription = lastActivity != null ? " " + lastActivity.discription + (lastActivity.isAvatar ? " mit " + lastActivity.getAvatar().name : "") : " [no activity found]";
+        string discription = lastActivity != null ? " " + lastActivity.discription + (lastActivity.isAvatar ? " mit " + lastActivity.getAvatar().name : "") : " [no activity found]";
         return (selectedAvatar.wasWalking?goingStartText:doingStartText) + discription + endText + (selectedAvatar.activatedAlarm ? alarmActivatedText : "");
     }
 
@@ -449,11 +452,12 @@ public class InteractionController : MonoBehaviour {
      * 
      */
 
-     /// <summary>
-     /// Looks for the given local dialog directory
-     /// </summary>
-     /// <param name="path">The path to look in recursively</param>
-     /// <returns>If the local dialog directory has been found</returns>
+    /// <summary>
+    /// Looks for the given local dialog directory
+    /// Warning: no other path is allowed to contain a directory with the same name as in the variable dialogDirectory
+    /// </summary>
+    /// <param name="path">The path to look in recursively</param>
+    /// <returns>If the local dialog directory has been found</returns>
     private bool findDirectoryIn(string path) {//dialogDirectory
 
         string[] directories = Directory.GetDirectories(path);

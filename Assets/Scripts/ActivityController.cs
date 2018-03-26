@@ -167,7 +167,7 @@ public class ActivityController : MonoBehaviour {
             log4Me($"{(myLeader != null ? "My leader is now " + myLeader.name : "I have no leader anymore")}");
 
             if (myLeader != null)
-                myLeader.log4Me($"{(myLeader != null ? " I'm now the leader of " + name : "I'm not the leader of " + name + " anymore")}");
+                myLeader.log4Me($"{(myLeader != null ? "I'm now the leader of " + name : "I'm not the leader of " + name + " anymore")}");
         }
     }
 
