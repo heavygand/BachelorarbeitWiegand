@@ -38,7 +38,8 @@ public class ObjectController : MonoBehaviour {
 		typing,
 		call,
         throwOneHand,
-        pushButton
+        pushButton,
+        guitarPlaying
     }
 
     /// <summary>
@@ -255,8 +256,6 @@ public class ObjectController : MonoBehaviour {
 		internalLoops = loops;
 
 		avatar = gameObject.GetComponentInParent<ActivityController>();
-
-        if(isAvatar) name = $"{name} with {avatar.name}";
 
 		StartCoroutine(checkIfOutside());
 

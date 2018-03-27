@@ -55,6 +55,7 @@ public class ActivityController : MonoBehaviour {
 
             if (nextActivity != null) {
 
+                log4Me($"{nextActivity.name} was set as nextactivity");
                 nextActivity.CurrentUser = this;
             }
         }
@@ -261,6 +262,11 @@ public class ActivityController : MonoBehaviour {
     public ObjectController myActivity { get; private set; }
 
     /// <summary>
+    /// This is the activity that represents the avatars callingDestination
+    /// </summary>
+    public ObjectController myCalling { get; private set; }
+
+    /// <summary>
     /// Determines, if the Start() method has been started
     /// </summary>
     public bool started { get; set; }
@@ -277,9 +283,6 @@ public class ActivityController : MonoBehaviour {
     private Animator animator;
     private NavMeshAgent navComponent;
     private int retries;
-
-    private Transform whatBurn;
-    private Transform smartphone;
 
     private bool iAmParticipant => MyLeader != null;
     private bool activityChangeRequested;
@@ -315,14 +318,20 @@ public class ActivityController : MonoBehaviour {
         started = true;
 
         vehicle = tag == "Vehicle";
+        isPlayer = tag == "Player";
 
         // Init Components
-        myActivity = GetComponentInChildren<ObjectController>();
+        if (!vehicle) {
 
-        isPlayer = tag == "Player";
+            myActivity = transform.Find("TalkDestination").GetComponent<ObjectController>();
+
+            myActivity.name = $"{name} with {name}";
+
+            if(!isPlayer) myCalling = transform.Find("callingDestination").GetComponent<ObjectController>(); 
+        }
+
         if (isPlayer) {
 
-            myActivity = GameObject.FindGameObjectWithTag("playersTalkDestination").GetComponent<ObjectController>();
             return;
         }
 
@@ -350,6 +359,10 @@ public class ActivityController : MonoBehaviour {
 
             Debug.LogWarning($"Achtung: {name} hat keine Talkdestination, d.h. dieser Avatar kann nicht angesprochen werden.");
         }
+        if (myCalling == null && !vehicle) {
+
+            Debug.LogWarning($"Achtung: {name} hat keine Talkdestination, d.h. dieser Avatar kann nicht angesprochen werden.");
+        }
         if (!vehicle && bubble == null) {
 
             Debug.LogError($"Fehler: {name} hat keine Destination Bubble im Inspector bekommen, weise das Prefab unter Prefabs/Attenders im Inspektor zu");
@@ -374,6 +387,7 @@ public class ActivityController : MonoBehaviour {
 
             StopCoroutine(startGoingRoutine);
             startGoingRoutine = null;
+            log4Me($"startGoingRoutine for {CurrentActivity.name} killed#Detail10Log");
         }
 
         if (stopNow) {
@@ -411,7 +425,7 @@ public class ActivityController : MonoBehaviour {
         log4Me($"{(CurrentActivity.isAvatar ? "My current activity is another avatar -> " + CurrentActivity.getAvatar().name : "I'm gonna do my activity alone")}#Detail10Log");
 
         // Decide what to do now
-        if (iAmParticipant && CurrentActivity.isAvatar) {
+        if (iAmParticipant && CurrentActivity.isAvatar || CurrentActivity == myCalling) {
 
             log4Me($"I don't have to start Going");
             stopGoing();
@@ -695,7 +709,7 @@ public class ActivityController : MonoBehaviour {
         // Stopped, because my partner was interrupted or away
         else if (partnerIsAway) {
 
-            log4Me($"stopping {CurrentActivity.name}, because my partner was interrupted ({CurrentActivity.getAvatar().name})");
+            log4Me($"stopping {CurrentActivity.name}, because my partner was interrupted ({theOther.name})");
             CurrentActivity.getAvatar().log4Me($"My former partner {name} stopped, because I was interrupted");
 
             if (myParticipants != null){
@@ -708,7 +722,7 @@ public class ActivityController : MonoBehaviour {
         // Stopped, because I was interrupted
         else if (activityChangeRequested && Panic) {
 
-            log4Me($"stopping {CurrentActivity.name}, because panic");
+            log4Me($"stopping {CurrentActivity.name}, because activityChangeRequested && panic was true");
         }
         else if (activityChangeRequested) {
 
@@ -801,7 +815,8 @@ public class ActivityController : MonoBehaviour {
 
             yield return new WaitForSeconds(0.2f);
         }
-        if(!iAmParticipant && Panic) deOrganize();
+
+        if (!iAmParticipant && Panic) deOrganize();
 
         log4Me($"done stopping {CurrentActivity.name}");
 
@@ -1076,7 +1091,7 @@ public class ActivityController : MonoBehaviour {
         Transform[] transformsInChildren = GetComponentsInChildren<Transform>();
         foreach (Transform child in transformsInChildren) {
 
-            if (child.name == "mixamorig:" + side + "HandMiddle1") {
+            if (child.name.Contains(side+"HandMiddle1")) {
 
                 found = child.gameObject;
             }
@@ -1371,64 +1386,37 @@ public class ActivityController : MonoBehaviour {
 
     /// <summary>
     /// Starts calling the fire department
-    /// This is a relict from "Avatare in Serious Games" and could be done differently
-    /// Is left in here because it works
     /// </summary>
     private void callFireDepartment() {
 
-        smartphone = getLeftSmartphone();
-
-        // He must have a smartphone
-        if (smartphone == null) return;
-
         log4Me($"I'm calling the Firedepartment");
 
-        // Stop
-        navComponent.enabled = true;
-        navComponent.isStopped = true;
-
         // Do calling animation
-        animator.SetBool("call", true);
-        smartphone.gameObject.SetActive(true);
-        smartphone.gameObject.GetComponent<MeshRenderer>().enabled = true;
+        myCalling.enabled = true;
+
+        ObjectController destination = CurrentActivity;
+        NextActivity = myCalling;
+
+        interrupt();
 
         // Resume after some secs
-        StartCoroutine(resumeFromCalling(10));
+        StartCoroutine(resumeFromCalling(myCalling.time, destination));
     }
 
     /// <summary>
-    /// Get's the left hand smartphone wich is hidden deeply in the hierarchy of the avatar
-    /// It will be attached to the left hand for realistic movement while calling
-    /// This is a relict from "Avatare in Serious Games" and is only kept here,
-    /// because it is used for the calling of the fire department and still works well.
-    /// This should actually be an activity with ObjectController
-    /// </summary>
-    /// <returns>The Transform of the hand</returns>
-    private Transform getLeftSmartphone() {
-
-        return transform
-            .Find("mixamorig:Hips")
-            .Find("mixamorig:Spine")
-            .Find("mixamorig:Spine1")
-            .Find("mixamorig:Spine2")
-            .Find("mixamorig:LeftShoulder")
-            .Find("mixamorig:LeftArm")
-            .Find("mixamorig:LeftForeArm")
-            .Find("mixamorig:LeftHand")
-            .Find("Smartphone");
-    }
-
-    /// <summary>
-    /// Resumes on the navMesh after a given amount of seconds, informs the gamelogic the firefighters are called
-    /// and hides the smartphone again
-    /// This is a relict from "Avatare in Serious Games"
+    /// Informs the gamelogic the firefighters are called
     /// </summary>
     /// <param name="seconds">The seconds to wait</param>
-    private IEnumerator resumeFromCalling(int seconds) {
+    /// <param name="destination">The destination to return to, after the call is finished</param>
+    private IEnumerator resumeFromCalling(int seconds, ObjectController destination) {
 
         yield return new WaitForSeconds(seconds);
-        animator.SetBool("call", false);
-        smartphone.gameObject.SetActive(false);
+
+        NextActivity = destination;
+
+        interrupt();
+
+        myCalling.enabled = false;
         myRegion.getMaster().called(this);
     }
 
