@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 54890963908672738}
   - component: {fileID: 82338671753625454}
   m_Layer: 0
-  m_Name: GuitarDesination
+  m_Name: GuitarDesination (single)
   m_TagString: Untagged
   m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
