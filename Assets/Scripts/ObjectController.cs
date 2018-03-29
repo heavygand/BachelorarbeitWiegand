@@ -404,6 +404,11 @@ public class ObjectController : MonoBehaviour {
 
             userHere.Panic = false;
         }
+        // When it's a talkdestination, then we only need sound at the groupleader
+        if (tag == "talkDestination" && userHere.MyLeader == null) {
+
+            sound.Stop();
+        }
 
         isActivated = true;
         userHere.log4Me($"{name} activated");
@@ -437,5 +442,17 @@ public class ObjectController : MonoBehaviour {
         //Debug.Log($"Groupactivity {name} has {participantActivities.Count} groupactivitychild without {name}");
 
         return participantActivities;
+    }
+
+    /// <summary>
+    /// Deactivates the object
+    /// </summary>
+    public void deactivate() {
+
+        isActivated = false;
+
+        AudioSource sound = GetComponent<AudioSource>();
+        if (sound != null)
+            sound.Stop();
     }
 }

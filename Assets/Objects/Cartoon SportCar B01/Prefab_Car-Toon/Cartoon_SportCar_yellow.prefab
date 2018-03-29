@@ -515,8 +515,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 136596}
-  m_LocalRotation: {x: -6.2034064e-14, y: 0.71566886, z: -6.356432e-14, w: 0.6984398}
-  m_LocalPosition: {x: -0.92274475, y: -9.909682, z: 6.629101}
+  m_LocalRotation: {x: -3.5757503e-14, y: 0.4247754, z: -8.130223e-14, w: 0.9052988}
+  m_LocalPosition: {x: 20.32, y: -9.71, z: 7.48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 402960}
@@ -530,7 +530,7 @@ Transform:
   - {fileID: 431990}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 91.396, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 50.273003, z: 0}
 --- !u!4 &437274
 Transform:
   m_ObjectHideFlags: 1
@@ -1828,6 +1828,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentActivity: {fileID: 0}
   nextActivity: {fileID: 0}
+  rotationSpeed: 0
+  activityTimeRefreshRate: 0
   bubble: {fileID: 0}
   exclamationMark: {fileID: 0}
   showDebugWindow: 0
@@ -1842,7 +1844,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 136596}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 1.84
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50

@@ -179,9 +179,9 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 15
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -267,6 +267,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 2
   startDelay: 0
+  multiUserActivity: 0
   discription: "Summer bet\xE4tigen"
 --- !u!136 &136125958646300354
 CapsuleCollider:

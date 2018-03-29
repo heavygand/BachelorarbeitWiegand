@@ -816,6 +816,8 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
 
+        CurrentActivity.deactivate();
+
         if (!iAmParticipant && Panic) deOrganize();
 
         log4Me($"done stopping {CurrentActivity.name}");
