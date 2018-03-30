@@ -3155,7 +3155,7 @@ MonoBehaviour:
   loops: 0
   activationDelay: 0
   startDelay: 0
-  multiUserActivity: 0
+  multiUserActivity: 1
   discription: reden mit dem Spieler
 --- !u!114 &114181373712067558
 MonoBehaviour:

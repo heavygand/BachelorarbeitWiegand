@@ -325,7 +325,7 @@ public class ActivityController : MonoBehaviour {
 
             myActivity = transform.Find("TalkDestination").GetComponent<ObjectController>();
 
-            myActivity.name = $"{name} with {name}";
+            myActivity.name = $"{myActivity.name} with {name}";
 
             if(!isPlayer) myCalling = transform.Find("callingDestination").GetComponent<ObjectController>(); 
         }
@@ -529,6 +529,7 @@ public class ActivityController : MonoBehaviour {
 
             if (arrivedAtRP) {
 
+                log4Me($"Setting the NextActivity with the last activity {LastActivity.name}");
                 NextActivity = LastActivity;
             }
 
@@ -803,8 +804,8 @@ public class ActivityController : MonoBehaviour {
             yield return new WaitForSeconds(0.2f);
         }
 
-        // When my activity is still not activated, then wait
-        while (!CurrentActivity.IsActivated) {
+        // When my activity is still not activated, then wait. (only when single user activity)
+        while (!CurrentActivity.multiUserActivity && !CurrentActivity.IsActivated) {
 
             log4Me($"Cannot proceed, because {CurrentActivity.name} is not activated yet");
             yield return new WaitForSeconds(0.2f);
@@ -997,6 +998,7 @@ public class ActivityController : MonoBehaviour {
             log4Me($"Proceeding to {componentsInChildren[1].name} after this");
 
             // Then go there first
+            log4Me($"Setting the NextActivity with componentsInChildren[1] {componentsInChildren[1].name}");
             NextActivity = componentsInChildren[1];
 
             return true;
@@ -1010,6 +1012,8 @@ public class ActivityController : MonoBehaviour {
 
             // Then start with the root again
             ObjectController[] componentsInParent = CurrentActivity.gameObject.GetComponentsInParent<ObjectController>();
+
+            log4Me($"Setting the NextActivity with componentsInParent[componentsInParent.Length - 1] {componentsInParent[componentsInParent.Length - 1].name}");
             NextActivity = componentsInParent[componentsInParent.Length - 1];
 
             return true;
@@ -1178,7 +1182,7 @@ public class ActivityController : MonoBehaviour {
         
         if(activity == null) Debug.LogError($"{name}: activity war null in interruptWith()");
 
-        log4Me($"Interruption {activity.name} accepted");
+        log4Me($"Interruption {activity.name} accepted, so setting this as nextactivity and interruptedfor");
 
         NextActivity = activity;
 
@@ -1397,6 +1401,8 @@ public class ActivityController : MonoBehaviour {
         myCalling.enabled = true;
 
         ObjectController destination = CurrentActivity;
+
+        log4Me($"Setting the NextActivity with myCallingDestination {myCalling.name}");
         NextActivity = myCalling;
 
         interrupt();
@@ -1414,9 +1420,13 @@ public class ActivityController : MonoBehaviour {
 
         yield return new WaitForSeconds(seconds);
 
-        NextActivity = destination;
+        if (!activityChangeRequested) {
 
-        interrupt();
+            log4Me($"Waited for {seconds}s and setting the NextActivity with the destination in the given parameter of resumeFromCalling {destination.name}");
+            NextActivity = destination;
+
+            interrupt(); 
+        }
 
         myCalling.enabled = false;
         myRegion.getMaster().called(this);
@@ -1692,7 +1702,7 @@ public class ActivityController : MonoBehaviour {
 
         if (arrivedAtRP || Panic || vehicle) return;
 
-        log4Me($"I am fleeing now");
+        log4Me($"I am fleeing now (will set next activity to rallying point)");
 
         fireRegion = myRegion;
         wasWalking = Going;

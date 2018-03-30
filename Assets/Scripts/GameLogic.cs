@@ -426,6 +426,7 @@ public class GameLogic : MonoBehaviour {
 
             fireWitness.log4Me($"The Gamelogic gave me panic");
             fireWitness.Panic = true;
+            fireWitness.log4Me($"The Gamelogic is trying to interrupt me with {talkDestination.name}");
             fireWitness.interruptWith(talkDestination);
         }
     }
