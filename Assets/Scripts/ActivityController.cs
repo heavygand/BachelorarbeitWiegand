@@ -276,6 +276,11 @@ public class ActivityController : MonoBehaviour {
     /// </summary>
     public bool vehicle { get; private set; }
 
+    /// <summary>
+    /// Determines if the object has been activated
+    /// </summary>
+    public bool activationSignalized { get; set; }
+
     #endregion
     #region PRIVATE MEMBERS
 
@@ -401,6 +406,7 @@ public class ActivityController : MonoBehaviour {
         log4Me($"setTarget() called#Detail10Log");
 
         activityChangeRequested = false;
+        activationSignalized = false;
 
         // Take the next activity if there is one, and save the last activity
         tryNextInQueue();
@@ -805,7 +811,7 @@ public class ActivityController : MonoBehaviour {
         }
 
         // When my activity is still not activated, then wait. (only when single user activity)
-        while (!CurrentActivity.multiUserActivity && !CurrentActivity.IsActivated) {
+        while (!CurrentActivity.multiUserActivity && !activationSignalized) {
 
             log4Me($"Cannot proceed, because {CurrentActivity.name} is not activated yet");
             yield return new WaitForSeconds(0.2f);
@@ -858,13 +864,14 @@ public class ActivityController : MonoBehaviour {
         
         if(iAmParticipant || myParticipants == null) return true;
 
-        // Wait untill all participants started the groupactivity
+        // Wait until all participants started the groupactivity
         foreach (ActivityController parti in myParticipants) {
 
-            if (!Panic && parti.interruptedFor != null && !parti.interruptedFor.IsActivated) {
+            if (!Panic && (parti.interruptedFor != null && !parti.interruptedFor.IsActivated || !parti.activationSignalized)) {
 
-                    log4Me($"Cannot proceed, because {parti.name} did not activate {parti.interruptedFor.name} yet");
-                    parti.log4Me($"My Leader {name} cannot proceed, because I didn't activate {parti.interruptedFor.name} yet");
+                log4Me($"Cannot proceed, because {parti.name} did not activate {parti.interruptedFor.name} yet");
+                log4Me($"parti.activationSignalized = {parti.activationSignalized}");
+                parti.log4Me($"My Leader {name} cannot proceed, because I didn't activate {parti.interruptedFor.name} yet");
 
                 return false;
             }

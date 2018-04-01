@@ -411,6 +411,7 @@ public class ObjectController : MonoBehaviour {
         }
 
         isActivated = true;
+        userHere.activationSignalized = true;
         userHere.log4Me($"{name} activated");
     }
 
